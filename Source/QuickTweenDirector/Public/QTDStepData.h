@@ -45,8 +45,6 @@ enum class EQTDRotatorProperty : uint8
 UENUM(BlueprintType)
 enum class EQTDFloatTarget : uint8
 {
-	/** User-supplied getter/setter bound via BindFloatSlot. */
-	Custom              UMETA(DisplayName = "Custom (Bound at Runtime)"),
 	/** Sets a scalar parameter on a UMaterialInstanceDynamic. */
 	MaterialScalar      UMETA(DisplayName = "Material Scalar Parameter"),
 };
@@ -55,8 +53,6 @@ enum class EQTDFloatTarget : uint8
 UENUM(BlueprintType)
 enum class EQTDColorTarget : uint8
 {
-	/** User-supplied getter/setter bound via BindColorSlot. */
-	Custom              UMETA(DisplayName = "Custom (Bound at Runtime)"),
 	/** Sets a vector parameter on a UMaterialInstanceDynamic. */
 	MaterialVector      UMETA(DisplayName = "Material Vector Parameter"),
 };
@@ -191,7 +187,7 @@ struct QUICKTWEENDIRECTOR_API FQTDStepData
 	/** How the float value is delivered to the target. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Float",
 		meta = (EditCondition = "StepType == EQTDStepType::Float", EditConditionHides))
-	EQTDFloatTarget FloatTarget = EQTDFloatTarget::Custom;
+	EQTDFloatTarget FloatTarget = EQTDFloatTarget::MaterialScalar;
 
 	/** Start float value. Ignored when bFloatFromCurrent is true. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Float",

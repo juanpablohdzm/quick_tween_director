@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "QuickTweenable.h"
 #include "Utils/CommonValues.h"
+#include "Tweens/QuickTweenBase.h"
 #include "QTDStepData.h"
 #include "QuickTweenDirectorPlayer.generated.h"
 
@@ -13,10 +14,7 @@ class UQuickTweenBase;
 class AActor;
 class USceneComponent;
 
-DEFINE_LOG_CATEGORY_STATIC(LogQTDPlayer, Log, All);
-
-DECLARE_MULTICAST_DELEGATE_OneParam(FNativeDelegateQTDPlayer, class UQuickTweenDirectorPlayer*);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FDynamicDelegateQTDPlayer, class UQuickTweenDirectorPlayer*, Player);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQTDPlayerEvent, UQuickTweenDirectorPlayer*, Player);
 
 /**
  * Internal entry pairing a built tween with its absolute timeline position.
@@ -34,9 +32,6 @@ struct FQTDBuiltStep
 
 	/** Total wall-clock duration of the step (Duration * Loops / TimeScale). */
 	float TotalDuration = 0.0f;
-
-	/** Track whether the tween was active on the previous seek to fire start/complete events. */
-	bool bWasActive = false;
 };
 
 /**
@@ -57,18 +52,9 @@ class QUICKTWEENDIRECTOR_API UQuickTweenDirectorPlayer : public UQuickTweenable
 {
 	GENERATED_BODY()
 
+	friend class UQuickTweenDirectorLibrary;
+
 public:
-
-	// ── Factory ───────────────────────────────────────────────────────────────
-
-	/**
-	 * Create a new player for the given asset.
-	 * @param WorldContext  Any in-world UObject (actor, component, …).
-	 * @param Asset         The director asset to play.
-	 * @return              The player, already registered with QuickTweenManager.
-	 *                      Returns nullptr if the asset is null or there is no manager.
-	 */
-	static UQuickTweenDirectorPlayer* Create(UObject* WorldContext, UQuickTweenDirectorAsset* Asset);
 
 	// ── Slot binding ──────────────────────────────────────────────────────────
 
@@ -89,6 +75,24 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Director")
 	bool Build(UObject* WorldContext);
+
+	// ── Tween accessors ───────────────────────────────────────────────────────
+
+	/**
+	 * Return the tween for the step with the given ID, or nullptr if not found.
+	 * The player must have been built (Play() or Build() called) before calling this.
+	 * Cast the result to UQuickTweenBase to assign per-tween callbacks.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Director")
+	UQuickTweenBase* GetTweenByStepId(FGuid StepId) const;
+
+	/**
+	 * Return the first tween whose step label matches Label, or nullptr if not found.
+	 * The player must have been built (Play() or Build() called) before calling this.
+	 * Cast the result to UQuickTweenBase to assign per-tween callbacks.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Director")
+	UQuickTweenBase* GetTweenByLabel(const FString& Label) const;
 
 	// ── UQuickTweenable interface ─────────────────────────────────────────────
 
@@ -125,28 +129,26 @@ public:
 
 	// ── Events ────────────────────────────────────────────────────────────────
 
-	UFUNCTION(BlueprintCallable, Category = "Director|Events")
-	void AssignOnStartEvent(FDynamicDelegateQTDPlayer Callback);
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDPlayerEvent OnStart;
 
-	UFUNCTION(BlueprintCallable, Category = "Director|Events")
-	void AssignOnUpdateEvent(FDynamicDelegateQTDPlayer Callback);
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDPlayerEvent OnUpdate;
 
-	UFUNCTION(BlueprintCallable, Category = "Director|Events")
-	void AssignOnCompleteEvent(FDynamicDelegateQTDPlayer Callback);
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDPlayerEvent OnComplete;
 
-	UFUNCTION(BlueprintCallable, Category = "Director|Events")
-	void AssignOnKilledEvent(FDynamicDelegateQTDPlayer Callback);
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDPlayerEvent OnKilled;
 
-	UFUNCTION(BlueprintCallable, Category = "Director|Events")
-	void AssignOnLoopEvent(FDynamicDelegateQTDPlayer Callback);
-
-	FNativeDelegateQTDPlayer OnStart;
-	FNativeDelegateQTDPlayer OnUpdate;
-	FNativeDelegateQTDPlayer OnComplete;
-	FNativeDelegateQTDPlayer OnKilled;
-	FNativeDelegateQTDPlayer OnLoop;
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDPlayerEvent OnLoop;
 
 private:
+
+	// ── Factory (Blueprint library only) ──────────────────────────────────────
+
+	static UQuickTweenDirectorPlayer* Create(UObject* WorldContext, UQuickTweenDirectorAsset* Asset);
 
 	// ── Internals ─────────────────────────────────────────────────────────────
 
@@ -187,6 +189,9 @@ private:
 	/** Child tweens kept alive by UPROPERTY. */
 	UPROPERTY()
 	TArray<UQuickTweenable*> OwnedTweens;
+
+	/** Step data parallel to OwnedTweens — same index. Used by GetTweenByXxx. */
+	TArray<FQTDStepData> BuiltStepData;
 
 	/** Timeline-mapped steps. Sorted ascending by StartTime after Build(). */
 	TArray<FQTDBuiltStep> BuiltSteps;

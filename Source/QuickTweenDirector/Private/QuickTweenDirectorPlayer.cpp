@@ -13,8 +13,10 @@
 #include "Components/SceneComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogQTDPlayer, Log, All);
+
 // ──────────────────────────────────────────────────────────────────────────────
-// Factory
+// Factory (used only by UQuickTweenDirectorLibrary)
 // ──────────────────────────────────────────────────────────────────────────────
 
 UQuickTweenDirectorPlayer* UQuickTweenDirectorPlayer::Create(UObject* WorldContext, UQuickTweenDirectorAsset* InAsset)
@@ -51,6 +53,34 @@ void UQuickTweenDirectorPlayer::BindSlot(FName SlotName, UObject* Object)
 		return;
 	}
 	SlotBindings.Add(SlotName, TWeakObjectPtr<UObject>(Object));
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Tween accessors
+// ──────────────────────────────────────────────────────────────────────────────
+
+UQuickTweenBase* UQuickTweenDirectorPlayer::GetTweenByStepId(FGuid StepId) const
+{
+	for (int32 i = 0; i < BuiltStepData.Num(); ++i)
+	{
+		if (BuiltStepData[i].StepId == StepId && BuiltSteps.IsValidIndex(i))
+		{
+			return Cast<UQuickTweenBase>(BuiltSteps[i].Tween);
+		}
+	}
+	return nullptr;
+}
+
+UQuickTweenBase* UQuickTweenDirectorPlayer::GetTweenByLabel(const FString& Label) const
+{
+	for (int32 i = 0; i < BuiltStepData.Num(); ++i)
+	{
+		if (BuiltStepData[i].Label == Label && BuiltSteps.IsValidIndex(i))
+		{
+			return Cast<UQuickTweenBase>(BuiltSteps[i].Tween);
+		}
+	}
+	return nullptr;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -224,9 +254,6 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 	// ── Float ─────────────────────────────────────────────────────────────────
 	if (Step.StepType == EQTDStepType::Float)
 	{
-		const float ToVal   = Step.FloatTo;
-		const float FromVal = Step.FloatFrom;
-
 		if (Step.FloatTarget == EQTDFloatTarget::MaterialScalar)
 		{
 			const TWeakObjectPtr<UObject>* FoundObj = SlotBindings.Find(Step.SlotName);
@@ -243,6 +270,8 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 
 			TWeakObjectPtr<UMaterialInstanceDynamic> WeakMID(MID);
 			const FName ParamName = Step.ParameterName;
+			const float ToVal   = Step.FloatTo;
+			const float FromVal = Step.FloatFrom;
 
 			FNativeFloatGetter GetterFrom = Step.bFloatFromCurrent
 				? FNativeFloatGetter::CreateLambda([WeakMID, ParamName](UQuickFloatTween*) {
@@ -266,8 +295,6 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 				/*bAutoKill*/ false, /*WhilePaused*/ false, /*AutoPlay*/ false);
 		}
 
-		// EQTDFloatTarget::Custom — user must bind via a subclass or event.
-		UE_LOG(LogQTDPlayer, Verbose, TEXT("Step '%s': Float/Custom steps require runtime subclass binding."), *Step.Label);
 		return nullptr;
 	}
 
@@ -293,13 +320,6 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 			const FLinearColor ToVal = Step.ColorTo;
 			const FLinearColor FromVal = Step.ColorFrom;
 
-			// Represent color as a float tween on each channel via a Vector tween approach.
-			// QuickTween doesn't have a native LinearColor tween, so we decompose into
-			// a custom UQuickFloatTween for each channel. For simplicity we use a
-			// UQuickVectorTween to carry RGB and ignore alpha, which is the standard
-			// material workflow. A separate float tween can handle alpha if needed.
-
-			TWeakObjectPtr<USceneComponent> Unused; // not used for material tweens
 			const FVector ToVec   = FVector(ToVal.R,   ToVal.G,   ToVal.B);
 			const FVector FromVec = FVector(FromVal.R, FromVal.G, FromVal.B);
 
@@ -326,7 +346,6 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 				/*bAutoKill*/ false, /*WhilePaused*/ false, /*AutoPlay*/ false);
 		}
 
-		UE_LOG(LogQTDPlayer, Verbose, TEXT("Step '%s': Color/Custom requires runtime subclass binding."), *Step.Label);
 		return nullptr;
 	}
 
@@ -344,17 +363,13 @@ bool UQuickTweenDirectorPlayer::Build(UObject* WorldContext)
 	if (WorldContext) WorldContextObject = WorldContext;
 
 	// ── Auto-bind component slots ──────────────────────────────────────────────
-	// For every track that has a ComponentVariableName, try to resolve the component
-	// on the owning actor so manual BindSlot() calls are not required when the player
-	// is created on the actor that owns those components.
 	if (AActor* OwnerActor = Cast<AActor>(const_cast<UObject*>(WorldContextObject)))
 	{
 		for (const FQTDTrackData& Track : Asset->Tracks)
 		{
 			if (Track.ComponentVariableName.IsNone()) continue;
-			if (SlotBindings.Contains(Track.ComponentVariableName)) continue;  // already bound manually
+			if (SlotBindings.Contains(Track.ComponentVariableName)) continue;
 
-			// Search by FName match (Blueprint-generated components use their variable name as FName)
 			for (UActorComponent* Comp : OwnerActor->GetComponents())
 			{
 				if (Comp && Comp->GetFName() == Track.ComponentVariableName)
@@ -367,7 +382,6 @@ bool UQuickTweenDirectorPlayer::Build(UObject* WorldContext)
 				}
 			}
 
-			// Fallback: search by class property reflection (handles renamed components)
 			if (!SlotBindings.Contains(Track.ComponentVariableName))
 			{
 				FObjectProperty* Prop = FindFProperty<FObjectProperty>(
@@ -387,22 +401,22 @@ bool UQuickTweenDirectorPlayer::Build(UObject* WorldContext)
 		}
 	}
 
-	// Clear any previously built state.
 	OwnedTweens.Empty();
 	BuiltSteps.Empty();
+	BuiltStepData.Empty();
 
 	UQuickTweenManager* Manager = UQuickTweenManager::Get(WorldContextObject);
 
 	for (const FQTDStepData& Step : Asset->Steps)
 	{
 		UQuickTweenBase* Tween = CreateTweenForStep(Step);
-		if (!Tween) continue; // step skipped (warning already logged inside)
+		if (!Tween) continue;
 
-		// Remove from manager (we control its lifetime) and make us the owner.
 		if (Manager) Manager->RemoveTween(Tween);
 		Tween->SetOwner(this);
 
 		OwnedTweens.Add(Tween);
+		BuiltStepData.Add(Step);
 
 		FQTDBuiltStep BuiltStep;
 		BuiltStep.Tween         = Tween;
@@ -412,9 +426,26 @@ bool UQuickTweenDirectorPlayer::Build(UObject* WorldContext)
 	}
 
 	// Sort ascending by start time for efficient seek.
-	BuiltSteps.Sort([](const FQTDBuiltStep& A, const FQTDBuiltStep& B) {
-		return A.StartTime < B.StartTime;
+	// Note: BuiltSteps and BuiltStepData are sorted together via index.
+	TArray<int32> SortedIndices;
+	SortedIndices.SetNum(BuiltSteps.Num());
+	for (int32 i = 0; i < SortedIndices.Num(); ++i) SortedIndices[i] = i;
+	SortedIndices.Sort([this](int32 A, int32 B) {
+		return BuiltSteps[A].StartTime < BuiltSteps[B].StartTime;
 	});
+
+	TArray<FQTDBuiltStep> SortedSteps;
+	TArray<FQTDStepData>  SortedData;
+	TArray<UQuickTweenable*> SortedTweens;
+	for (int32 Idx : SortedIndices)
+	{
+		SortedSteps.Add(BuiltSteps[Idx]);
+		SortedData.Add(BuiltStepData[Idx]);
+		SortedTweens.Add(OwnedTweens[Idx]);
+	}
+	BuiltSteps    = MoveTemp(SortedSteps);
+	BuiltStepData = MoveTemp(SortedData);
+	OwnedTweens   = MoveTemp(SortedTweens);
 
 	bIsBuilt = true;
 	return true;
@@ -536,7 +567,6 @@ void UQuickTweenDirectorPlayer::Update(float DeltaTime)
 	float LocalTime = FMath::Fmod(ElapsedTime, LoopDur);
 	if (LocalTime < 0.0f) LocalTime += LoopDur;
 
-	// PingPong: odd loops play backward.
 	if (GetLoopType() == ELoopType::PingPong && (CurrentLoop & 1) != 0)
 	{
 		LocalTime = LoopDur - LocalTime;
@@ -622,7 +652,6 @@ void UQuickTweenDirectorPlayer::SeekTime(float LoopLocalTime)
 		};
 
 		Entry.Tween->Evaluate(Payload, this);
-		Entry.bWasActive = bActive;
 	}
 
 	PreviousLoopLocalTime = LoopLocalTime;
@@ -704,33 +733,4 @@ bool UQuickTweenDirectorPlayer::GetAutoKill() const
 bool UQuickTweenDirectorPlayer::GetShouldPlayWhilePaused() const
 {
 	return Asset ? Asset->bPlayWhilePaused : false;
-}
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Events
-// ──────────────────────────────────────────────────────────────────────────────
-
-void UQuickTweenDirectorPlayer::AssignOnStartEvent(FDynamicDelegateQTDPlayer Callback)
-{
-	OnStart.AddUFunction(Callback.GetUObject(), Callback.GetFunctionName());
-}
-
-void UQuickTweenDirectorPlayer::AssignOnUpdateEvent(FDynamicDelegateQTDPlayer Callback)
-{
-	OnUpdate.AddUFunction(Callback.GetUObject(), Callback.GetFunctionName());
-}
-
-void UQuickTweenDirectorPlayer::AssignOnCompleteEvent(FDynamicDelegateQTDPlayer Callback)
-{
-	OnComplete.AddUFunction(Callback.GetUObject(), Callback.GetFunctionName());
-}
-
-void UQuickTweenDirectorPlayer::AssignOnKilledEvent(FDynamicDelegateQTDPlayer Callback)
-{
-	OnKilled.AddUFunction(Callback.GetUObject(), Callback.GetFunctionName());
-}
-
-void UQuickTweenDirectorPlayer::AssignOnLoopEvent(FDynamicDelegateQTDPlayer Callback)
-{
-	OnLoop.AddUFunction(Callback.GetUObject(), Callback.GetFunctionName());
 }

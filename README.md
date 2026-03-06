@@ -19,8 +19,6 @@ A visual timeline editor and runtime system for **QuickTween**. Create complex, 
    - [Zoom and navigation](#zoom-and-navigation)
    - [Saving](#saving)
 5. [Playing the animation at runtime](#playing-the-animation-at-runtime)
-   - [Blueprint](#blueprint)
-   - [C++](#c)
 6. [Slot bindings](#slot-bindings)
 7. [Supported step types](#supported-step-types)
 8. [Combining with other sequences](#combining-with-other-sequences)
@@ -94,7 +92,7 @@ Each **track** targets one component from your Blueprint's component hierarchy.
 2. The **Select Component** dialog opens, showing the full component tree of your Blueprint (mirrors the Components panel).
 3. Pick a component and click **OK**. A track is added, labeled with the component's variable name and class.
 
-> Only components from your Blueprint's Simple Construction Script are listed. Inherited C++ components may not appear — animate those via C++ or a custom slot binding.
+> Only components from your Blueprint's Simple Construction Script are listed. Inherited C++ components may not appear — animate those via a custom slot binding.
 
 ### Adding a step
 
@@ -107,7 +105,6 @@ A **step** is a colored block on a track that represents one tween.
 |----------------|----------------|
 | Any `USceneComponent` | Relative Location, World Location, Relative Rotation, World Rotation, Relative Scale, World Scale |
 | Any `UPrimitiveComponent` | All of the above + Material Scalar, Material Color |
-| Other `UActorComponent` | Custom Float, Custom Color |
 | All | Delay (Empty) |
 
 3. Select a type. The **Edit Step** dialog opens immediately so you can set the **From** / **To** values, duration, and easing.
@@ -135,9 +132,9 @@ Double-click any step to re-open its edit dialog.
 | **To** | End value |
 | **From Current** | Reads the component's live value at start time instead of a fixed **From** |
 
-**Float steps** — set **From**, **To**, and optionally a **Parameter Name** (for material scalar targets).
+**Float steps** — set **From**, **To**, and a **Parameter Name** (material scalar parameter name).
 
-**Color steps** — click the swatches to open a color picker for **From** and **To**. Set **Parameter Name** for material vector targets.
+**Color steps** — click the swatches to open a color picker for **From** and **To**. Set **Parameter Name** for the material vector parameter name.
 
 ### Moving and deleting steps
 
@@ -164,8 +161,6 @@ Click **Save** in the toolbar. The Director asset is an ordinary `UDataAsset` sa
 
 Because the Director panel added a **Blueprint variable** for each animation, using it at runtime is straightforward.
 
-### Blueprint
-
 **Simplest case — actor animates its own components:**
 
 ```
@@ -185,7 +180,20 @@ That's it. Components are **automatically bound** — no manual `Bind Slot` call
 **Chaining events:**
 
 ```
-[Create Director Player] ──► [Assign On Complete Event ← MyCallback] ──► [Play]
+[Create Director Player] ──► [Assign On Complete ← MyCallback] ──► [Play]
+```
+
+Or bind directly using the **BlueprintAssignable** delegates on the returned player:
+
+```
+[Create Director Player] → return value → [OnComplete (Assign Event)] → [Play]
+```
+
+**Accessing individual step tweens for callbacks:**
+
+```
+[Create Director Player] ──► [Play]
+                         ──► [Get Tween By Label "MyStep"] ──► [Assign On Complete Event]
 ```
 
 **Storing the player for later control:**
@@ -197,38 +205,6 @@ That's it. Components are **automatically bound** — no manual `Bind Slot` call
 [Event SomeTrigger]      ──► [GET MyAnimationPlayer] ──► [Pause]
 ```
 
-### C++
-
-```cpp
-#include "QuickTweenDirectorPlayer.h"
-
-// The asset is referenced by a UPROPERTY variable added to the Blueprint.
-// Retrieve it via the property or load it directly:
-UQuickTweenDirectorPlayer* Player = UQuickTweenDirectorPlayer::Create(this, MyAnimation);
-
-if (Player)
-{
-    // Components referenced by the animation are auto-bound — no BindSlot() needed
-    // for components that belong to this actor.
-
-    Player->OnComplete.AddLambda([](UQuickTweenDirectorPlayer* P)
-    {
-        UE_LOG(LogTemp, Log, TEXT("Animation finished!"));
-    });
-
-    Player->Play();
-}
-```
-
-If you need to animate a component on a **different actor**, bind it manually before `Play()`:
-
-```cpp
-Player->BindSlot(TEXT("TargetMesh"), OtherActor->GetRootComponent());
-Player->Play();
-```
-
-Manual bindings always take priority over the automatic ones.
-
 ---
 
 ## Slot bindings
@@ -238,16 +214,15 @@ Each track stores the **variable name** of the component it was created for. At 
 | Situation | What happens |
 |-----------|-------------|
 | Animation created for this Blueprint's component | Auto-bound — no action required |
-| You call `BindSlot(Name, Object)` before `Play()` | Manual binding overrides the automatic one |
+| You call `Bind Slot(Name, Object)` before `Play()` | Manual binding overrides the automatic one |
 | Slot name is empty | Falls back to the world context object (actor root component) |
 | Component not found and no manual binding | Step is skipped with a log warning |
 
 For **material parameter** steps (Float → Material Scalar, Color → Material Vector) the slot must be a `UMaterialInstanceDynamic`. Bind it manually since dynamic material instances are created at runtime:
 
-```cpp
-UMaterialInstanceDynamic* MID = Mesh->CreateAndSetMaterialInstanceDynamic(0);
-Player->BindSlot(TEXT("MyMeshSlot"), MID);
-Player->Play();
+```
+[Create and Set Material Instance Dynamic] ──► [Bind Slot ("MyMeshSlot", MID)]
+[Create Director Player] ──► [Bind Slot ("MyMeshSlot", MID)] ──► [Play]
 ```
 
 ---
@@ -272,21 +247,11 @@ Animates an `FRotator`, always using the shortest angular path.
 | Relative Rotation | `SetRelativeRotation` |
 | World Rotation | `SetWorldRotation` |
 
-### Float
-Animates a single `float`.
+### Float (Material Scalar)
+Sets a scalar parameter on a `UMaterialInstanceDynamic`. Requires **Parameter Name** and a manually bound MID slot.
 
-| Target | Description |
-|--------|-------------|
-| Material Scalar | Sets a scalar parameter on a `UMaterialInstanceDynamic`. Requires **Parameter Name**. |
-| Custom | Requires a C++ subclass or runtime `BindSlot` with a custom getter/setter. |
-
-### Linear Color
-Animates an RGB color (alpha not animated in this version).
-
-| Target | Description |
-|--------|-------------|
-| Material Vector | Sets a vector parameter on a `UMaterialInstanceDynamic`. Requires **Parameter Name**. |
-| Custom | Requires a C++ subclass or runtime binding. |
+### Linear Color (Material Vector)
+Sets a vector parameter on a `UMaterialInstanceDynamic` (RGB only). Requires **Parameter Name** and a manually bound MID slot.
 
 ### Empty (Delay)
 A no-op step. Use it to add pauses within a track without affecting parallel tracks.
@@ -295,55 +260,41 @@ A no-op step. Use it to add pauses within a track without affecting parallel tra
 
 ## Combining with other sequences
 
-`UQuickTweenDirectorPlayer` implements `UQuickTweenable`, so it can be nested inside any QuickTween sequence.
-
-**C++**
-```cpp
-UQuickTweenSequence* Seq = UQuickTweenSequence::CreateSequence(this);
-
-UQuickTweenDirectorPlayer* Player = UQuickTweenDirectorPlayer::Create(this, MyAnimation);
-Player->Build(this);   // pre-build so Seq knows its duration
-
-Seq->Append(Player);          // play after the previous step
-Seq->Join(SomeOtherTween);    // play in parallel with the player
-
-Seq->Play();
-```
-
-**Blueprint**
-Use the standard **Quick Tween Create Sequence → Append / Join** nodes, passing the Director Player variable as the `Tween` argument.
+`UQuickTweenDirectorPlayer` implements `UQuickTweenable`, so it can be nested inside any QuickTween sequence using the standard **Quick Tween Create Sequence → Append / Join** nodes, passing the Director Player variable as the `Tween` argument.
 
 ---
 
 ## Playback control reference
 
-| Method | Description |
+| Node | Description |
 |--------|-------------|
-| `Play()` | Start or resume. Calls `Build()` automatically on first play. |
-| `Pause()` | Pause at the current position. |
-| `Reverse()` | Toggle playback direction. |
-| `Restart()` | Reset to Idle. Call `Play()` again to restart. |
-| `Complete(bSnapToEnd)` | Jump to the end state immediately. |
-| `Kill()` | Stop and unregister. Do not use the player after this. |
+| `Play` | Start or resume. Calls `Build` automatically on first play. |
+| `Pause` | Pause at the current position. |
+| `Reverse` | Toggle playback direction. |
+| `Restart` | Reset to Idle. Call `Play` again to restart. |
+| `Complete` | Jump to the end state immediately. |
+| `Kill` | Stop and unregister. Do not use the player after this. |
+| `Get Tween By Step Id` | Returns the tween for a specific step ID (must be built first). |
+| `Get Tween By Label` | Returns the first tween whose label matches (must be built first). |
 
-**Events** (Blueprint: Assign … Event nodes; C++: multicast delegates on `OnXxx`):
+**Events** (drag off the player reference and use the `OnXxx` delegate pins, or use `Assign Event` nodes):
 
 | Event | Fires when |
 |-------|-----------|
-| `OnStart` | First `Play()` exits Idle |
+| `OnStart` | First `Play` exits Idle |
 | `OnUpdate` | Every tick while playing |
 | `OnLoop` | Each time the animation loops |
 | `OnComplete` | The last loop finishes |
-| `OnKilled` | `Kill()` is called |
+| `OnKilled` | `Kill` is called |
 
 **State queries:**
 
-| Function | Returns |
+| Node | Returns |
 |----------|---------|
-| `GetIsPlaying()` | `true` while ticking |
-| `GetIsCompleted()` | `true` after the last loop |
-| `GetIsPendingKill()` | `true` after `Kill()` |
-| `GetElapsedTime()` | Seconds since playback started |
-| `GetLoopDuration()` | Duration of one loop |
-| `GetTotalDuration()` | `LoopDuration × Loops` |
-| `GetCurrentLoop()` | Current loop index (0-based) |
+| `Get Is Playing` | `true` while ticking |
+| `Get Is Completed` | `true` after the last loop |
+| `Get Is Pending Kill` | `true` after `Kill` |
+| `Get Elapsed Time` | Seconds since playback started |
+| `Get Loop Duration` | Duration of one loop |
+| `Get Total Duration` | `Loop Duration × Loops` |
+| `Get Current Loop` | Current loop index (0-based) |

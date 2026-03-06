@@ -323,20 +323,8 @@ private:
 			SubBuilder.EndSection();
 		}
 
-		// ── Custom / generic ──────────────────────────────────────────────
-		SubBuilder.BeginSection("Custom", LOCTEXT("SecCustom", "Custom"));
-		SubBuilder.AddMenuEntry(
-			LOCTEXT("CustomFloat", "Custom Float"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-				MakeFloatStep(EQTDFloatTarget::Custom, SlotName, ClickTime))));
-		SubBuilder.AddMenuEntry(
-			LOCTEXT("CustomColor", "Custom Color"),
-			FText::GetEmpty(),
-			FSlateIcon(),
-			FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-				MakeColorStep(EQTDColorTarget::Custom, SlotName, ClickTime))));
+		// ── Generic ───────────────────────────────────────────────────────
+		SubBuilder.BeginSection("Generic", LOCTEXT("SecGeneric", "Generic"));
 		SubBuilder.AddMenuEntry(
 			LOCTEXT("Delay", "Delay (Empty)"),
 			FText::GetEmpty(),
@@ -389,8 +377,7 @@ private:
 	{
 		FQTDStepData S = MakeBaseStep(EQTDStepType::Float, SlotName, T);
 		S.FloatTarget = Target;
-		S.Label = (Target == EQTDFloatTarget::MaterialScalar)
-			? TEXT("Material Float") : TEXT("Custom Float");
+		S.Label = TEXT("Material Float");
 		return S;
 	}
 
@@ -398,8 +385,7 @@ private:
 	{
 		FQTDStepData S = MakeBaseStep(EQTDStepType::LinearColor, SlotName, T);
 		S.ColorTarget = Target;
-		S.Label = (Target == EQTDColorTarget::MaterialVector)
-			? TEXT("Material Color") : TEXT("Custom Color");
+		S.Label = TEXT("Material Color");
 		return S;
 	}
 

@@ -14,6 +14,7 @@
 	"IsBetaVersion": true,
 	"IsExperimentalVersion": false,
 	"Installed": false,
+	"PlatformAllowList": [ "Win64", "Win32", "Mac", "Linux", "LinuxArm64", "Android", "IOS" ],
 	"Plugins": [
 		{
 			"Name": "QuickTween",
