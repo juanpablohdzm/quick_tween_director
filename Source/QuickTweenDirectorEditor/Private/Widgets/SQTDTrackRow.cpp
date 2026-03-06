@@ -548,4 +548,9 @@ void SQTDTrackRow::SetPixelsPerSec(float NewPPS)
 	if (StepContent.IsValid()) StepContent->SetPixelsPerSec(NewPPS);
 }
 
+TSharedRef<SWidget> SQTDTrackRow::GetStepContentWidget() const
+{
+	return StepContent.ToSharedRef();
+}
+
 #undef LOCTEXT_NAMESPACE

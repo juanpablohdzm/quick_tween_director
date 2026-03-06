@@ -57,7 +57,7 @@ public:
 	 * Returns the step content widget to be placed in the shared horizontal scroll box.
 	 * Must be called after Construct().
 	 */
-	TSharedRef<SWidget> GetStepContentWidget() const { return StepContent.ToSharedRef(); }
+	TSharedRef<SWidget> GetStepContentWidget() const;
 
 private:
 	FQTDTrackData             Track;
