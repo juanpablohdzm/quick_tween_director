@@ -20,13 +20,17 @@ namespace QTDEditorConstants
 	/** Pixels per second in the timeline content area. */
 	static constexpr float DefaultPixelsPerSec = 80.0f;
 	/** Height of each track row in pixels. */
-	static constexpr float TrackHeight         = 40.0f;
+	static constexpr float TrackHeight         = 36.0f;
 	/** Height of the ruler header in pixels. */
-	static constexpr float RulerHeight         = 24.0f;
+	static constexpr float RulerHeight         = 28.0f;
 	/** Minimum step width so very short steps are still clickable. */
-	static constexpr float MinStepWidth        = 6.0f;
+	static constexpr float MinStepWidth        = 8.0f;
 	/** Snap increment in seconds when dragging steps. */
 	static constexpr float SnapIncrement       = 0.05f;
+	/** Fixed toolbar height. */
+	static constexpr float ToolbarHeight       = 32.0f;
+	/** Label column left border accent width (px). */
+	static constexpr float LabelAccentWidth    = 2.0f;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

@@ -61,52 +61,64 @@ public:
 		const float W   = AllottedGeometry.GetLocalSize().X;
 		const float H   = AllottedGeometry.GetLocalSize().Y;
 
+		// Dark ruler background
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 			AllottedGeometry.ToPaintGeometry(),
-			FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"),
+			FAppStyle::GetBrush("WhiteBrush"),
 			ESlateDrawEffect::None,
-			FLinearColor(0.08f, 0.08f, 0.08f));
+			FLinearColor(0.055f, 0.055f, 0.055f));
+		++LayerId;
+
+		// Bottom edge separator
+		TArray<FVector2D> BotEdge = { FVector2D(0.f, H - 1.f), FVector2D(W, H - 1.f) };
+		FSlateDrawElement::MakeLines(OutDrawElements, LayerId,
+			AllottedGeometry.ToPaintGeometry(), BotEdge,
+			ESlateDrawEffect::None, FLinearColor(0.20f, 0.20f, 0.20f), true, 1.f);
 		++LayerId;
 
 		// Pick a major step that keeps labels at least ~70 px apart.
 		static const float NiceSteps[] = { 0.05f, 0.1f, 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 10.0f, 30.0f, 60.0f };
-		float MajorStep = NiceSteps[4]; // default 1s
+		float MajorStep = NiceSteps[4];
 		if (PPS > 0.0f)
 		{
-			const float MinSpacing = 70.0f;
-			const float RawStep    = MinSpacing / PPS;
+			const float RawStep = 70.f / PPS;
 			MajorStep = NiceSteps[UE_ARRAY_COUNT(NiceSteps) - 1];
-			for (float S : NiceSteps)
-			{
-				if (S >= RawStep) { MajorStep = S; break; }
-			}
+			for (float S : NiceSteps) { if (S >= RawStep) { MajorStep = S; break; } }
 		}
 		const float MinorStep = MajorStep / 5.0f;
 
+		// Minor ticks
 		for (float T = 0.0f; T <= Dur + MajorStep; T += MinorStep)
 		{
 			const float X = T * PPS;
 			if (X > W) break;
-			TArray<FVector2D> Pts = { FVector2D(X, H * 0.7f), FVector2D(X, H) };
+			TArray<FVector2D> Pts = { FVector2D(X, H * 0.72f), FVector2D(X, H - 1.f) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
-				Pts, ESlateDrawEffect::None, FLinearColor(0.35f, 0.35f, 0.35f), true, 1.0f);
+				Pts, ESlateDrawEffect::None, FLinearColor(0.26f, 0.26f, 0.26f), true, 1.0f);
 		}
 
+		// Major ticks + labels
 		for (float T = 0.0f; T <= Dur + MajorStep; T += MajorStep)
 		{
 			const float X = T * PPS;
 			if (X > W) break;
 
-			TArray<FVector2D> Pts = { FVector2D(X, H * 0.3f), FVector2D(X, H) };
+			// Accent tick mark
+			TArray<FVector2D> Pts = { FVector2D(X, H * 0.30f), FVector2D(X, H - 1.f) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
-				Pts, ESlateDrawEffect::None, FLinearColor(0.65f, 0.65f, 0.65f), true, 1.5f);
+				Pts, ESlateDrawEffect::None, FLinearColor(1.0f, 0.55f, 0.15f, 0.80f), true, 1.5f);
 
+			// Time label — position text slightly above the tick bottom
+			const FString TimeStr = (MajorStep >= 1.0f)
+				? FString::Printf(TEXT("%.0fs"), T)
+				: FString::Printf(TEXT("%.2fs"), T);
 			FSlateDrawElement::MakeText(OutDrawElements, LayerId,
-				AllottedGeometry.ToPaintGeometry(FVector2f(60.0f, H), FSlateLayoutTransform(FVector2f(X + 3.0f, 2.0f))),
-				FText::FromString(FString::Printf(TEXT("%.2fs"), T)),
+				AllottedGeometry.ToPaintGeometry(FVector2f(60.f, H * 0.55f),
+					FSlateLayoutTransform(FVector2f(X + 4.f, 3.f))),
+				FText::FromString(TimeStr),
 				FAppStyle::GetFontStyle("TinyText"),
 				ESlateDrawEffect::None,
-				FLinearColor(0.75f, 0.75f, 0.75f));
+				FLinearColor(0.70f, 0.70f, 0.70f));
 		}
 
 		return LayerId;
@@ -126,44 +138,138 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 	Asset     = InArgs._Asset;
 	Blueprint = InArgs._Blueprint;
 
-	auto Toolbar = SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f)
+	auto Toolbar =
+		SNew(SBorder)
+		.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+		.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
+		.Padding(FMargin(4.f, 0.f))
 		[
-			SNew(SButton)
-			.Text(LOCTEXT("Save", "Save"))
-			.ToolTipText(LOCTEXT("SaveTip", "Save the director asset"))
-			.OnClicked(this, &SQuickTweenDirectorEditor::OnSaveClicked)
-		]
-		+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f)
-		[
-			SNew(SButton)
-			.Text(LOCTEXT("AddTrack", "+ Add Track"))
-			.ToolTipText(LOCTEXT("AddTrackTip", "Pick a component to animate"))
-			.OnClicked(this, &SQuickTweenDirectorEditor::OnAddTrackClicked)
-		]
-		+ SHorizontalBox::Slot().FillWidth(1.0f)[ SNew(SSpacer) ]
-		+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f).VAlign(VAlign_Center)
-		[
-			SNew(STextBlock)
-			.Text_Lambda([this]() -> FText {
-				const float D = Asset ? Asset->GetTotalDuration() : 0.0f;
-				return FText::FromString(FString::Printf(TEXT("Duration: %.2fs"), D));
-			})
-		]
-		+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f).VAlign(VAlign_Center)
-		[
-			SNew(STextBlock).Text(LOCTEXT("Zoom", "  Zoom:"))
-		]
-		+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f).VAlign(VAlign_Center)
-		[
-			SNew(SBox).WidthOverride(120.0f)
+			SNew(SBox).HeightOverride(QTDEditorConstants::ToolbarHeight)
 			[
-				SNew(SSlider)
-				.Value_Raw(this, &SQuickTweenDirectorEditor::OnGetZoomValue)
-				.OnValueChanged(this, &SQuickTweenDirectorEditor::OnZoomChanged)
-				.MinValue(20.0f)
-				.MaxValue(400.0f)
-				.ToolTipText(LOCTEXT("ZoomTip", "Pixels per second"))
+				SNew(SHorizontalBox)
+
+				// ── Save ─────────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(8.f, 4.f))
+					.ToolTipText(LOCTEXT("SaveTip", "Save the director asset to disk"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnSaveClicked)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
+						[
+							SNew(SImage)
+							.Image(FAppStyle::GetBrush("Icons.Save"))
+							.DesiredSizeOverride(FVector2D(14.f, 14.f))
+							.ColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.8f, 0.8f)))
+						]
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("Save", "Save"))
+							.Font(FAppStyle::GetFontStyle("SmallFont"))
+							.ColorAndOpacity(FLinearColor(0.85f, 0.85f, 0.85f))
+						]
+					]
+				]
+
+				// ── Divider ───────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
+				[
+					SNew(SSeparator).Orientation(Orient_Vertical)
+					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
+					.Thickness(1.f)
+					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f))
+				]
+
+				// ── Add Track ─────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(8.f, 4.f))
+					.ToolTipText(LOCTEXT("AddTrackTip", "Add a track bound to a Blueprint component"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnAddTrackClicked)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
+						[
+							SNew(SImage)
+							.Image(FAppStyle::GetBrush("Icons.Plus"))
+							.DesiredSizeOverride(FVector2D(12.f, 12.f))
+							.ColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.55f, 0.15f)))
+						]
+						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("AddTrack", "Add Track"))
+							.Font(FAppStyle::GetFontStyle("SmallFont"))
+							.ColorAndOpacity(FLinearColor(1.0f, 0.55f, 0.15f))
+						]
+					]
+				]
+
+				+ SHorizontalBox::Slot().FillWidth(1.f)[ SNew(SSpacer) ]
+
+				// ── Duration badge ────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.f, 0.f)
+				[
+					SNew(SBorder)
+					.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+					.BorderBackgroundColor(FLinearColor(0.10f, 0.10f, 0.10f))
+					.Padding(FMargin(8.f, 3.f))
+					[
+						SNew(STextBlock)
+						.Text_Lambda([this]() -> FText {
+							const float D = Asset ? Asset->GetTotalDuration() : 0.0f;
+							return FText::FromString(FString::Printf(TEXT("%.2f s"), D));
+						})
+						.Font(FAppStyle::GetFontStyle("SmallFont"))
+						.ColorAndOpacity(FLinearColor(0.60f, 0.60f, 0.60f))
+					]
+				]
+
+				// ── Divider ───────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
+				[
+					SNew(SSeparator).Orientation(Orient_Vertical)
+					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
+					.Thickness(1.f)
+					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f))
+				]
+
+				// ── Zoom ──────────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SImage)
+					.Image(FAppStyle::GetBrush("Icons.Search"))
+					.DesiredSizeOverride(FVector2D(12.f, 12.f))
+					.ColorAndOpacity(FSlateColor(FLinearColor(0.45f, 0.45f, 0.45f)))
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 2.f, 0.f)
+				[
+					SNew(SBox).WidthOverride(100.f)
+					[
+						SNew(SSlider)
+						.Value_Raw(this, &SQuickTweenDirectorEditor::OnGetZoomValue)
+						.OnValueChanged(this, &SQuickTweenDirectorEditor::OnZoomChanged)
+						.MinValue(20.0f)
+						.MaxValue(400.0f)
+						.ToolTipText(LOCTEXT("ZoomTip", "Zoom: pixels per second"))
+					]
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 6.f, 0.f)
+				[
+					SNew(STextBlock)
+					.Text_Lambda([this]() -> FText {
+						return FText::FromString(FString::Printf(TEXT("%.0f%%"),
+							(PixelsPerSec / QTDEditorConstants::DefaultPixelsPerSec) * 100.f));
+					})
+					.Font(FAppStyle::GetFontStyle("TinyText"))
+					.ColorAndOpacity(FLinearColor(0.40f, 0.40f, 0.40f))
+				]
 			]
 		];
 
@@ -209,8 +315,7 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 	ChildSlot
 	[
 		SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(2.0f)[ Toolbar ]
-		+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+		+ SVerticalBox::Slot().AutoHeight()[ Toolbar ]
 
 		// Main area — vertical scroll wraps labels + content together
 		+ SVerticalBox::Slot().FillHeight(1.0f)
@@ -235,18 +340,31 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 						.HeightOverride(QTDEditorConstants::RulerHeight)
 						[
 							SNew(SBorder)
-							.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
-							.Padding(FMargin(6.0f, 0.0f))
-							.VAlign(VAlign_Center)
+							.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+							.BorderBackgroundColor(FLinearColor(0.055f, 0.055f, 0.055f))
+							.Padding(FMargin(0.f))
 							[
-								SNew(STextBlock)
-								.Text(LOCTEXT("RulerLabel", "Timeline"))
-								.Font(FAppStyle::GetFontStyle("TinyText"))
-								.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
+								SNew(SHorizontalBox)
+								// Orange accent bar on the left
+								+ SHorizontalBox::Slot().AutoWidth()
+								[
+									SNew(SBox).WidthOverride(QTDEditorConstants::LabelAccentWidth)
+									[
+										SNew(SBorder)
+										.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+										.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f))
+									]
+								]
+								+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(8.f, 0.f)
+								[
+									SNew(STextBlock)
+									.Text(LOCTEXT("RulerLabel", "TIMELINE"))
+									.Font(FAppStyle::GetFontStyle("TinyText"))
+									.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
+								]
 							]
 						]
 					]
-					+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
 					// Track label rows
 					+ SVerticalBox::Slot().AutoHeight()[ LabelContainer.ToSharedRef() ]
 				]

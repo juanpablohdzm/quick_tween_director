@@ -63,77 +63,106 @@ public:
 	{
 		if (!Asset) return LayerId;
 
-		// Track background
-		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
-			AllottedGeometry.ToPaintGeometry(),
-			FAppStyle::GetBrush("ToolPanel.GroupBorder"),
-			ESlateDrawEffect::None, FLinearColor(0.12f, 0.12f, 0.12f));
-		++LayerId;
-
-		// Center line
 		const float H = AllottedGeometry.GetLocalSize().Y;
 		const float W = AllottedGeometry.GetLocalSize().X;
-		TArray<FVector2D> CLPts = { FVector2D(0.0f, H * 0.5f), FVector2D(W, H * 0.5f) };
-		FSlateDrawElement::MakeLines(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
-			CLPts, ESlateDrawEffect::None, FLinearColor(0.22f, 0.22f, 0.22f), true, 1.0f);
+
+		// ── Track background ─────────────────────────────────────────────────
+		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
+			AllottedGeometry.ToPaintGeometry(),
+			FAppStyle::GetBrush("WhiteBrush"),
+			ESlateDrawEffect::None, FLinearColor(0.09f, 0.09f, 0.09f));
 		++LayerId;
 
-		// Step boxes
+		// Bottom edge separator (1 px)
+		TArray<FVector2D> BotPts = { FVector2D(0.f, H - 1.f), FVector2D(W, H - 1.f) };
+		FSlateDrawElement::MakeLines(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
+			BotPts, ESlateDrawEffect::None, FLinearColor(0.16f, 0.16f, 0.16f), true, 1.f);
+		++LayerId;
+
+		// ── Step blocks ──────────────────────────────────────────────────────
 		TArray<FQTDStepData*> TrackSteps = Asset->GetStepsForTrack(Track.TrackId);
 		for (const FQTDStepData* Step : TrackSteps)
 		{
 			if (!Step) continue;
 
+			const float PadY = 3.f;
+			const float BH   = H - PadY * 2.f;
 			const float X    = Step->StartTime * PixelsPerSec;
-			const float SW   = FMath::Max(Step->Duration * PixelsPerSec * FMath::Max(Step->Loops, 1),
-			                              QTDEditorConstants::MinStepWidth);
-			const float PadY = 4.0f;
+			const float SW   = FMath::Max(
+				Step->Duration * PixelsPerSec * FMath::Max(Step->Loops, 1),
+				QTDEditorConstants::MinStepWidth);
 
-			const FLinearColor Base = Step->GetTypeColor();
-			const FLinearColor Dim  = Base * 0.7f;
+			const FLinearColor TypeColor = Step->GetTypeColor();
 
-			// Box fill
+			// ── Tinted fill (semi-transparent) ────────────────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 				AllottedGeometry.ToPaintGeometry(
-					FVector2f(SW - 2.0f, H - PadY * 2.0f),
+					FVector2f(SW - 1.f, BH),
 					FSlateLayoutTransform(FVector2f(X, PadY))),
-				FAppStyle::GetBrush("WhiteBrush"), ESlateDrawEffect::None, Dim.CopyWithNewOpacity(0.85f));
+				FAppStyle::GetBrush("WhiteBrush"),
+				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(0.16f));
 
-			// Left accent bar
+			// ── Left accent stripe (4 px, full opacity) ───────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId + 1,
 				AllottedGeometry.ToPaintGeometry(
-					FVector2f(3.0f, H - PadY * 2.0f),
+					FVector2f(4.f, BH),
 					FSlateLayoutTransform(FVector2f(X, PadY))),
-				FAppStyle::GetBrush("WhiteBrush"), ESlateDrawEffect::None, Base);
+				FAppStyle::GetBrush("WhiteBrush"),
+				ESlateDrawEffect::None, TypeColor);
 
-			// Label
-			if (SW > 20.0f)
+			// ── Top edge highlight ─────────────────────────────────────────────
+			TArray<FVector2D> TopPts = { FVector2D(X + 4.f, PadY), FVector2D(X + SW - 1.f, PadY) };
+			FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 2,
+				AllottedGeometry.ToPaintGeometry(), TopPts,
+				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(0.35f), true, 1.f);
+
+			// ── Step label ────────────────────────────────────────────────────
+			if (SW > 18.f)
 			{
-				const FText LabelText = Step->Label.IsEmpty()
-					? FText::FromString(UEnum::GetValueAsString(Step->StepType))
-					: FText::FromString(Step->Label);
-				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 2,
+				const FText LabelText = FText::FromString(
+					Step->Label.IsEmpty()
+						? UEnum::GetDisplayValueAsText(Step->StepType).ToString()
+						: Step->Label);
+				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 3,
 					AllottedGeometry.ToPaintGeometry(
-						FVector2f(SW - 10.0f, H - PadY * 2.0f - 4.0f),
-						FSlateLayoutTransform(FVector2f(X + 6.0f, PadY + 2.0f))),
-					LabelText, FAppStyle::GetFontStyle("SmallFont"),
-					ESlateDrawEffect::None, FLinearColor::White);
+						FVector2f(FMath::Max(SW - 16.f, 4.f), BH - 4.f),
+						FSlateLayoutTransform(FVector2f(X + 9.f, PadY + 4.f))),
+					LabelText,
+					FAppStyle::GetFontStyle("SmallFont"),
+					ESlateDrawEffect::None,
+					FLinearColor(1.f, 1.f, 1.f, 0.88f));
 			}
 
-			// Duration label
-			if (SW > 50.0f)
+			// ── Duration chip (bottom-right, accent-tinted) ───────────────────
+			if (SW > 52.f)
 			{
-				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 2,
+				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 3,
 					AllottedGeometry.ToPaintGeometry(
-						FVector2f(40.0f, H - PadY * 2.0f - 4.0f),
-						FSlateLayoutTransform(FVector2f(X + SW - 44.0f, PadY + 2.0f))),
+						FVector2f(46.f, 12.f),
+						FSlateLayoutTransform(FVector2f(X + SW - 50.f, PadY + BH - 13.f))),
 					FText::FromString(FString::Printf(TEXT("%.2fs"), Step->Duration)),
 					FAppStyle::GetFontStyle("TinyText"),
-					ESlateDrawEffect::None, FLinearColor(1.0f, 1.0f, 1.0f, 0.6f));
+					ESlateDrawEffect::None,
+					TypeColor.CopyWithNewOpacity(0.75f));
+			}
+
+			// ── Loop badge (bottom-left, when looping) ────────────────────────
+			if (SW > 28.f && Step->Loops != 1)
+			{
+				const FString LoopStr = (Step->Loops < 0)
+					? TEXT("∞") : FString::Printf(TEXT("×%d"), Step->Loops);
+				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 3,
+					AllottedGeometry.ToPaintGeometry(
+						FVector2f(30.f, 12.f),
+						FSlateLayoutTransform(FVector2f(X + 9.f, PadY + BH - 13.f))),
+					FText::FromString(LoopStr),
+					FAppStyle::GetFontStyle("TinyText"),
+					ESlateDrawEffect::None,
+					TypeColor.CopyWithNewOpacity(0.65f));
 			}
 		}
 
-		return LayerId + 3;
+		return LayerId + 4;
 	}
 
 	// ── Mouse ──────────────────────────────────────────────────────────────────
@@ -455,14 +484,11 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 		.OnStepMoved(OnStepMoved)
 		.OnStepDeleted(OnStepDeleted);
 
-	// Build a small component-type chip to display next to the label
-	const FString TypeChip = (Track.ComponentClass)
-		? (FString(TEXT(" [")) + Track.ComponentClass->GetName() + TEXT("]"))
+	const FString ClassShortName = Track.ComponentClass
+		? Track.ComponentClass->GetName().Replace(TEXT("Component"), TEXT(""))
 		: FString();
 
-	// This widget shows ONLY the label column.
-	// The step content (StepContent) is placed separately by SQuickTweenDirectorEditor
-	// inside the single shared horizontal scroll box so ruler + all steps scroll together.
+	// Label column widget — placed in the fixed left column (no horizontal scroll).
 	ChildSlot
 	[
 		SNew(SBox)
@@ -470,57 +496,71 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 		.HeightOverride(QTDEditorConstants::TrackHeight)
 		[
 			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush("DetailsView.CategoryTop"))
-			.Padding(FMargin(6.0f, 0.0f))
+			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(FLinearColor(0.095f, 0.095f, 0.095f))
+			.Padding(FMargin(0.f))
 			[
 				SNew(SHorizontalBox)
 
-				// Component class icon
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 4.0f, 0.0f)
+				// Orange accent bar (left edge)
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					SNew(SBox).WidthOverride(QTDEditorConstants::LabelAccentWidth)
+					[
+						SNew(SBorder)
+						.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+						.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f, 0.5f))
+					]
+				]
+
+				// Icon
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(8.f, 0.f, 5.f, 0.f)
 				[
 					SNew(SImage)
 					.Image(FSlateIconFinder::FindIconBrushForClass(
 						Track.ComponentClass.Get(), TEXT("SCS.Component")))
-					.DesiredSizeOverride(FVector2D(14.0f, 14.0f))
+					.DesiredSizeOverride(FVector2D(14.f, 14.f))
+					.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
 					.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
 				]
 
-				// Component variable name + class chip
-				+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
+				// Track name + class subtitle
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
 				[
 					SNew(SVerticalBox)
 					+ SVerticalBox::Slot().AutoHeight()
 					[
 						SNew(STextBlock)
-						.Text_Lambda([this]() { return FText::FromString(Track.TrackLabel); })
+						.Text(FText::FromString(Track.TrackLabel))
 						.Font(FAppStyle::GetFontStyle("SmallFont"))
+						.ColorAndOpacity(FLinearColor(0.85f, 0.85f, 0.85f))
 					]
 					+ SVerticalBox::Slot().AutoHeight()
 					[
 						SNew(STextBlock)
-						.Text(FText::FromString(TypeChip))
+						.Text(FText::FromString(ClassShortName))
 						.Font(FAppStyle::GetFontStyle("TinyText"))
-						.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
-						.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
+						.ColorAndOpacity(FLinearColor(0.38f, 0.38f, 0.38f))
+						.Visibility(ClassShortName.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible)
 					]
 				]
 
-				// Delete button
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+				// Delete button (X icon)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
 				[
 					SNew(SButton)
-					.ButtonStyle(FAppStyle::Get(), "NoBorder")
-					.ToolTipText(LOCTEXT("DeleteTrack", "Delete this track"))
+					.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+					.ToolTipText(LOCTEXT("DeleteTrack", "Remove this track"))
 					.OnClicked_Lambda([this]() -> FReply {
 						OnTrackDelete.ExecuteIfBound(Track.TrackId);
 						return FReply::Handled();
 					})
-					.ContentPadding(2.0f)
+					.ContentPadding(FMargin(3.f, 2.f))
 					[
-						SNew(STextBlock)
-						.Text(FText::FromString(TEXT("✕")))
-						.Font(FAppStyle::GetFontStyle("TinyText"))
-						.ColorAndOpacity(FLinearColor(1.0f, 0.3f, 0.3f))
+						SNew(SImage)
+						.Image(FAppStyle::GetBrush("Icons.X"))
+						.DesiredSizeOverride(FVector2D(10.f, 10.f))
+						.ColorAndOpacity(FSlateColor(FLinearColor(0.55f, 0.22f, 0.22f)))
 					]
 				]
 			]

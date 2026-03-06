@@ -53,44 +53,85 @@ void SQTDComponentPickerDialog::Construct(const FArguments& InArgs)
 		[
 			SNew(SVerticalBox)
 
-			// Title
-			+ SVerticalBox::Slot().AutoHeight().Padding(8.0f, 8.0f, 8.0f, 4.0f)
+			// Header
+			+ SVerticalBox::Slot().AutoHeight()
 			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("Title", "Select Component to Animate"))
-				.Font(FAppStyle::GetFontStyle("HeadingExtraSmall"))
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(FLinearColor(0.055f, 0.055f, 0.055f))
+				.Padding(FMargin(0.f))
+				[
+					SNew(SHorizontalBox)
+					// Orange accent bar
+					+ SHorizontalBox::Slot().AutoWidth()
+					[
+						SNew(SBox).WidthOverride(4.f)
+						[
+							SNew(SBorder)
+							.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+							.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f))
+						]
+					]
+					+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(12.f, 10.f)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("Title", "Select Component to Animate"))
+						.Font(FAppStyle::GetFontStyle("NormalFont"))
+						.ColorAndOpacity(FLinearColor(0.90f, 0.90f, 0.90f))
+					]
+				]
 			]
-			+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+
+			// 1px separator
+			+ SVerticalBox::Slot().AutoHeight().MaxHeight(1.0f)
+			[
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(FLinearColor(1.f, 1.f, 1.f, 0.06f))
+				.Padding(0.f)
+			]
 
 			// Tree
 			+ SVerticalBox::Slot().FillHeight(1.0f).Padding(4.0f)
 			[
 				SNew(SBorder)
-				.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
 				[
 					TreeView.ToSharedRef()
 				]
 			]
 
-			+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+			// 1px separator
+			+ SVerticalBox::Slot().AutoHeight().MaxHeight(1.0f)
+			[
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(FLinearColor(1.f, 1.f, 1.f, 0.06f))
+				.Padding(0.f)
+			]
 
 			// Buttons
-			+ SVerticalBox::Slot().AutoHeight().Padding(8.0f)
+			+ SVerticalBox::Slot().AutoHeight().Padding(8.0f, 6.0f)
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot().FillWidth(1.0f)[ SNew(SSpacer) ]
 				+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f)
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("OK", "OK"))
-					.IsEnabled_Lambda([this]() { return CanConfirm(); })
-					.OnClicked(this, &SQTDComponentPickerDialog::OnConfirm)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.Text(LOCTEXT("Cancel", "Cancel"))
+					.TextStyle(FAppStyle::Get(), "SmallText")
+					.OnClicked(this, &SQTDComponentPickerDialog::OnCancel)
 				]
 				+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f)
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("Cancel", "Cancel"))
-					.OnClicked(this, &SQTDComponentPickerDialog::OnCancel)
+					.ButtonStyle(FAppStyle::Get(), "PrimaryButton")
+					.Text(LOCTEXT("OK", "Add Track"))
+					.TextStyle(FAppStyle::Get(), "SmallText")
+					.IsEnabled_Lambda([this]() { return CanConfirm(); })
+					.OnClicked(this, &SQTDComponentPickerDialog::OnConfirm)
 				]
 			]
 		]

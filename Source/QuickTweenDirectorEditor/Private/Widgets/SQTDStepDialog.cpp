@@ -128,22 +128,58 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 		.Font(FAppStyle::GetFontStyle("SmallFont"))
 		.HintText(LOCTEXT("ParamHint", "e.g. Opacity"));
 
+	// Colored header strip based on step type
+	const FLinearColor HeaderAccent = EditedStep.GetTypeColor();
+
 	ChildSlot
 	[
 		SNew(SBox)
-		.MinDesiredWidth(420.0f)
-		.MaxDesiredHeight(620.0f)
+		.MinDesiredWidth(430.0f)
+		.MaxDesiredHeight(640.0f)
 		[
 			SNew(SVerticalBox)
 
-			// Title bar
-			+ SVerticalBox::Slot().AutoHeight().Padding(8.0f, 8.0f, 8.0f, 4.0f)
+			// Colored header bar
+			+ SVerticalBox::Slot().AutoHeight()
 			[
-				SNew(STextBlock)
-				.Text(LOCTEXT("EditStep", "Edit Step"))
-				.Font(FAppStyle::GetFontStyle("HeadingExtraSmall"))
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(FLinearColor(0.055f, 0.055f, 0.055f))
+				.Padding(FMargin(0.f))
+				[
+					SNew(SHorizontalBox)
+					// Type-color accent bar
+					+ SHorizontalBox::Slot().AutoWidth()
+					[
+						SNew(SBox).WidthOverride(4.f)
+						[
+							SNew(SBorder)
+							.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+							.BorderBackgroundColor(HeaderAccent)
+						]
+					]
+					+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(12.f, 10.f)
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							SNew(STextBlock)
+							.Text(LOCTEXT("EditStep", "Edit Step"))
+							.Font(FAppStyle::GetFontStyle("NormalFont"))
+							.ColorAndOpacity(FLinearColor(0.90f, 0.90f, 0.90f))
+						]
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString(EditedStep.Label.IsEmpty()
+								? UEnum::GetValueAsString(EditedStep.StepType)
+								: EditedStep.Label))
+							.Font(FAppStyle::GetFontStyle("TinyText"))
+							.ColorAndOpacity(HeaderAccent.CopyWithNewOpacity(0.8f))
+						]
+					]
+				]
 			]
-			+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
 
 			// Scrollable content
 			+ SVerticalBox::Slot().FillHeight(1.0f)
@@ -224,21 +260,27 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 			+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
 
 			// Buttons
-			+ SVerticalBox::Slot().AutoHeight().Padding(8.0f)
+			+ SVerticalBox::Slot().AutoHeight().Padding(8.f, 6.f)
 			[
 				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot().FillWidth(1.0f)[ SNew(SSpacer) ]
-				+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f)
+				+ SHorizontalBox::Slot().FillWidth(1.f)[ SNew(SSpacer) ]
+				+ SHorizontalBox::Slot().AutoWidth().Padding(4.f, 0.f)
 				[
 					SNew(SButton)
-					.Text(LOCTEXT("OK", "OK"))
-					.OnClicked(this, &SQTDStepDialog::OnConfirm)
-				]
-				+ SHorizontalBox::Slot().AutoWidth().Padding(4.0f, 0.0f)
-				[
-					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(16.f, 5.f))
 					.Text(LOCTEXT("Cancel", "Cancel"))
+					.TextStyle(FAppStyle::Get(), "SmallText")
 					.OnClicked(this, &SQTDStepDialog::OnCancel)
+				]
+				+ SHorizontalBox::Slot().AutoWidth().Padding(4.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "PrimaryButton")
+					.ContentPadding(FMargin(16.f, 5.f))
+					.Text(LOCTEXT("OK", "Apply"))
+					.TextStyle(FAppStyle::Get(), "SmallText")
+					.OnClicked(this, &SQTDStepDialog::OnConfirm)
 				]
 			]
 		]

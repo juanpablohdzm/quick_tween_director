@@ -39,19 +39,26 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 	.HAlign(HAlign_Center).VAlign(VAlign_Center)
 	[
 		SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.0f, 0.0f, 0.0f, 8.0f)
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 12.f)
+		[
+			SNew(SImage)
+			.Image(FAppStyle::GetBrush("Sequencer.Tracks.CinematicShot"))
+			.DesiredSizeOverride(FVector2D(40.f, 40.f))
+			.ColorAndOpacity(FSlateColor(FLinearColor(0.35f, 0.35f, 0.35f)))
+		]
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 6.f)
 		[
 			SNew(STextBlock)
 			.Text(LOCTEXT("NoBP", "No Actor Blueprint focused"))
-			.Font(FAppStyle::GetFontStyle("HeadingExtraSmall"))
-			.ColorAndOpacity(FLinearColor(0.6f, 0.6f, 0.6f))
+			.Font(FAppStyle::GetFontStyle("NormalFont"))
+			.ColorAndOpacity(FLinearColor(0.55f, 0.55f, 0.55f))
 		]
 		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
 		[
 			SNew(STextBlock)
-			.Text(LOCTEXT("NoBPHint", "Open an Actor Blueprint and click the\n\"Director\" button in the toolbar."))
+			.Text(LOCTEXT("NoBPHint", "Open an Actor Blueprint and click\nthe Director button in the toolbar."))
 			.Font(FAppStyle::GetFontStyle("SmallFont"))
-			.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
+			.ColorAndOpacity(FLinearColor(0.32f, 0.32f, 0.32f))
 			.Justification(ETextJustify::Center)
 		]
 	];
@@ -60,10 +67,21 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 	SAssignNew(EmptyTimelineHint, SBox)
 	.HAlign(HAlign_Center).VAlign(VAlign_Center)
 	[
-		SNew(STextBlock)
-		.Text(LOCTEXT("NoAnim", "Select or create an animation on the left."))
-		.Font(FAppStyle::GetFontStyle("SmallFont"))
-		.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
+		SNew(SVerticalBox)
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).Padding(0.f, 0.f, 0.f, 8.f)
+		[
+			SNew(SImage)
+			.Image(FAppStyle::GetBrush("Sequencer.Timeline.ScrubHandleDown"))
+			.DesiredSizeOverride(FVector2D(24.f, 24.f))
+			.ColorAndOpacity(FSlateColor(FLinearColor(0.28f, 0.28f, 0.28f)))
+		]
+		+ SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("NoAnim", "Select or create an animation."))
+			.Font(FAppStyle::GetFontStyle("SmallFont"))
+			.ColorAndOpacity(FLinearColor(0.32f, 0.32f, 0.32f))
+		]
 	];
 
 	// ── Animation list (left column) ─────────────────────────────────────────
@@ -71,15 +89,75 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 
 	TSharedRef<SWidget> AnimListPanel =
 		SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight().Padding(4.0f, 4.0f, 4.0f, 2.0f)
+
+		// Panel header
+		+ SVerticalBox::Slot().AutoHeight()
+		[
+			SNew(SBorder)
+			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
+			.Padding(FMargin(0.f, 0.f, 0.f, 0.f))
+			[
+				SNew(SHorizontalBox)
+				// Orange accent bar
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					SNew(SBox).WidthOverride(3.f)
+					[
+						SNew(SBorder)
+						.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+						.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f))
+					]
+				]
+				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(8.f, 6.f)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("AnimHeader", "ANIMATIONS"))
+					.Font(FAppStyle::GetFontStyle("TinyText"))
+					.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
+				]
+			]
+		]
+
+		// "+ New Animation" button — full-width accent button
+		+ SVerticalBox::Slot().AutoHeight().Padding(6.f, 6.f, 6.f, 4.f)
 		[
 			SNew(SButton)
+			.ButtonStyle(FAppStyle::Get(), "FlatButton")
 			.HAlign(HAlign_Center)
-			.Text(LOCTEXT("NewAnim", "+ New Animation"))
-			.ToolTipText(LOCTEXT("NewAnimTip", "Create a new Director animation and add it as a Blueprint variable"))
+			.ContentPadding(FMargin(0.f, 5.f))
+			.ToolTipText(LOCTEXT("NewAnimTip", "Create a new Director animation asset and add it as a Blueprint variable"))
 			.OnClicked(this, &SQTDDirectorPanel::OnNewAnimationClicked)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 5.f, 0.f)
+				[
+					SNew(SImage)
+					.Image(FAppStyle::GetBrush("Icons.Plus"))
+					.DesiredSizeOverride(FVector2D(11.f, 11.f))
+					.ColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.55f, 0.15f)))
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("NewAnim", "New Animation"))
+					.Font(FAppStyle::GetFontStyle("SmallFont"))
+					.ColorAndOpacity(FLinearColor(1.0f, 0.55f, 0.15f))
+				]
+			]
 		]
-		+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+
+		// Separator
+		+ SVerticalBox::Slot().AutoHeight().Padding(6.f, 0.f)
+		[
+			SNew(SBorder)
+			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(FLinearColor(0.18f, 0.18f, 0.18f))
+			.Padding(FMargin(0.f))
+			[ SNew(SBox).HeightOverride(1.f) ]
+		]
+
+		// Animation list (scrollable)
 		+ SVerticalBox::Slot().FillHeight(1.0f)
 		[
 			SNew(SScrollBox)
@@ -99,26 +177,41 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 	SAssignNew(BlueprintNameText, STextBlock)
 		.Text(LOCTEXT("NoBPName", "No Blueprint"))
 		.Font(FAppStyle::GetFontStyle("SmallFont"))
-		.ColorAndOpacity(FLinearColor(0.7f, 0.7f, 0.7f));
+		.ColorAndOpacity(FLinearColor(0.75f, 0.75f, 0.75f));
 
 	// ── Main content (shown when a Blueprint IS focused) ──────────────────────
 	SAssignNew(MainContent, SVerticalBox)
-	+ SVerticalBox::Slot().AutoHeight().Padding(6.0f, 4.0f)
+
+	// Slim header bar showing the active Blueprint
+	+ SVerticalBox::Slot().AutoHeight()
 	[
-		SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 6.0f, 0.0f)
+		SNew(SBorder)
+		.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+		.BorderBackgroundColor(FLinearColor(0.055f, 0.055f, 0.055f))
+		.Padding(FMargin(10.f, 5.f))
 		[
-			SNew(STextBlock)
-			.Text(LOCTEXT("BPLabel", "Blueprint:"))
-			.Font(FAppStyle::GetFontStyle("SmallFont"))
-			.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
-		]
-		+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
-		[
-			BlueprintNameText.ToSharedRef()
+			SNew(SHorizontalBox)
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 6.f, 0.f)
+			[
+				SNew(SImage)
+				.Image(FAppStyle::GetBrush("ClassIcon.Blueprint"))
+				.DesiredSizeOverride(FVector2D(12.f, 12.f))
+				.ColorAndOpacity(FSlateColor(FLinearColor(0.38f, 0.38f, 0.38f)))
+			]
+			+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("BPLabel", "Blueprint:"))
+				.Font(FAppStyle::GetFontStyle("TinyText"))
+				.ColorAndOpacity(FLinearColor(0.38f, 0.38f, 0.38f))
+			]
+			+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
+			[
+				BlueprintNameText.ToSharedRef()
+			]
 		]
 	]
-	+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+
 	+ SVerticalBox::Slot().FillHeight(1.0f)
 	[
 		SNew(SSplitter)
@@ -126,8 +219,9 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		+ SSplitter::Slot().Value(0.22f)
 		[
 			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
-			.Padding(0.0f)
+			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(FLinearColor(0.09f, 0.09f, 0.09f))
+			.Padding(0.f)
 			[
 				AnimListPanel
 			]
@@ -187,77 +281,84 @@ void SQTDDirectorPanel::RefreshAnimationList()
 		AnimVarNames.Add(VarName);
 
 		const bool bSelected = (i == SelectedAnimIndex);
+		const FLinearColor RowBg     = bSelected
+			? FLinearColor(0.14f, 0.14f, 0.14f) : FLinearColor(0.09f, 0.09f, 0.09f);
+		const FLinearColor AccentBar = bSelected
+			? FLinearColor(1.0f, 0.55f, 0.15f)  : FLinearColor(1.0f, 0.55f, 0.15f, 0.0f);
+		const FLinearColor NameColor = bSelected
+			? FLinearColor(0.95f, 0.95f, 0.95f) : FLinearColor(0.65f, 0.65f, 0.65f);
 
 		AnimListContainer->AddSlot()
 		.AutoHeight()
 		[
-			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush(bSelected
-				? "DetailsView.CategoryTop_Hovered"
-				: "NoBorder"))
-			.Padding(FMargin(4.0f, 2.0f))
-			.OnMouseButtonDown_Lambda([this, CapturedIndex](const FGeometry&, const FPointerEvent& Event) -> FReply
+			SNew(SButton)
+			.ButtonStyle(FAppStyle::Get(), "NoBorder")
+			.OnClicked_Lambda([this, CapturedIndex]() -> FReply
 			{
-				if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
-				{
-					SelectAnimation(CapturedIndex);
-					return FReply::Handled();
-				}
-				return FReply::Unhandled();
+				SelectAnimation(CapturedIndex);
+				return FReply::Handled();
 			})
+			.ContentPadding(FMargin(0.f))
 			[
-				SNew(SHorizontalBox)
-
-				// Selection indicator dot
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 6.0f, 0.0f)
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(RowBg)
+				.Padding(FMargin(0.f))
 				[
-					SNew(STextBlock)
-					.Text(FText::FromString(bSelected ? TEXT("●") : TEXT("○")))
-					.Font(FAppStyle::GetFontStyle("TinyText"))
-					.ColorAndOpacity(bSelected
-						? FLinearColor(1.0f, 0.55f, 0.25f)
-						: FLinearColor(0.4f, 0.4f, 0.4f))
-				]
+					SNew(SHorizontalBox)
 
-				// Inline-editable name
-				+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
-				[
-					SNew(SInlineEditableTextBlock)
-					.Text(FText::FromName(VarName))
-					.Font(FAppStyle::GetFontStyle("SmallFont"))
-					.IsReadOnly(false)
-					.OnTextCommitted_Lambda([this, CapturedIndex](const FText& NewText, ETextCommit::Type CommitType)
-					{
-						OnRenameAnimation(CapturedIndex, NewText, CommitType);
-					})
-					.OnVerifyTextChanged_Lambda([](const FText& Text, FText& OutError) -> bool
-					{
-						if (Text.IsEmpty())
-						{
-							OutError = LOCTEXT("EmptyName", "Name cannot be empty");
-							return false;
-						}
-						return true;
-					})
-				]
-
-				// Delete button
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-				[
-					SNew(SButton)
-					.ButtonStyle(FAppStyle::Get(), "NoBorder")
-					.ToolTipText(LOCTEXT("DeleteAnim", "Delete this animation"))
-					.OnClicked_Lambda([this, CapturedIndex]() -> FReply
-					{
-						OnDeleteAnimation(CapturedIndex);
-						return FReply::Handled();
-					})
-					.ContentPadding(2.0f)
+					// Left accent bar (orange when selected)
+					+ SHorizontalBox::Slot().AutoWidth()
 					[
-						SNew(STextBlock)
-						.Text(FText::FromString(TEXT("✕")))
-						.Font(FAppStyle::GetFontStyle("TinyText"))
-						.ColorAndOpacity(FLinearColor(0.8f, 0.25f, 0.25f))
+						SNew(SBox).WidthOverride(3.f)
+						[
+							SNew(SBorder)
+							.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+							.BorderBackgroundColor(AccentBar)
+						]
+					]
+
+					// Animation name (inline-editable)
+					+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(8.f, 5.f, 4.f, 5.f)
+					[
+						SNew(SInlineEditableTextBlock)
+						.Text(FText::FromName(VarName))
+						.Font(FAppStyle::GetFontStyle("SmallFont"))
+						.ColorAndOpacity(NameColor)
+						.IsReadOnly(false)
+						.OnTextCommitted_Lambda([this, CapturedIndex](const FText& NewText, ETextCommit::Type CommitType)
+						{
+							OnRenameAnimation(CapturedIndex, NewText, CommitType);
+						})
+						.OnVerifyTextChanged_Lambda([](const FText& Text, FText& OutError) -> bool
+						{
+							if (Text.IsEmpty())
+							{
+								OutError = LOCTEXT("EmptyName", "Name cannot be empty");
+								return false;
+							}
+							return true;
+						})
+					]
+
+					// Delete button (X icon)
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
+					[
+						SNew(SButton)
+						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+						.ToolTipText(LOCTEXT("DeleteAnim", "Remove this animation variable"))
+						.OnClicked_Lambda([this, CapturedIndex]() -> FReply
+						{
+							OnDeleteAnimation(CapturedIndex);
+							return FReply::Handled();
+						})
+						.ContentPadding(FMargin(3.f, 2.f))
+						[
+							SNew(SImage)
+							.Image(FAppStyle::GetBrush("Icons.X"))
+							.DesiredSizeOverride(FVector2D(9.f, 9.f))
+							.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.18f, 0.18f)))
+						]
 					]
 				]
 			]
