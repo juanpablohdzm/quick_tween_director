@@ -1,0 +1,35 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "QuickTweenDirector",
+	"Description": "Visual timeline editor for creating and saving QuickTween sequences as reusable assets.",
+	"Category": "Animation",
+	"CreatedBy": "Mosti Dev",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Plugins": [
+		{
+			"Name": "QuickTween",
+			"Enabled": true
+		}
+	],
+	"Modules": [
+		{
+			"Name": "QuickTweenDirector",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "QuickTweenDirectorEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
+		}
+	]
+}
