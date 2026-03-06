@@ -320,6 +320,11 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 		// Main area — vertical scroll wraps labels + content together
 		+ SVerticalBox::Slot().FillHeight(1.0f)
 		[
+			SNew(SBorder)
+			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(FLinearColor(0.075f, 0.075f, 0.075f))
+			.Padding(FMargin(0.f))
+			[
 			SNew(SScrollBox)
 			.Orientation(Orient_Vertical)
 			.ScrollBarVisibility(EVisibility::Visible)
@@ -375,6 +380,7 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 					HScrollBox.ToSharedRef()
 				]
 			]
+			]  // SBorder (dark bg)
 		]
 
 		// Horizontal scrollbar — pinned below everything, always visible
@@ -411,6 +417,11 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 			.Track(Track)
 			.Asset(Asset)
 			.PixelsPerSec(PixelsPerSec)
+			.IsSelected(SelectedTrackId == Track.TrackId)
+			.OnTrackSelected_Lambda([this, TrackId = Track.TrackId]() {
+				SelectedTrackId = TrackId;
+				RefreshFromAsset();
+			})
 			.OnTrackDelete_Lambda([this](FGuid Id) { DeleteTrack(Id); })
 			.OnStepAdded_Lambda([this](FQTDStepData S) { AddStepToTrack(S); })
 			.OnStepEdit_Lambda([this](FQTDStepData S) { OpenStepDialog(S); })

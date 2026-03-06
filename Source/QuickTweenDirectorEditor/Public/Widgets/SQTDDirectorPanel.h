@@ -9,6 +9,7 @@
 class UBlueprint;
 class UQuickTweenDirectorAsset;
 class SQuickTweenDirectorEditor;
+class SBorder;
 class SBox;
 class SVerticalBox;
 class STextBlock;
@@ -80,6 +81,7 @@ private:
 
 	// ── Widgets ───────────────────────────────────────────────────────────────
 
+	TSharedPtr<SBorder>                  RootBorder;
 	TSharedPtr<STextBlock>               BlueprintNameText;
 	TSharedPtr<SVerticalBox>             AnimListContainer;
 	TSharedPtr<SBox>                     TimelineArea;

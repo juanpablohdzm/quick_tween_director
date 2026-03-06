@@ -32,6 +32,8 @@ public:
 		SLATE_ARGUMENT(FQTDTrackData,             Track)
 		SLATE_ARGUMENT(UQuickTweenDirectorAsset*, Asset)
 		SLATE_ARGUMENT(float,                     PixelsPerSec)
+		SLATE_ARGUMENT(bool,                      IsSelected)
+		SLATE_EVENT (FSimpleDelegate,             OnTrackSelected)
 		SLATE_EVENT (FOnStepAdded,                OnStepAdded)
 		SLATE_EVENT (FOnStepEdit,                 OnStepEdit)
 		SLATE_EVENT (FOnStepMoved,                OnStepMoved)
@@ -40,13 +42,15 @@ public:
 
 	void Construct(const FArguments& InArgs)
 	{
-		Track         = InArgs._Track;
-		Asset         = InArgs._Asset;
-		PixelsPerSec  = InArgs._PixelsPerSec;
-		OnStepAdded   = InArgs._OnStepAdded;
-		OnStepEdit    = InArgs._OnStepEdit;
-		OnStepMoved   = InArgs._OnStepMoved;
-		OnStepDeleted = InArgs._OnStepDeleted;
+		Track            = InArgs._Track;
+		Asset            = InArgs._Asset;
+		PixelsPerSec     = InArgs._PixelsPerSec;
+		bIsSelected      = InArgs._IsSelected;
+		OnTrackSelected  = InArgs._OnTrackSelected;
+		OnStepAdded      = InArgs._OnStepAdded;
+		OnStepEdit       = InArgs._OnStepEdit;
+		OnStepMoved      = InArgs._OnStepMoved;
+		OnStepDeleted    = InArgs._OnStepDeleted;
 	}
 
 	void SetPixelsPerSec(float PPS) { PixelsPerSec = PPS; Invalidate(EInvalidateWidgetReason::Paint); }
@@ -67,10 +71,13 @@ public:
 		const float W = AllottedGeometry.GetLocalSize().X;
 
 		// ── Track background ─────────────────────────────────────────────────
+		const FLinearColor TrackBg = bIsSelected
+			? FLinearColor(0.11f, 0.11f, 0.11f)
+			: FLinearColor(0.09f, 0.09f, 0.09f);
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 			AllottedGeometry.ToPaintGeometry(),
 			FAppStyle::GetBrush("WhiteBrush"),
-			ESlateDrawEffect::None, FLinearColor(0.09f, 0.09f, 0.09f));
+			ESlateDrawEffect::None, TrackBg);
 		++LayerId;
 
 		// Bottom edge separator (1 px)
@@ -93,6 +100,10 @@ public:
 				QTDEditorConstants::MinStepWidth);
 
 			const FLinearColor TypeColor = Step->GetTypeColor();
+			const bool bHovered = (HoveredStepId == Step->StepId);
+			const bool bPressed = (PressedStepId == Step->StepId);
+			const float FillOpacity = bPressed ? 0.28f : (bHovered ? 0.22f : 0.16f);
+			const float TopOpacity  = bPressed ? 0.60f : (bHovered ? 0.50f : 0.35f);
 
 			// ── Tinted fill (semi-transparent) ────────────────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
@@ -100,7 +111,7 @@ public:
 					FVector2f(SW - 1.f, BH),
 					FSlateLayoutTransform(FVector2f(X, PadY))),
 				FAppStyle::GetBrush("WhiteBrush"),
-				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(0.16f));
+				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(FillOpacity));
 
 			// ── Left accent stripe (4 px, full opacity) ───────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId + 1,
@@ -114,7 +125,7 @@ public:
 			TArray<FVector2D> TopPts = { FVector2D(X + 4.f, PadY), FVector2D(X + SW - 1.f, PadY) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 2,
 				AllottedGeometry.ToPaintGeometry(), TopPts,
-				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(0.35f), true, 1.f);
+				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(TopOpacity), true, 1.f);
 
 			// ── Step label ────────────────────────────────────────────────────
 			if (SW > 18.f)
@@ -171,15 +182,20 @@ public:
 	{
 		if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
 		{
+			OnTrackSelected.ExecuteIfBound();
+
 			const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
 			if (const FQTDStepData* Hit = HitTestStep(Local))
 			{
-				bIsDragging      = true;
-				DraggedStepId    = Hit->StepId;
-				DragStartMouseX  = Local.X;
+				bIsDragging       = true;
+				DraggedStepId     = Hit->StepId;
+				PressedStepId     = Hit->StepId;
+				DragStartMouseX   = Local.X;
 				DragOrigStartTime = Hit->StartTime;
+				Invalidate(EInvalidateWidgetReason::Paint);
 				return FReply::Handled().CaptureMouse(AsShared());
 			}
+			return FReply::Handled();
 		}
 
 		if (Event.GetEffectingButton() == EKeys::RightMouseButton)
@@ -194,10 +210,18 @@ public:
 
 	virtual FReply OnMouseButtonUp(const FGeometry&, const FPointerEvent& Event) override
 	{
-		if (Event.GetEffectingButton() == EKeys::LeftMouseButton && bIsDragging)
+		if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
 		{
-			bIsDragging = false;
-			DraggedStepId.Invalidate();
+			if (bIsDragging)
+			{
+				bIsDragging = false;
+				DraggedStepId.Invalidate();
+			}
+			if (PressedStepId.IsValid())
+			{
+				PressedStepId.Invalidate();
+				Invalidate(EInvalidateWidgetReason::Paint);
+			}
 			return FReply::Handled().ReleaseMouseCapture();
 		}
 		return FReply::Unhandled();
@@ -205,9 +229,10 @@ public:
 
 	virtual FReply OnMouseMove(const FGeometry& Geometry, const FPointerEvent& Event) override
 	{
+		const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
+
 		if (bIsDragging && DraggedStepId.IsValid())
 		{
-			const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
 			float NewStart = DragOrigStartTime + (Local.X - DragStartMouseX) / PixelsPerSec;
 			NewStart = FMath::RoundToFloat(NewStart / QTDEditorConstants::SnapIncrement)
 			           * QTDEditorConstants::SnapIncrement;
@@ -216,6 +241,16 @@ public:
 			Invalidate(EInvalidateWidgetReason::Paint);
 			return FReply::Handled();
 		}
+
+		// Hover tracking (no capture needed — called whenever cursor is over widget)
+		const FQTDStepData* Hit = HitTestStep(Local);
+		const FGuid NewHovered  = Hit ? Hit->StepId : FGuid();
+		if (NewHovered != HoveredStepId)
+		{
+			HoveredStepId = NewHovered;
+			Invalidate(EInvalidateWidgetReason::Paint);
+		}
+
 		return FReply::Unhandled();
 	}
 
@@ -223,6 +258,11 @@ public:
 	{
 		bIsDragging = false;
 		DraggedStepId.Invalidate();
+		if (HoveredStepId.IsValid())
+		{
+			HoveredStepId.Invalidate();
+			Invalidate(EInvalidateWidgetReason::Paint);
+		}
 	}
 
 	virtual FReply OnMouseButtonDoubleClick(const FGeometry& Geometry, const FPointerEvent& Event) override
@@ -447,14 +487,18 @@ private:
 	FQTDTrackData             Track;
 	UQuickTweenDirectorAsset* Asset        = nullptr;
 	float                     PixelsPerSec = 80.0f;
+	bool                      bIsSelected  = false;
 
-	FOnStepAdded   OnStepAdded;
-	FOnStepEdit    OnStepEdit;
-	FOnStepMoved   OnStepMoved;
-	FOnStepDeleted OnStepDeleted;
+	FSimpleDelegate OnTrackSelected;
+	FOnStepAdded    OnStepAdded;
+	FOnStepEdit     OnStepEdit;
+	FOnStepMoved    OnStepMoved;
+	FOnStepDeleted  OnStepDeleted;
 
 	bool  bIsDragging        = false;
 	FGuid DraggedStepId;
+	FGuid HoveredStepId;
+	FGuid PressedStepId;
 	float DragStartMouseX    = 0.0f;
 	float DragOrigStartTime  = 0.0f;
 };
@@ -465,20 +509,24 @@ private:
 
 void SQTDTrackRow::Construct(const FArguments& InArgs)
 {
-	Track         = InArgs._Track;
-	Asset         = InArgs._Asset;
-	PixelsPerSec  = InArgs._PixelsPerSec;
-	OnTrackDelete = InArgs._OnTrackDelete;
-	OnStepAdded   = InArgs._OnStepAdded;
-	OnStepEdit    = InArgs._OnStepEdit;
-	OnStepMoved   = InArgs._OnStepMoved;
-	OnStepDeleted = InArgs._OnStepDeleted;
+	Track           = InArgs._Track;
+	Asset           = InArgs._Asset;
+	PixelsPerSec    = InArgs._PixelsPerSec;
+	bIsSelected     = InArgs._IsSelected;
+	OnTrackSelected = InArgs._OnTrackSelected;
+	OnTrackDelete   = InArgs._OnTrackDelete;
+	OnStepAdded     = InArgs._OnStepAdded;
+	OnStepEdit      = InArgs._OnStepEdit;
+	OnStepMoved     = InArgs._OnStepMoved;
+	OnStepDeleted   = InArgs._OnStepDeleted;
 
 	// Build the step content widget (placed externally in the shared H-scroll box).
 	SAssignNew(StepContent, SQTDStepContent)
 		.Track(Track)
 		.Asset(Asset)
 		.PixelsPerSec(PixelsPerSec)
+		.IsSelected(bIsSelected)
+		.OnTrackSelected(OnTrackSelected)
 		.OnStepAdded(OnStepAdded)
 		.OnStepEdit(OnStepEdit)
 		.OnStepMoved(OnStepMoved)
@@ -488,6 +536,9 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 		? Track.ComponentClass->GetName().Replace(TEXT("Component"), TEXT(""))
 		: FString();
 
+	const float LabelBg      = bIsSelected ? 0.115f : 0.095f;
+	const float AccentAlpha  = bIsSelected ? 1.00f  : 0.50f;
+
 	// Label column widget — placed in the fixed left column (no horizontal scroll).
 	ChildSlot
 	[
@@ -495,23 +546,31 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 		.WidthOverride(QTDEditorConstants::TrackLabelWidth)
 		.HeightOverride(QTDEditorConstants::TrackHeight)
 		[
-			SNew(SBorder)
-			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-			.BorderBackgroundColor(FLinearColor(0.095f, 0.095f, 0.095f))
-			.Padding(FMargin(0.f))
+			SNew(SButton)
+			.ButtonStyle(FAppStyle::Get(), "NoBorder")
+			.ContentPadding(FMargin(0.f))
+			.OnClicked_Lambda([this]() -> FReply {
+				OnTrackSelected.ExecuteIfBound();
+				return FReply::Handled();
+			})
 			[
-				SNew(SHorizontalBox)
-
-				// Orange accent bar (left edge)
-				+ SHorizontalBox::Slot().AutoWidth()
+				SNew(SBorder)
+				.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+				.BorderBackgroundColor(FLinearColor(LabelBg, LabelBg, LabelBg))
+				.Padding(FMargin(0.f))
 				[
-					SNew(SBox).WidthOverride(QTDEditorConstants::LabelAccentWidth)
+					SNew(SHorizontalBox)
+
+					// Orange accent bar (left edge)
+					+ SHorizontalBox::Slot().AutoWidth()
 					[
-						SNew(SBorder)
-						.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-						.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f, 0.5f))
+						SNew(SBox).WidthOverride(QTDEditorConstants::LabelAccentWidth)
+						[
+							SNew(SBorder)
+							.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+							.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f, AccentAlpha))
+						]
 					]
-				]
 
 				// Icon
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(8.f, 0.f, 5.f, 0.f)
@@ -552,6 +611,7 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 					.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 					.ToolTipText(LOCTEXT("DeleteTrack", "Remove this track"))
 					.OnClicked_Lambda([this]() -> FReply {
+						OnTrackSelected.ExecuteIfBound();
 						OnTrackDelete.ExecuteIfBound(Track.TrackId);
 						return FReply::Handled();
 					})
@@ -564,7 +624,8 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 					]
 				]
 			]
-		]
+		]  // SBorder
+		]  // SButton
 	];
 }
 

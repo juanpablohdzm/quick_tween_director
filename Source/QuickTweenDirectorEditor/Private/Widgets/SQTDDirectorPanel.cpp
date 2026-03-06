@@ -160,10 +160,16 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		// Animation list (scrollable)
 		+ SVerticalBox::Slot().FillHeight(1.0f)
 		[
-			SNew(SScrollBox)
-			+ SScrollBox::Slot()
+			SNew(SBorder)
+			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+			.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
+			.Padding(0.f)
 			[
-				AnimListContainer.ToSharedRef()
+				SNew(SScrollBox)
+				+ SScrollBox::Slot()
+				[
+					AnimListContainer.ToSharedRef()
+				]
 			]
 		];
 
@@ -232,9 +238,17 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		]
 	];
 
-	ChildSlot
+	SAssignNew(RootBorder, SBorder)
+	.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+	.BorderBackgroundColor(FLinearColor(0.06f, 0.06f, 0.06f))
+	.Padding(0.f)
 	[
 		NoBlueprintHint.ToSharedRef()
+	];
+
+	ChildSlot
+	[
+		RootBorder.ToSharedRef()
 	];
 }
 
@@ -250,12 +264,12 @@ void SQTDDirectorPanel::SetBlueprint(UBlueprint* NewBlueprint)
 
 	if (!NewBlueprint)
 	{
-		ChildSlot[ NoBlueprintHint.ToSharedRef() ];
+		RootBorder->SetContent(NoBlueprintHint.ToSharedRef());
 		return;
 	}
 
 	BlueprintNameText->SetText(FText::FromString(NewBlueprint->GetName()));
-	ChildSlot[ MainContent.ToSharedRef() ];
+	RootBorder->SetContent(MainContent.ToSharedRef());
 
 	RefreshAnimationList();
 }

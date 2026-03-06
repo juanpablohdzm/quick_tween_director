@@ -84,8 +84,9 @@ private:
 	void  OnZoomChanged(float NewValue);
 
 	// ── Data ──────────────────────────────────────────────────────────────────
-	UQuickTweenDirectorAsset*    Asset     = nullptr;
+	UQuickTweenDirectorAsset*    Asset           = nullptr;
 	TWeakObjectPtr<UBlueprint>   Blueprint;
+	FGuid                        SelectedTrackId;
 
 	/**
 	 * Label column container — rebuilt by RefreshFromAsset().

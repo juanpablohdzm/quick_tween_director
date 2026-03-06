@@ -44,11 +44,12 @@ private:
 	TSharedRef<SDockTab> SpawnDirectorPanel(const FSpawnTabArgs& Args);
 
 	// ── Blueprint toolbar extension ───────────────────────────────────────────
-	void RegisterMenuExtensions();
+	void AddToolbarButton(FToolBarBuilder& Builder);
 	void OpenDirectorPanel();
 
 	// ── Data ──────────────────────────────────────────────────────────────────
 	TSharedPtr<IAssetTypeActions> AssetTypeActions;
+	TSharedPtr<FExtender>         ToolBarExtender;
 
 	TWeakObjectPtr<UBlueprint>    ActiveBlueprint;
 	TWeakPtr<SQTDDirectorPanel>   DirectorPanel;

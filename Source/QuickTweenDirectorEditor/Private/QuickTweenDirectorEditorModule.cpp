@@ -10,9 +10,10 @@
 #include "GameFramework/Actor.h"
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "Framework/Docking/TabManager.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Styling/AppStyle.h"
-#include "ToolMenus.h"
+#include "BlueprintEditorModule.h"
 
 #define LOCTEXT_NAMESPACE "FQuickTweenDirectorEditorModule"
 
@@ -36,12 +37,23 @@ void FQuickTweenDirectorEditorModule::StartupModule()
 		.SetDisplayName(LOCTEXT("DirectorTab", "QuickTween Director"))
 		.SetTooltipText(LOCTEXT("DirectorTabTip", "Open the QuickTween Director animation panel"))
 		.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Sequencer.Tabs.SequencerMain"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
+		.SetMenuType(ETabSpawnerMenuType::Enabled);  // Visible under Window menu
 
-	// ── Blueprint editor toolbar button via UToolMenus ─────────────────────────
-	UToolMenus::RegisterStartupCallback(
-		FSimpleMulticastDelegate::FDelegate::CreateRaw(
-			this, &FQuickTweenDirectorEditorModule::RegisterMenuExtensions));
+	// ── Blueprint editor toolbar button via extensibility manager ──────────────
+	if (FModuleManager::Get().IsModuleLoaded("Kismet"))
+	{
+		FBlueprintEditorModule& BPEditorModule =
+			FModuleManager::GetModuleChecked<FBlueprintEditorModule>("Kismet");
+
+		ToolBarExtender = MakeShared<FExtender>();
+		ToolBarExtender->AddToolBarExtension(
+			"Compile",
+			EExtensionHook::After,
+			TSharedPtr<FUICommandList>(),
+			FToolBarExtensionDelegate::CreateRaw(this, &FQuickTweenDirectorEditorModule::AddToolbarButton));
+
+		BPEditorModule.GetMenuExtensibilityManager()->AddExtender(ToolBarExtender);
+	}
 
 	// ── Track which Actor Blueprint is being edited ────────────────────────────
 	if (GEditor)
@@ -65,10 +77,12 @@ void FQuickTweenDirectorEditorModule::ShutdownModule()
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(DirectorPanelTabName);
 
-	UToolMenus::UnRegisterStartupCallback(this);
-	if (UObjectInitialized())
+	if (ToolBarExtender.IsValid() && FModuleManager::Get().IsModuleLoaded("Kismet"))
 	{
-		UToolMenus::Get()->UnregisterOwner(this);
+		FBlueprintEditorModule& BPEditorModule =
+			FModuleManager::GetModuleChecked<FBlueprintEditorModule>("Kismet");
+		BPEditorModule.GetMenuExtensibilityManager()->RemoveExtender(ToolBarExtender);
+		ToolBarExtender.Reset();
 	}
 
 	if (GEditor && AssetOpenedHandle.IsValid())
@@ -130,24 +144,20 @@ TSharedRef<SDockTab> FQuickTweenDirectorEditorModule::SpawnDirectorPanel(const F
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Tool menu registration (Blueprint editor toolbar)
+// Toolbar extension (Blueprint editor)
 // ──────────────────────────────────────────────────────────────────────────────
 
-void FQuickTweenDirectorEditorModule::RegisterMenuExtensions()
+void FQuickTweenDirectorEditorModule::AddToolbarButton(FToolBarBuilder& Builder)
 {
-	FToolMenuOwnerScoped OwnerScoped(this);
-
-	UToolMenu* ToolMenu = UToolMenus::Get()->ExtendMenu("BlueprintEditor.ToolBar");
-	if (!ToolMenu) return;
-
-	FToolMenuSection& Section = ToolMenu->FindOrAddSection("QuickTweenDirector");
-	Section.AddEntry(FToolMenuEntry::InitToolBarButton(
-		"QuickTweenDirectorButton",
+	Builder.BeginSection("QuickTweenDirector");
+	Builder.AddToolBarButton(
 		FUIAction(FExecuteAction::CreateRaw(this, &FQuickTweenDirectorEditorModule::OpenDirectorPanel)),
+		NAME_None,
 		LOCTEXT("DirectorButton", "Director"),
 		LOCTEXT("DirectorButtonTip", "Open the QuickTween Director animation panel for this Blueprint"),
 		FSlateIcon(FAppStyle::GetAppStyleSetName(), "Sequencer.Tabs.SequencerMain")
-	));
+	);
+	Builder.EndSection();
 }
 
 void FQuickTweenDirectorEditorModule::OpenDirectorPanel()

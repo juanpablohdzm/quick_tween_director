@@ -41,6 +41,8 @@ public:
 		SLATE_ARGUMENT(FQTDTrackData,             Track)
 		SLATE_ARGUMENT(UQuickTweenDirectorAsset*, Asset)
 		SLATE_ARGUMENT(float,                     PixelsPerSec)
+		SLATE_ARGUMENT(bool,                      IsSelected)
+		SLATE_EVENT (FSimpleDelegate,             OnTrackSelected)
 		SLATE_EVENT (FOnTrackDelete,              OnTrackDelete)
 		SLATE_EVENT (FOnStepAdded,                OnStepAdded)
 		SLATE_EVENT (FOnStepEdit,                 OnStepEdit)
@@ -63,7 +65,9 @@ private:
 	FQTDTrackData             Track;
 	UQuickTweenDirectorAsset* Asset        = nullptr;
 	float                     PixelsPerSec = 80.0f;
+	bool                      bIsSelected  = false;
 
+	FSimpleDelegate OnTrackSelected;
 	FOnTrackDelete  OnTrackDelete;
 	FOnStepAdded    OnStepAdded;
 	FOnStepEdit     OnStepEdit;
