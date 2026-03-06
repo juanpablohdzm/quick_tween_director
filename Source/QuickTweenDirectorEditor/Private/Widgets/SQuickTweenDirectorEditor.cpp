@@ -167,67 +167,100 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 			]
 		];
 
-	SAssignNew(TrackContainer, SVerticalBox);
+	// ── Shared widgets created once, populated by RefreshFromAsset ───────────
 
+	// Ruler — lives inside ContentContainer, which is inside the ONE H scroll box.
 	TSharedRef<SQTDRuler> Ruler = SNew(SQTDRuler)
 		.PixelsPerSec_Lambda([this]() { return PixelsPerSec; })
 		.TotalDuration_Lambda([this]() { return Asset ? Asset->GetTotalDuration() : 1.0f; });
 	RulerWidget = Ruler;
 
-	// Shared horizontal scrollbar — linked to the ruler and all track rows.
-	SAssignNew(HScrollBar, SScrollBar)
+	// Label column (track labels, rebuilt each RefreshFromAsset).
+	SAssignNew(LabelContainer, SVerticalBox);
+
+	// Content column (ruler + step content rows, rebuilt each RefreshFromAsset).
+	// All content lives inside ONE SScrollBox(H) so they scroll together perfectly.
+	SAssignNew(ContentContainer, SVerticalBox);
+
+	// The single external horizontal scrollbar.
+	TSharedRef<SScrollBar> HBar = SNew(SScrollBar)
 		.Orientation(Orient_Horizontal)
 		.Thickness(FVector2D(6.0f, 6.0f));
+	HScrollBox = SNew(SScrollBox)
+		.Orientation(Orient_Horizontal)
+		.ScrollBarVisibility(EVisibility::Collapsed)
+		.ExternalScrollbar(HBar);
+	HScrollBox->AddSlot()[ ContentContainer.ToSharedRef() ];
+
+	// ── Final layout ─────────────────────────────────────────────────────────
+	//
+	//  Toolbar  |  Separator
+	//  ─────────────────────────────────────────────────────────────────────
+	//  SScrollBox(V)          ← vertical scroll for many tracks
+	//    SHorizontalBox
+	//      [200px label col]     [SScrollBox(H, ExternalBar=HBar)]
+	//        ruler label           ContentContainer (SVerticalBox)
+	//        sep                     SQTDRuler
+	//        LabelContainer          sep
+	//          label rows            step content rows...
+	//  HBar                   ← horizontal scrollbar, always visible
+	//
 
 	ChildSlot
 	[
 		SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight().Padding(2.0f)[ Toolbar ]
 		+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
-		// Ruler row: fixed label placeholder + scrollable ruler (aligned with track step content)
-		+ SVerticalBox::Slot().AutoHeight()
-		[
-			SNew(SHorizontalBox)
-			// Label column placeholder — matches the fixed 200 px track label width
-			+ SHorizontalBox::Slot().AutoWidth()
-			[
-				SNew(SBox)
-				.WidthOverride(QTDEditorConstants::TrackLabelWidth)
-				.HeightOverride(QTDEditorConstants::RulerHeight)
-				[
-					SNew(SBorder)
-					.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
-					.Padding(FMargin(6.0f, 0.0f))
-					.VAlign(VAlign_Center)
-					[
-						SNew(STextBlock)
-						.Text(LOCTEXT("RulerLabel", "Timeline"))
-						.Font(FAppStyle::GetFontStyle("TinyText"))
-						.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
-					]
-				]
-			]
-			// Scrollable ruler — shares HScrollBar with the track step content boxes
-			+ SHorizontalBox::Slot().FillWidth(1.0f)
-			[
-				SNew(SScrollBox)
-				.Orientation(Orient_Horizontal)
-				.ScrollBarVisibility(EVisibility::Collapsed)
-				.ExternalScrollbar(HScrollBar)
-				+ SScrollBox::Slot()[ Ruler ]
-			]
-		]
-		+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+
+		// Main area — vertical scroll wraps labels + content together
 		+ SVerticalBox::Slot().FillHeight(1.0f)
 		[
 			SNew(SScrollBox)
 			.Orientation(Orient_Vertical)
-			+ SScrollBox::Slot()[ TrackContainer.ToSharedRef() ]
+			.ScrollBarVisibility(EVisibility::Visible)
+			+ SScrollBox::Slot()
+			[
+				SNew(SHorizontalBox)
+
+				// ── Label column: fixed 200 px, no horizontal scroll ──────────
+				+ SHorizontalBox::Slot().AutoWidth()
+				[
+					SNew(SVerticalBox)
+
+					// Ruler-label header
+					+ SVerticalBox::Slot().AutoHeight()
+					[
+						SNew(SBox)
+						.WidthOverride(QTDEditorConstants::TrackLabelWidth)
+						.HeightOverride(QTDEditorConstants::RulerHeight)
+						[
+							SNew(SBorder)
+							.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+							.Padding(FMargin(6.0f, 0.0f))
+							.VAlign(VAlign_Center)
+							[
+								SNew(STextBlock)
+								.Text(LOCTEXT("RulerLabel", "Timeline"))
+								.Font(FAppStyle::GetFontStyle("TinyText"))
+								.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
+							]
+						]
+					]
+					+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+					// Track label rows
+					+ SVerticalBox::Slot().AutoHeight()[ LabelContainer.ToSharedRef() ]
+				]
+
+				// ── Content column: ONE H scroll box for ruler + all step rows ─
+				+ SHorizontalBox::Slot().FillWidth(1.0f)
+				[
+					HScrollBox.ToSharedRef()
+				]
+			]
 		]
-		+ SVerticalBox::Slot().AutoHeight()
-		[
-			HScrollBar.ToSharedRef()
-		]
+
+		// Horizontal scrollbar — pinned below everything, always visible
+		+ SVerticalBox::Slot().AutoHeight()[ HBar ]
 	];
 
 	RefreshFromAsset();
@@ -237,19 +270,29 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 
 void SQuickTweenDirectorEditor::RefreshFromAsset()
 {
-	if (!TrackContainer) return;
-	TrackContainer->ClearChildren();
+	if (!LabelContainer || !ContentContainer) return;
+
+	LabelContainer->ClearChildren();
+	ContentContainer->ClearChildren();
+
+	// Ruler is always at the top of the content column
+	if (RulerWidget.IsValid())
+	{
+		ContentContainer->AddSlot().AutoHeight()[ RulerWidget.ToSharedRef() ];
+		ContentContainer->AddSlot().AutoHeight()[ SNew(SSeparator) ];
+		// Force ruler to repaint with current zoom
+		RulerWidget->Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
+	}
+
 	if (!Asset) return;
 
 	for (const FQTDTrackData& Track : Asset->Tracks)
 	{
-		TrackContainer->AddSlot().AutoHeight()
-		[
+		TSharedRef<SQTDTrackRow> Row =
 			SNew(SQTDTrackRow)
 			.Track(Track)
 			.Asset(Asset)
 			.PixelsPerSec(PixelsPerSec)
-			.HScrollBar(HScrollBar)
 			.OnTrackDelete_Lambda([this](FGuid Id) { DeleteTrack(Id); })
 			.OnStepAdded_Lambda([this](FQTDStepData S) { AddStepToTrack(S); })
 			.OnStepEdit_Lambda([this](FQTDStepData S) { OpenStepDialog(S); })
@@ -263,8 +306,13 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 			})
 			.OnStepDeleted_Lambda([this](FGuid StepId) {
 				if (Asset) { Asset->RemoveStep(StepId); RefreshFromAsset(); }
-			})
-		];
+			});
+
+		// Label goes in the fixed label column (this widget IS the label — SQTDTrackRow shows only the label).
+		LabelContainer->AddSlot().AutoHeight()[ Row ];
+
+		// Step content goes inside ContentContainer — same H scroll box as the ruler.
+		ContentContainer->AddSlot().AutoHeight()[ Row->GetStepContentWidget() ];
 	}
 }
 

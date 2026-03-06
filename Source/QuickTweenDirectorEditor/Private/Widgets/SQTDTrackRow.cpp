@@ -458,8 +458,8 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 	OnStepEdit    = InArgs._OnStepEdit;
 	OnStepMoved   = InArgs._OnStepMoved;
 	OnStepDeleted = InArgs._OnStepDeleted;
-	TSharedPtr<SScrollBar> HScrollBar = InArgs._HScrollBar;
 
+	// Build the step content widget (placed externally in the shared H-scroll box).
 	SAssignNew(StepContent, SQTDStepContent)
 		.Track(Track)
 		.Asset(Asset)
@@ -474,89 +474,68 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 		? (FString(TEXT(" [")) + Track.ComponentClass->GetName() + TEXT("]"))
 		: FString();
 
+	// This widget shows ONLY the label column.
+	// The step content (StepContent) is placed separately by SQuickTweenDirectorEditor
+	// inside the single shared horizontal scroll box so ruler + all steps scroll together.
 	ChildSlot
 	[
-		SNew(SBorder)
-		.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
-		.Padding(0.0f)
+		SNew(SBox)
+		.WidthOverride(QTDEditorConstants::TrackLabelWidth)
+		.HeightOverride(QTDEditorConstants::TrackHeight)
 		[
-			SNew(SHorizontalBox)
-
-			// ── Label column ─────────────────────────────────────────────────
-			+ SHorizontalBox::Slot().AutoWidth()
+			SNew(SBorder)
+			.BorderImage(FAppStyle::GetBrush("DetailsView.CategoryTop"))
+			.Padding(FMargin(6.0f, 0.0f))
 			[
-				SNew(SBox)
-				.WidthOverride(QTDEditorConstants::TrackLabelWidth)
-				.HeightOverride(QTDEditorConstants::TrackHeight)
+				SNew(SHorizontalBox)
+
+				// Component class icon
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 4.0f, 0.0f)
 				[
-					SNew(SBorder)
-					.BorderImage(FAppStyle::GetBrush("DetailsView.CategoryTop"))
-					.Padding(FMargin(6.0f, 0.0f))
+					SNew(SImage)
+					.Image(FSlateIconFinder::FindIconBrushForClass(
+						Track.ComponentClass.Get(), TEXT("SCS.Component")))
+					.DesiredSizeOverride(FVector2D(14.0f, 14.0f))
+					.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
+				]
+
+				// Component variable name + class chip
+				+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot().AutoHeight()
 					[
-						SNew(SHorizontalBox)
-
-						// Component class icon
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.0f, 0.0f, 4.0f, 0.0f)
-						[
-							SNew(SImage)
-							.Image(FSlateIconFinder::FindIconBrushForClass(
-								Track.ComponentClass.Get(), TEXT("SCS.Component")))
-							.DesiredSizeOverride(FVector2D(14.0f, 14.0f))
-							.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
-						]
-
-						// Component variable name
-						+ SHorizontalBox::Slot().FillWidth(1.0f).VAlign(VAlign_Center)
-						[
-							SNew(SVerticalBox)
-							+ SVerticalBox::Slot().AutoHeight()
-							[
-								SNew(STextBlock)
-								.Text_Lambda([this]() { return FText::FromString(Track.TrackLabel); })
-								.Font(FAppStyle::GetFontStyle("SmallFont"))
-							]
-							+ SVerticalBox::Slot().AutoHeight()
-							[
-								SNew(STextBlock)
-								.Text(FText::FromString(TypeChip))
-								.Font(FAppStyle::GetFontStyle("TinyText"))
-								.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
-								.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
-							]
-						]
-
-						// Delete button
-						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-						[
-							SNew(SButton)
-							.ButtonStyle(FAppStyle::Get(), "NoBorder")
-							.ToolTipText(LOCTEXT("DeleteTrack", "Delete this track"))
-							.OnClicked_Lambda([this]() -> FReply {
-								OnTrackDelete.ExecuteIfBound(Track.TrackId);
-								return FReply::Handled();
-							})
-							.ContentPadding(2.0f)
-							[
-								SNew(STextBlock)
-								.Text(FText::FromString(TEXT("✕")))
-								.Font(FAppStyle::GetFontStyle("TinyText"))
-								.ColorAndOpacity(FLinearColor(1.0f, 0.3f, 0.3f))
-							]
-						]
+						SNew(STextBlock)
+						.Text_Lambda([this]() { return FText::FromString(Track.TrackLabel); })
+						.Font(FAppStyle::GetFontStyle("SmallFont"))
+					]
+					+ SVerticalBox::Slot().AutoHeight()
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(TypeChip))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
+						.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
 					]
 				]
-			]
 
-			// ── Step content area ─────────────────────────────────────────────
-			+ SHorizontalBox::Slot().FillWidth(1.0f)
-			[
-				SNew(SScrollBox)
-				.Orientation(Orient_Horizontal)
-				.ScrollBarVisibility(EVisibility::Collapsed)
-				.ExternalScrollbar(HScrollBar)
-				+ SScrollBox::Slot()
+				// Delete button
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
 				[
-					StepContent.ToSharedRef()
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "NoBorder")
+					.ToolTipText(LOCTEXT("DeleteTrack", "Delete this track"))
+					.OnClicked_Lambda([this]() -> FReply {
+						OnTrackDelete.ExecuteIfBound(Track.TrackId);
+						return FReply::Handled();
+					})
+					.ContentPadding(2.0f)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(TEXT("✕")))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity(FLinearColor(1.0f, 0.3f, 0.3f))
+					]
 				]
 			]
 		]

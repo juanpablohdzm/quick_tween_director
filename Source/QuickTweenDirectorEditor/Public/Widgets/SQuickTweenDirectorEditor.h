@@ -40,10 +40,14 @@ namespace QTDEditorConstants
  * Layout:
  *   ┌─ Toolbar ──────────────────────────────────────────────────────┐
  *   │  [Save]  [+ Add Track]          Duration: X.XXs  Zoom: [──]   │
- *   ├─ Ruler ────────────────────────────────────────────────────────┤
- *   ├─ Tracks ───────────────────────────────────────────────────────┤
- *   │  Component label + type  │  step boxes (drag/drop)             │
- *   └────────────────────────────────────────────────────────────────┘
+ *   ├─ Label col (200px) ──┬─ Single H-scroll box ───────────────────┤
+ *   │  "Timeline" header   │  SQTDRuler (ticks)                      │
+ *   │  Track1 label        │  Track1 step content                    │
+ *   │  Track2 label        │  Track2 step content                    │
+ *   └──────────────────────┴─ HScrollBar ────────────────────────────┘
+ *
+ * The ruler and all step content live inside ONE SScrollBox (horizontal)
+ * so they always scroll in perfect sync.
  */
 class SQuickTweenDirectorEditor : public SCompoundWidget
 {
@@ -67,27 +71,34 @@ private:
 
 	// ── Track / step actions ──────────────────────────────────────────────────
 	void DeleteTrack(FGuid TrackId);
-
-	/**
-	 * Called when the user picks an animation type from the context submenu.
-	 * @param PrefilledStep  Step already configured with type, SlotName and sub-property.
-	 *                       StartTime is set to the click position.
-	 */
 	void AddStepToTrack(FQTDStepData PrefilledStep);
-
 	void OpenStepDialog(const FQTDStepData& Step);
 
 	// ── Zoom ──────────────────────────────────────────────────────────────────
 	float PixelsPerSec = QTDEditorConstants::DefaultPixelsPerSec;
-	float OnGetZoomValue()     const { return PixelsPerSec; }
+	float OnGetZoomValue() const { return PixelsPerSec; }
 	void  OnZoomChanged(float NewValue);
 
 	// ── Data ──────────────────────────────────────────────────────────────────
 	UQuickTweenDirectorAsset*    Asset     = nullptr;
 	TWeakObjectPtr<UBlueprint>   Blueprint;
 
-	TSharedPtr<SScrollBox>       TrackScrollBox;
-	TSharedPtr<SVerticalBox>     TrackContainer;
+	/**
+	 * Label column container — rebuilt by RefreshFromAsset().
+	 * Contains the ruler-label placeholder + one label row per track.
+	 */
+	TSharedPtr<SVerticalBox>     LabelContainer;
+
+	/**
+	 * Content column container — rebuilt by RefreshFromAsset().
+	 * Lives inside the single horizontal SScrollBox.
+	 * Contains SQTDRuler + one step-content widget per track.
+	 */
+	TSharedPtr<SVerticalBox>     ContentContainer;
+
+	/** The single shared horizontal scroll box (ruler + all step content). */
+	TSharedPtr<SScrollBox>       HScrollBox;
+
+	/** The ruler leaf widget — invalidated on zoom change. */
 	TSharedPtr<SWidget>          RulerWidget;
-	TSharedPtr<SScrollBar>       HScrollBar;
 };

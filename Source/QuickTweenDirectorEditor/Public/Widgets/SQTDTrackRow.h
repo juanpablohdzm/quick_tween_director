@@ -8,7 +8,6 @@
 
 class UQuickTweenDirectorAsset;
 class SQTDStepContent;
-class SScrollBar;
 
 DECLARE_DELEGATE_OneParam (FOnTrackDelete,  FGuid        /*TrackId*/);
 /**
@@ -23,10 +22,13 @@ DECLARE_DELEGATE_TwoParams(FOnStepMoved,    FGuid        /*StepId*/, float /*New
 DECLARE_DELEGATE_OneParam (FOnStepDeleted,  FGuid        /*StepId*/);
 
 /**
- * One row in the director timeline. Shows the track label (with component name and
- * type icon) on the left and all step boxes on the right.
+ * One track row in the director timeline.
  *
- * Step interactions:
+ * This widget shows ONLY the label column (component name, icon, delete button).
+ * The step content widget is hosted separately (in the shared horizontal scroll box)
+ * and can be retrieved via GetStepContentWidget().
+ *
+ * Step interactions (on the step content widget):
  *   - Left-click + drag  → move (change StartTime)
  *   - Double-click       → open the step edit dialog
  *   - Right-click empty  → context submenu with animation types filtered by component class
@@ -39,7 +41,6 @@ public:
 		SLATE_ARGUMENT(FQTDTrackData,             Track)
 		SLATE_ARGUMENT(UQuickTweenDirectorAsset*, Asset)
 		SLATE_ARGUMENT(float,                     PixelsPerSec)
-		SLATE_ARGUMENT(TSharedPtr<SScrollBar>,    HScrollBar)
 		SLATE_EVENT (FOnTrackDelete,              OnTrackDelete)
 		SLATE_EVENT (FOnStepAdded,                OnStepAdded)
 		SLATE_EVENT (FOnStepEdit,                 OnStepEdit)
@@ -52,9 +53,15 @@ public:
 	/** Update zoom and propagate to the inner content widget. */
 	void SetPixelsPerSec(float NewPPS);
 
+	/**
+	 * Returns the step content widget to be placed in the shared horizontal scroll box.
+	 * Must be called after Construct().
+	 */
+	TSharedRef<SWidget> GetStepContentWidget() const { return StepContent.ToSharedRef(); }
+
 private:
 	FQTDTrackData             Track;
-	UQuickTweenDirectorAsset* Asset       = nullptr;
+	UQuickTweenDirectorAsset* Asset        = nullptr;
 	float                     PixelsPerSec = 80.0f;
 
 	FOnTrackDelete  OnTrackDelete;
