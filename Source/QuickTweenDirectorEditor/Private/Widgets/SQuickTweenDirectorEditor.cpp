@@ -47,7 +47,8 @@ public:
 	{
 		const float PPS = PixelsPerSecAttr.Get();
 		const float Dur = TotalDurationAttr.Get();
-		return FVector2D(QTDEditorConstants::TrackLabelWidth + PPS * FMath::Max(Dur, 1.0f) + 60.0f,
+		// No label offset — the ruler scrollbox is positioned after the label column.
+		return FVector2D(PPS * FMath::Max(Dur, 1.0f) + 60.0f,
 		                 QTDEditorConstants::RulerHeight);
 	}
 
@@ -55,11 +56,10 @@ public:
 	                      const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements,
 	                      int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
 	{
-		const float PPS  = PixelsPerSecAttr.Get();
-		const float Dur  = TotalDurationAttr.Get();
-		const float W    = AllottedGeometry.GetLocalSize().X;
-		const float H    = AllottedGeometry.GetLocalSize().Y;
-		const float OffX = QTDEditorConstants::TrackLabelWidth;
+		const float PPS = PixelsPerSecAttr.Get();
+		const float Dur = TotalDurationAttr.Get();
+		const float W   = AllottedGeometry.GetLocalSize().X;
+		const float H   = AllottedGeometry.GetLocalSize().Y;
 
 		FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 			AllottedGeometry.ToPaintGeometry(),
@@ -68,14 +68,24 @@ public:
 			FLinearColor(0.08f, 0.08f, 0.08f));
 		++LayerId;
 
-		float MajorStep = 1.0f;
-		if      (PPS >= 200.0f) MajorStep = 0.25f;
-		else if (PPS >= 100.0f) MajorStep = 0.5f;
+		// Pick a major step that keeps labels at least ~70 px apart.
+		static const float NiceSteps[] = { 0.05f, 0.1f, 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 10.0f, 30.0f, 60.0f };
+		float MajorStep = NiceSteps[4]; // default 1s
+		if (PPS > 0.0f)
+		{
+			const float MinSpacing = 70.0f;
+			const float RawStep    = MinSpacing / PPS;
+			MajorStep = NiceSteps[UE_ARRAY_COUNT(NiceSteps) - 1];
+			for (float S : NiceSteps)
+			{
+				if (S >= RawStep) { MajorStep = S; break; }
+			}
+		}
 		const float MinorStep = MajorStep / 5.0f;
 
 		for (float T = 0.0f; T <= Dur + MajorStep; T += MinorStep)
 		{
-			const float X = OffX + T * PPS;
+			const float X = T * PPS;
 			if (X > W) break;
 			TArray<FVector2D> Pts = { FVector2D(X, H * 0.7f), FVector2D(X, H) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
@@ -84,7 +94,7 @@ public:
 
 		for (float T = 0.0f; T <= Dur + MajorStep; T += MajorStep)
 		{
-			const float X = OffX + T * PPS;
+			const float X = T * PPS;
 			if (X > W) break;
 
 			TArray<FVector2D> Pts = { FVector2D(X, H * 0.3f), FVector2D(X, H) };
@@ -174,13 +184,38 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 		SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight().Padding(2.0f)[ Toolbar ]
 		+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
+		// Ruler row: fixed label placeholder + scrollable ruler (aligned with track step content)
 		+ SVerticalBox::Slot().AutoHeight()
 		[
-			SNew(SScrollBox)
-			.Orientation(Orient_Horizontal)
-			.ScrollBarVisibility(EVisibility::Collapsed)
-			.ExternalScrollbar(HScrollBar)
-			+ SScrollBox::Slot()[ Ruler ]
+			SNew(SHorizontalBox)
+			// Label column placeholder — matches the fixed 200 px track label width
+			+ SHorizontalBox::Slot().AutoWidth()
+			[
+				SNew(SBox)
+				.WidthOverride(QTDEditorConstants::TrackLabelWidth)
+				.HeightOverride(QTDEditorConstants::RulerHeight)
+				[
+					SNew(SBorder)
+					.BorderImage(FAppStyle::GetBrush("ToolPanel.DarkGroupBorder"))
+					.Padding(FMargin(6.0f, 0.0f))
+					.VAlign(VAlign_Center)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("RulerLabel", "Timeline"))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity(FLinearColor(0.5f, 0.5f, 0.5f))
+					]
+				]
+			]
+			// Scrollable ruler — shares HScrollBar with the track step content boxes
+			+ SHorizontalBox::Slot().FillWidth(1.0f)
+			[
+				SNew(SScrollBox)
+				.Orientation(Orient_Horizontal)
+				.ScrollBarVisibility(EVisibility::Collapsed)
+				.ExternalScrollbar(HScrollBar)
+				+ SScrollBox::Slot()[ Ruler ]
+			]
 		]
 		+ SVerticalBox::Slot().AutoHeight()[ SNew(SSeparator) ]
 		+ SVerticalBox::Slot().FillHeight(1.0f)
@@ -349,6 +384,11 @@ void SQuickTweenDirectorEditor::OpenStepDialog(const FQTDStepData& Step)
 void SQuickTweenDirectorEditor::OnZoomChanged(float NewValue)
 {
 	PixelsPerSec = NewValue;
+	// Invalidate the ruler so it repaints with the new zoom and recalculates its desired size.
+	if (RulerWidget.IsValid())
+	{
+		RulerWidget->Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
+	}
 	RefreshFromAsset();
 }
 
