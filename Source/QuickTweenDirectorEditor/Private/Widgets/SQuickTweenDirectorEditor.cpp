@@ -435,7 +435,32 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 				}
 			})
 			.OnStepDeleted_Lambda([this](FGuid StepId) {
-				if (Asset) { Asset->RemoveStep(StepId); RefreshFromAsset(); }
+				if (!Asset) return;
+
+				// Capture the track before removing the step.
+				FGuid TrackId;
+				if (FQTDStepData* Step = Asset->FindStep(StepId))
+					TrackId = Step->TrackId;
+
+				Asset->RemoveStep(StepId);
+
+				// Shift subsequent steps on the same track to fill the gap.
+				if (TrackId.IsValid())
+				{
+					TArray<FQTDStepData*> Remaining = Asset->GetStepsForTrack(TrackId);
+					Remaining.Sort([](const FQTDStepData& A, const FQTDStepData& B) {
+						return A.StartTime < B.StartTime;
+					});
+					float Cursor = 0.f;
+					for (FQTDStepData* S : Remaining)
+					{
+						S->StartTime = Cursor;
+						Cursor += S->Duration * FMath::Max(S->Loops, 1);
+					}
+					Asset->MarkPackageDirty();
+				}
+
+				RefreshFromAsset();
 			});
 
 		// Label goes in the fixed label column (this widget IS the label — SQTDTrackRow shows only the label).
