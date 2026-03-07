@@ -39,6 +39,7 @@ private:
 
 	// ── Blueprint editor tracking ─────────────────────────────────────────────
 	void OnAssetOpenedInEditor(UObject* Asset, IAssetEditorInstance* EditorInstance);
+	void OnBlueprintEditorTabActivated(TSharedRef<SDockTab> Tab, ETabActivationCause Cause);
 
 	// ── Nomad tab ─────────────────────────────────────────────────────────────
 	TSharedRef<SDockTab> SpawnDirectorPanel(const FSpawnTabArgs& Args);
@@ -48,6 +49,10 @@ private:
 
 	// ── Data ──────────────────────────────────────────────────────────────────
 	TSharedPtr<IAssetTypeActions> AssetTypeActions;
+
+	// Maps each Blueprint editor's major (owner) tab → its Blueprint.
+	// Used to identify which BP is focused when the user switches tabs.
+	TMap<TWeakPtr<SDockTab>, TWeakObjectPtr<UBlueprint>> OpenBlueprintEditorTabs;
 
 	TWeakObjectPtr<UBlueprint>    ActiveBlueprint;
 	TWeakPtr<SQTDDirectorPanel>   DirectorPanel;

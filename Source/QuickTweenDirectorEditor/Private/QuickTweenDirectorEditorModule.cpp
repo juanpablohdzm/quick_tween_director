@@ -13,6 +13,7 @@
 #include "Widgets/Docking/SDockTab.h"
 #include "Styling/AppStyle.h"
 #include "ToolMenus.h"
+#include "Toolkits/AssetEditorToolkit.h"
 
 #define LOCTEXT_NAMESPACE "FQuickTweenDirectorEditorModule"
 
@@ -62,6 +63,7 @@ void FQuickTweenDirectorEditorModule::StartupModule()
 				this, &FQuickTweenDirectorEditorModule::OnAssetOpenedInEditor);
 		}
 	}
+
 }
 
 void FQuickTweenDirectorEditorModule::ShutdownModule()
@@ -84,6 +86,17 @@ void FQuickTweenDirectorEditorModule::ShutdownModule()
 		UAssetEditorSubsystem* Sub = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
 		if (Sub) Sub->OnAssetOpenedInEditor().Remove(AssetOpenedHandle);
 	}
+
+	// Clear per-tab activation callbacks to avoid dangling raw pointers.
+	for (auto& Pair : OpenBlueprintEditorTabs)
+	{
+		TSharedPtr<SDockTab> Tab = Pair.Key.Pin();
+		if (Tab.IsValid())
+		{
+			Tab->SetOnTabActivated(SDockTab::FOnTabActivatedCallback());
+		}
+	}
+	OpenBlueprintEditorTabs.Empty();
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -103,7 +116,7 @@ void FQuickTweenDirectorEditorModule::SetActiveBlueprint(UBlueprint* BP)
 // Asset editor tracking
 // ──────────────────────────────────────────────────────────────────────────────
 
-void FQuickTweenDirectorEditorModule::OnAssetOpenedInEditor(UObject* Asset, IAssetEditorInstance*)
+void FQuickTweenDirectorEditorModule::OnAssetOpenedInEditor(UObject* Asset, IAssetEditorInstance* EditorInstance)
 {
 	UBlueprint* BP = Cast<UBlueprint>(Asset);
 	if (!BP) return;
@@ -113,6 +126,43 @@ void FQuickTweenDirectorEditorModule::OnAssetOpenedInEditor(UObject* Asset, IAss
 
 	// Auto-open the Director panel the first time an Actor Blueprint is opened.
 	FGlobalTabmanager::Get()->TryInvokeTab(DirectorPanelTabName);
+
+	// Bind directly to this editor's major tab so we're notified when the user
+	// clicks back to it after switching to a different Blueprint editor.
+	if (EditorInstance)
+	{
+		FAssetEditorToolkit* Toolkit = static_cast<FAssetEditorToolkit*>(EditorInstance);
+		TSharedPtr<SDockTab> OwnerTab = Toolkit->GetTabManager()->GetOwnerTab();
+		if (OwnerTab.IsValid())
+		{
+			OpenBlueprintEditorTabs.Add(OwnerTab, BP);
+			OwnerTab->SetOnTabActivated(SDockTab::FOnTabActivatedCallback::CreateRaw(
+				this, &FQuickTweenDirectorEditorModule::OnBlueprintEditorTabActivated));
+		}
+	}
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Per-tab activation — fires when the user clicks a Blueprint editor's tab
+// ──────────────────────────────────────────────────────────────────────────────
+
+void FQuickTweenDirectorEditorModule::OnBlueprintEditorTabActivated(
+	TSharedRef<SDockTab> Tab, ETabActivationCause /*Cause*/)
+{
+	for (auto It = OpenBlueprintEditorTabs.CreateIterator(); It; ++It)
+	{
+		TSharedPtr<SDockTab> KnownTab = It.Key().Pin();
+		if (!KnownTab.IsValid())
+		{
+			It.RemoveCurrent();
+			continue;
+		}
+		if (KnownTab == Tab)
+		{
+			SetActiveBlueprint(It.Value().Get());
+			return;
+		}
+	}
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

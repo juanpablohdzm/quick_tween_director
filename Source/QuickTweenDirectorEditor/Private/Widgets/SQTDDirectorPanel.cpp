@@ -114,7 +114,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 					SNew(STextBlock)
 					.Text(LOCTEXT("AnimHeader", "ANIMATIONS"))
 					.Font(FAppStyle::GetFontStyle("TinyText"))
-					.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
+					.ColorAndOpacity(FLinearColor(0.32f, 0.32f, 0.32f))
 				]
 			]
 		]
@@ -240,7 +240,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 
 	SAssignNew(RootBorder, SBorder)
 	.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-	.BorderBackgroundColor(FLinearColor(0.06f, 0.06f, 0.06f))
+	.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f, 1.0f))
 	.Padding(0.f)
 	[
 		NoBlueprintHint.ToSharedRef()
