@@ -87,23 +87,22 @@ public:
 		++LayerId;
 
 		// ── Step blocks ──────────────────────────────────────────────────────
-		TArray<FQTDStepData*> TrackSteps = Asset->GetStepsForTrack(Track.TrackId);
-		for (const FQTDStepData* Step : TrackSteps)
+		for (const FStepRenderInfo& Info : BuildRenderList())
 		{
-			if (!Step) continue;
+			if (!Info.Step) continue;
 
 			const float PadY = 3.f;
 			const float BH   = H - PadY * 2.f;
-			const float X    = Step->StartTime * PixelsPerSec;
-			const float SW   = FMath::Max(
-				Step->Duration * PixelsPerSec * FMath::Max(Step->Loops, 1),
-				QTDEditorConstants::MinStepWidth);
+			const float X    = Info.X;
+			const float SW   = Info.W;
 
-			const FLinearColor TypeColor = Step->GetTypeColor();
-			const bool bHovered = (HoveredStepId == Step->StepId);
-			const bool bPressed = (PressedStepId == Step->StepId);
-			const float FillOpacity = bPressed ? 0.28f : (bHovered ? 0.22f : 0.16f);
-			const float TopOpacity  = bPressed ? 0.60f : (bHovered ? 0.50f : 0.35f);
+			const FLinearColor TypeColor = Info.Step->GetTypeColor();
+			const bool  bHovered    = (HoveredStepId == Info.Step->StepId);
+			const bool  bPressed    = (PressedStepId  == Info.Step->StepId);
+			const bool  bDragged    = Info.bIsDragged;
+			const float FillOpacity = bDragged ? 0.36f : (bPressed ? 0.28f : (bHovered ? 0.22f : 0.16f));
+			const float TopOpacity  = bDragged ? 0.90f : (bPressed ? 0.60f : (bHovered ? 0.50f : 0.35f));
+			const float TopLineW    = bDragged ? 2.f   : 1.f;
 
 			// ── Tinted fill (semi-transparent) ────────────────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
@@ -125,15 +124,15 @@ public:
 			TArray<FVector2D> TopPts = { FVector2D(X + 4.f, PadY), FVector2D(X + SW - 1.f, PadY) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 2,
 				AllottedGeometry.ToPaintGeometry(), TopPts,
-				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(TopOpacity), true, 1.f);
+				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(TopOpacity), true, TopLineW);
 
 			// ── Step label ────────────────────────────────────────────────────
 			if (SW > 18.f)
 			{
 				const FText LabelText = FText::FromString(
-					Step->Label.IsEmpty()
-						? UEnum::GetDisplayValueAsText(Step->StepType).ToString()
-						: Step->Label);
+					Info.Step->Label.IsEmpty()
+						? UEnum::GetDisplayValueAsText(Info.Step->StepType).ToString()
+						: Info.Step->Label);
 				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 3,
 					AllottedGeometry.ToPaintGeometry(
 						FVector2f(FMath::Max(SW - 16.f, 4.f), BH - 4.f),
@@ -141,7 +140,7 @@ public:
 					LabelText,
 					FAppStyle::GetFontStyle("SmallFont"),
 					ESlateDrawEffect::None,
-					FLinearColor(1.f, 1.f, 1.f, 0.88f));
+					FLinearColor(1.f, 1.f, 1.f, bDragged ? 1.0f : 0.88f));
 			}
 
 			// ── Duration chip (bottom-right, accent-tinted) ───────────────────
@@ -151,17 +150,17 @@ public:
 					AllottedGeometry.ToPaintGeometry(
 						FVector2f(46.f, 12.f),
 						FSlateLayoutTransform(FVector2f(X + SW - 50.f, PadY + BH - 13.f))),
-					FText::FromString(FString::Printf(TEXT("%.2fs"), Step->Duration)),
+					FText::FromString(FString::Printf(TEXT("%.2fs"), Info.Step->Duration)),
 					FAppStyle::GetFontStyle("TinyText"),
 					ESlateDrawEffect::None,
 					TypeColor.CopyWithNewOpacity(0.75f));
 			}
 
 			// ── Loop badge (bottom-left, when looping) ────────────────────────
-			if (SW > 28.f && Step->Loops != 1)
+			if (SW > 28.f && Info.Step->Loops != 1)
 			{
-				const FString LoopStr = (Step->Loops < 0)
-					? TEXT("∞") : FString::Printf(TEXT("×%d"), Step->Loops);
+				const FString LoopStr = (Info.Step->Loops < 0)
+					? TEXT("∞") : FString::Printf(TEXT("×%d"), Info.Step->Loops);
 				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 3,
 					AllottedGeometry.ToPaintGeometry(
 						FVector2f(30.f, 12.f),
@@ -187,11 +186,22 @@ public:
 			const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
 			if (const FQTDStepData* Hit = HitTestStep(Local))
 			{
-				bIsDragging       = true;
-				DraggedStepId     = Hit->StepId;
-				PressedStepId     = Hit->StepId;
-				DragStartMouseX   = Local.X;
-				DragOrigStartTime = Hit->StartTime;
+				bIsDragging   = true;
+				DraggedStepId = Hit->StepId;
+				PressedStepId = Hit->StepId;
+
+				// Record the step's current slot index in the sorted order
+				const TArray<FQTDStepData*> Sorted = GetSortedTrackSteps();
+				DragTargetIndex = 0;
+				for (int32 i = 0; i < Sorted.Num(); ++i)
+				{
+					if (Sorted[i] && Sorted[i]->StepId == Hit->StepId)
+					{
+						DragTargetIndex = i;
+						break;
+					}
+				}
+
 				Invalidate(EInvalidateWidgetReason::Paint);
 				return FReply::Handled().CaptureMouse(AsShared());
 			}
@@ -212,16 +222,42 @@ public:
 	{
 		if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
 		{
-			if (bIsDragging)
+			if (bIsDragging && DraggedStepId.IsValid() && Asset)
 			{
-				bIsDragging = false;
-				DraggedStepId.Invalidate();
+				// Commit reorder: rebuild sequential start times in the new slot order
+				TArray<FQTDStepData*> Sorted = GetSortedTrackSteps();
+				TArray<FQTDStepData*> OtherSteps;
+				FQTDStepData* DraggedStep = nullptr;
+				for (FQTDStepData* S : Sorted)
+				{
+					if (S && S->StepId == DraggedStepId) DraggedStep = S;
+					else if (S) OtherSteps.Add(S);
+				}
+				if (DraggedStep)
+				{
+					const int32 SafeTarget = FMath::Clamp(DragTargetIndex, 0, OtherSteps.Num());
+					TArray<FQTDStepData*> FinalOrder;
+					FinalOrder.Reserve(Sorted.Num());
+					for (int32 i = 0; i < OtherSteps.Num(); ++i)
+					{
+						if (i == SafeTarget) FinalOrder.Add(DraggedStep);
+						FinalOrder.Add(OtherSteps[i]);
+					}
+					if (SafeTarget >= OtherSteps.Num()) FinalOrder.Add(DraggedStep);
+
+					float Time = 0.f;
+					for (FQTDStepData* S : FinalOrder)
+					{
+						S->StartTime = Time;
+						Time += S->Duration * FMath::Max(S->Loops, 1);
+					}
+					Asset->MarkPackageDirty();
+				}
 			}
-			if (PressedStepId.IsValid())
-			{
-				PressedStepId.Invalidate();
-				Invalidate(EInvalidateWidgetReason::Paint);
-			}
+			bIsDragging = false;
+			DraggedStepId.Invalidate();
+			PressedStepId.Invalidate();
+			Invalidate(EInvalidateWidgetReason::Paint);
 			return FReply::Handled().ReleaseMouseCapture();
 		}
 		return FReply::Unhandled();
@@ -233,11 +269,11 @@ public:
 
 		if (bIsDragging && DraggedStepId.IsValid())
 		{
-			float NewStart = DragOrigStartTime + (Local.X - DragStartMouseX) / PixelsPerSec;
-			NewStart = FMath::RoundToFloat(NewStart / QTDEditorConstants::SnapIncrement)
-			           * QTDEditorConstants::SnapIncrement;
-			NewStart = FMath::Max(0.0f, NewStart);
-			OnStepMoved.ExecuteIfBound(DraggedStepId, NewStart);
+			const int32 NewTarget = ComputeDragTargetIndex(Local.X);
+			if (NewTarget != DragTargetIndex)
+			{
+				DragTargetIndex = NewTarget;
+			}
 			Invalidate(EInvalidateWidgetReason::Paint);
 			return FReply::Handled();
 		}
@@ -283,12 +319,121 @@ public:
 
 private:
 
+	// ── Render helpers ─────────────────────────────────────────────────────────
+
+	struct FStepRenderInfo
+	{
+		const FQTDStepData* Step       = nullptr;
+		float               X          = 0.f;
+		float               W          = 0.f;
+		bool                bIsDragged = false;
+	};
+
+	TArray<FQTDStepData*> GetSortedTrackSteps() const
+	{
+		if (!Asset) return {};
+		TArray<FQTDStepData*> Steps = Asset->GetStepsForTrack(Track.TrackId);
+		Steps.Sort([](const FQTDStepData& A, const FQTDStepData& B) {
+			return A.StartTime < B.StartTime;
+		});
+		return Steps;
+	}
+
+	// Returns the insertion index (among non-dragged steps) that cursor X maps to.
+	int32 ComputeDragTargetIndex(float CursorX) const
+	{
+		float T = 0.f;
+		int32 Target = 0;
+		for (FQTDStepData* S : GetSortedTrackSteps())
+		{
+			if (!S || S->StepId == DraggedStepId) continue;
+			const float Dur  = S->Duration * FMath::Max(S->Loops, 1);
+			const float MidX = (T + Dur * 0.5f) * PixelsPerSec;
+			if (CursorX > MidX) ++Target;
+			T += Dur;
+		}
+		return Target;
+	}
+
+	// Builds the list of steps with their draw positions.
+	// During a drag, positions reflect the preview (dragged step at DragTargetIndex).
+	TArray<FStepRenderInfo> BuildRenderList() const
+	{
+		TArray<FStepRenderInfo> List;
+		if (!Asset) return List;
+
+		TArray<FQTDStepData*> Sorted = GetSortedTrackSteps();
+
+		if (!bIsDragging || !DraggedStepId.IsValid())
+		{
+			for (const FQTDStepData* Step : Sorted)
+			{
+				if (!Step) continue;
+				FStepRenderInfo Info;
+				Info.Step = Step;
+				Info.X    = Step->StartTime * PixelsPerSec;
+				Info.W    = FMath::Max(Step->Duration * PixelsPerSec * FMath::Max(Step->Loops, 1),
+				                       QTDEditorConstants::MinStepWidth);
+				List.Add(Info);
+			}
+			return List;
+		}
+
+		// During drag: show steps rearranged with dragged step at DragTargetIndex
+		TArray<FQTDStepData*> OtherSteps;
+		FQTDStepData* DraggedStep = nullptr;
+		for (FQTDStepData* S : Sorted)
+		{
+			if (!S) continue;
+			if (S->StepId == DraggedStepId) DraggedStep = S;
+			else OtherSteps.Add(S);
+		}
+		if (!DraggedStep) return List;
+
+		const int32 SafeTarget = FMath::Clamp(DragTargetIndex, 0, OtherSteps.Num());
+		TArray<FQTDStepData*> FinalOrder;
+		FinalOrder.Reserve(Sorted.Num());
+		for (int32 i = 0; i < OtherSteps.Num(); ++i)
+		{
+			if (i == SafeTarget) FinalOrder.Add(DraggedStep);
+			FinalOrder.Add(OtherSteps[i]);
+		}
+		if (SafeTarget >= OtherSteps.Num()) FinalOrder.Add(DraggedStep);
+
+		float T = 0.f;
+		for (FQTDStepData* S : FinalOrder)
+		{
+			const float Dur = S->Duration * FMath::Max(S->Loops, 1);
+			FStepRenderInfo Info;
+			Info.Step       = S;
+			Info.X          = T * PixelsPerSec;
+			Info.W          = FMath::Max(Dur * PixelsPerSec, QTDEditorConstants::MinStepWidth);
+			Info.bIsDragged = (S->StepId == DraggedStepId);
+			List.Add(Info);
+			T += Dur;
+		}
+		return List;
+	}
+
 	// ── Context menu ──────────────────────────────────────────────────────────
 
 	void ShowContextMenu(FVector2D ScreenPos, FVector2D LocalPos)
 	{
-		const float ClickTime     = LocalPos.X / PixelsPerSec;
 		const FQTDStepData* HitStep = HitTestStep(LocalPos);
+
+		// New steps always append after the last step on this track
+		float NewStepStart = 0.f;
+		if (Asset)
+		{
+			for (const FQTDStepData* S : Asset->GetStepsForTrack(Track.TrackId))
+			{
+				if (S)
+				{
+					const float StepEnd = S->StartTime + S->Duration * FMath::Max(S->Loops, 1);
+					NewStepStart = FMath::Max(NewStepStart, StepEnd);
+				}
+			}
+		}
 
 		FMenuBuilder Builder(true, nullptr);
 
@@ -303,11 +448,10 @@ private:
 		}
 		else
 		{
-			// Build the "Add Step Here →" submenu filtered by component class
 			Builder.AddSubMenu(
-				LOCTEXT("AddStep", "Add Step Here"),
-				LOCTEXT("AddStepTip", "Choose the animation type for this track"),
-				FNewMenuDelegate::CreateSP(this, &SQTDStepContent::BuildAddStepSubmenu, ClickTime)
+				LOCTEXT("AddStep", "Add Step"),
+				LOCTEXT("AddStepTip", "Add a new step at the end of this track"),
+				FNewMenuDelegate::CreateSP(this, &SQTDStepContent::BuildAddStepSubmenu, NewStepStart)
 			);
 		}
 
@@ -495,12 +639,11 @@ private:
 	FOnStepMoved    OnStepMoved;
 	FOnStepDeleted  OnStepDeleted;
 
-	bool  bIsDragging        = false;
+	bool  bIsDragging    = false;
 	FGuid DraggedStepId;
 	FGuid HoveredStepId;
 	FGuid PressedStepId;
-	float DragStartMouseX    = 0.0f;
-	float DragOrigStartTime  = 0.0f;
+	int32 DragTargetIndex = 0;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────

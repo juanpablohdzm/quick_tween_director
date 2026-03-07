@@ -39,7 +39,6 @@ private:
 	TSharedPtr<SEditableTextBox>  LabelBox;
 
 	// Timing
-	TSharedPtr<SEditableTextBox>  StartTimeBox;
 	TSharedPtr<SEditableTextBox>  DurationBox;
 	TSharedPtr<SEditableTextBox>  TimeScaleBox;
 	TSharedPtr<SEditableTextBox>  LoopsBox;

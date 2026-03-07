@@ -85,9 +85,8 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 
 	// ── Shared timing fields ──────────────────────────────────────────────────
 
-	SAssignNew(LabelBox,     SEditableTextBox).Text(FText::FromString(EditedStep.Label));
-	SAssignNew(StartTimeBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.StartTime)));
-	SAssignNew(DurationBox,  SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.Duration)));
+	SAssignNew(LabelBox,    SEditableTextBox).Text(FText::FromString(EditedStep.Label));
+	SAssignNew(DurationBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.Duration)));
 	SAssignNew(TimeScaleBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.TimeScale)));
 	SAssignNew(LoopsBox,     SEditableTextBox).Text(FText::FromString(FString::FromInt(EditedStep.Loops)));
 
@@ -192,9 +191,6 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 					// ── Identity ──────────────────────────────────────────────
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
 					[ MakeLabeledRow(LOCTEXT("Label", "Label"), LabelBox.ToSharedRef()) ]
-
-					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
-					[ MakeLabeledRow(LOCTEXT("StartTime", "Start Time (s)"), StartTimeBox.ToSharedRef()) ]
 
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
 					[ MakeLabeledRow(LOCTEXT("Duration", "Duration (s)"), DurationBox.ToSharedRef()) ]
@@ -472,9 +468,8 @@ void SQTDStepDialog::OnColorPickerCommitted(FLinearColor NewColor, bool bIsFrom)
 
 bool SQTDStepDialog::CollectValues()
 {
-	if (LabelBox.IsValid())    EditedStep.Label     = LabelBox->GetText().ToString();
-	if (StartTimeBox.IsValid()) EditedStep.StartTime = FMath::Max(0.0f, ParseFloat(StartTimeBox));
-	if (DurationBox.IsValid())  EditedStep.Duration  = FMath::Max(0.001f, ParseFloat(DurationBox, 1.0f));
+	if (LabelBox.IsValid())   EditedStep.Label    = LabelBox->GetText().ToString();
+	if (DurationBox.IsValid()) EditedStep.Duration = FMath::Max(0.001f, ParseFloat(DurationBox, 1.0f));
 	if (TimeScaleBox.IsValid()) EditedStep.TimeScale = FMath::Max(0.01f, ParseFloat(TimeScaleBox, 1.0f));
 	if (LoopsBox.IsValid())     EditedStep.Loops     = ParseInt(LoopsBox, 1);
 
