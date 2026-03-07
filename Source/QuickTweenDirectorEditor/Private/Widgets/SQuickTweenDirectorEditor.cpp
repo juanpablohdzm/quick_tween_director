@@ -419,6 +419,7 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 			.PixelsPerSec(PixelsPerSec)
 			.IsSelected(SelectedTrackId == Track.TrackId)
 			.OnTrackSelected_Lambda([this, TrackId = Track.TrackId]() {
+				if (SelectedTrackId == TrackId) return;
 				SelectedTrackId = TrackId;
 				RefreshFromAsset();
 			})
