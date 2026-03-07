@@ -95,7 +95,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-			.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
+			.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 			.Padding(FMargin(0.f, 0.f, 0.f, 0.f))
 			[
 				SNew(SHorizontalBox)
@@ -152,7 +152,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-			.BorderBackgroundColor(FLinearColor(0.18f, 0.18f, 0.18f))
+			.BorderBackgroundColor(FLinearColor(0.04f, 0.04f, 0.04f))
 			.Padding(FMargin(0.f))
 			[ SNew(SBox).HeightOverride(1.f) ]
 		]
@@ -162,7 +162,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-			.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
+			.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 			.Padding(0.f)
 			[
 				SNew(SScrollBox)
@@ -193,7 +193,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 	[
 		SNew(SBorder)
 		.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-		.BorderBackgroundColor(FLinearColor(0.055f, 0.055f, 0.055f))
+		.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 		.Padding(FMargin(10.f, 5.f))
 		[
 			SNew(SHorizontalBox)
@@ -226,7 +226,7 @@ void SQTDDirectorPanel::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-			.BorderBackgroundColor(FLinearColor(0.09f, 0.09f, 0.09f))
+			.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 			.Padding(0.f)
 			[
 				AnimListPanel
@@ -296,7 +296,7 @@ void SQTDDirectorPanel::RefreshAnimationList()
 
 		const bool bSelected = (i == SelectedAnimIndex);
 		const FLinearColor RowBg     = bSelected
-			? FLinearColor(0.14f, 0.14f, 0.14f) : FLinearColor(0.09f, 0.09f, 0.09f);
+			? FLinearColor(0.025f, 0.025f, 0.025f) : FLinearColor(0.013f, 0.013f, 0.013f);
 		const FLinearColor AccentBar = bSelected
 			? FLinearColor(1.0f, 0.55f, 0.15f)  : FLinearColor(1.0f, 0.55f, 0.15f, 0.0f);
 		const FLinearColor NameColor = bSelected

@@ -66,7 +66,7 @@ public:
 			AllottedGeometry.ToPaintGeometry(),
 			FAppStyle::GetBrush("WhiteBrush"),
 			ESlateDrawEffect::None,
-			FLinearColor(0.055f, 0.055f, 0.055f));
+			FLinearColor(0.013f, 0.013f, 0.013f));
 		++LayerId;
 
 		// Bottom edge separator
@@ -141,7 +141,7 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 	auto Toolbar =
 		SNew(SBorder)
 		.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-		.BorderBackgroundColor(FLinearColor(0.07f, 0.07f, 0.07f))
+		.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 		.Padding(FMargin(4.f, 0.f))
 		[
 			SNew(SBox).HeightOverride(QTDEditorConstants::ToolbarHeight)
@@ -218,7 +218,7 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 				[
 					SNew(SBorder)
 					.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-					.BorderBackgroundColor(FLinearColor(0.10f, 0.10f, 0.10f))
+					.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 					.Padding(FMargin(8.f, 3.f))
 					[
 						SNew(STextBlock)
@@ -322,7 +322,7 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 		[
 			SNew(SBorder)
 			.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-			.BorderBackgroundColor(FLinearColor(0.075f, 0.075f, 0.075f))
+			.BorderBackgroundColor(FLinearColor(0.013f, 0.013f, 0.013f))
 			.Padding(FMargin(0.f))
 			[
 			SNew(SScrollBox)
