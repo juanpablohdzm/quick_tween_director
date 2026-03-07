@@ -105,6 +105,15 @@ void FQuickTweenDirectorEditorModule::ShutdownModule()
 
 void FQuickTweenDirectorEditorModule::SetActiveBlueprint(UBlueprint* BP)
 {
+	// Don't reset the panel if the same Blueprint is already active.
+	// When the Director panel is docked inside a Blueprint editor window, any
+	// click inside the panel re-fires the tab-activation callback (which calls
+	// this function) — without this guard that would reset the selection state.
+	if (ActiveBlueprint.Get() == BP)
+	{
+		return;
+	}
+
 	ActiveBlueprint = BP;
 	if (TSharedPtr<SQTDDirectorPanel> Panel = DirectorPanel.Pin())
 	{
@@ -124,8 +133,20 @@ void FQuickTweenDirectorEditorModule::OnAssetOpenedInEditor(UObject* Asset, IAss
 
 	SetActiveBlueprint(BP);
 
-	// Auto-open the Director panel the first time an Actor Blueprint is opened.
-	FGlobalTabmanager::Get()->TryInvokeTab(DirectorPanelTabName);
+	// Open the Director panel if it isn't already live.
+	// Using FindExistingLiveTab + DrawAttention avoids re-spawning the tab at
+	// the default floating position when it was already docked somewhere by
+	// the user.  TryInvokeTab is only used as a fallback (first-ever open or
+	// after the user explicitly closed the panel).
+	TSharedPtr<SDockTab> ExistingTab = FGlobalTabmanager::Get()->FindExistingLiveTab(FTabId(DirectorPanelTabName));
+	if (ExistingTab.IsValid())
+	{
+		ExistingTab->DrawAttention();
+	}
+	else
+	{
+		FGlobalTabmanager::Get()->TryInvokeTab(DirectorPanelTabName);
+	}
 
 	// Bind directly to this editor's major tab so we're notified when the user
 	// clicks back to it after switching to a different Blueprint editor.
