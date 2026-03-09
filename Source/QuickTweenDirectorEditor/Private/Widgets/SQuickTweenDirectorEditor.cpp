@@ -25,12 +25,18 @@
 #include "Styling/AppStyle.h"
 #include "ScopedTransaction.h"
 
-// JSON export
+// JSON export / import
 #include "Serialization/JsonWriter.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonReader.h"
+#include "Dom/JsonObject.h"
+#include "Dom/JsonValue.h"
 #include "Misc/FileHelper.h"
+#include "Misc/MessageDialog.h"
 #include "DesktopPlatformModule.h"
 #include "IDesktopPlatform.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
 
 #define LOCTEXT_NAMESPACE "SQuickTweenDirectorEditor"
 
@@ -285,67 +291,6 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 					]
 				]
 
-				// ── Divider ───────────────────────────────────────────────────
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
-				[ SNew(SSeparator).Orientation(Orient_Vertical).Thickness(1.f)
-					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
-					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f)) ]
-
-				// ── Playback controls ─────────────────────────────────────────
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
-				[
-					SNew(SButton)
-					.ButtonStyle(FAppStyle::Get(), "FlatButton")
-					.ContentPadding(FMargin(6.f, 4.f))
-					.ToolTipText(LOCTEXT("PlayTip", "Play from current playhead position"))
-					.OnClicked(this, &SQuickTweenDirectorEditor::OnPlayClicked)
-					[
-						SNew(SImage).Image(FAppStyle::GetBrush("Icons.Toolbar.Play"))
-						.DesiredSizeOverride(FVector2D(14.f, 14.f))
-						.ColorAndOpacity_Lambda([this]() {
-							return FSlateColor(bIsPlaying
-								? FLinearColor(0.05f, 0.95f, 0.40f) : FLinearColor(0.7f, 0.7f, 0.7f));
-						})
-					]
-				]
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
-				[
-					SNew(SButton)
-					.ButtonStyle(FAppStyle::Get(), "FlatButton")
-					.ContentPadding(FMargin(6.f, 4.f))
-					.ToolTipText(LOCTEXT("PauseTip", "Pause playback"))
-					.OnClicked(this, &SQuickTweenDirectorEditor::OnPauseClicked)
-					[
-						SNew(SImage).Image(FAppStyle::GetBrush("Icons.Toolbar.Pause"))
-						.DesiredSizeOverride(FVector2D(14.f, 14.f))
-						.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
-					]
-				]
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
-				[
-					SNew(SButton)
-					.ButtonStyle(FAppStyle::Get(), "FlatButton")
-					.ContentPadding(FMargin(6.f, 4.f))
-					.ToolTipText(LOCTEXT("StopTip", "Stop and reset playhead to 0"))
-					.OnClicked(this, &SQuickTweenDirectorEditor::OnStopClicked)
-					[
-						SNew(SImage).Image(FAppStyle::GetBrush("Icons.Toolbar.Stop"))
-						.DesiredSizeOverride(FVector2D(14.f, 14.f))
-						.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
-					]
-				]
-
-				// ── Playhead time display ─────────────────────────────────────
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.f, 0.f)
-				[
-					SNew(STextBlock)
-					.Text_Lambda([this]() -> FText {
-						return FText::FromString(FString::Printf(TEXT("%.2fs"), PlayheadTime));
-					})
-					.Font(FAppStyle::GetFontStyle("TinyText"))
-					.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
-				]
-
 				+ SHorizontalBox::Slot().FillWidth(1.f)[ SNew(SSpacer) ]
 
 				// ── Duration badge ────────────────────────────────────────────
@@ -447,10 +392,23 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 					SNew(SButton)
 					.ButtonStyle(FAppStyle::Get(), "FlatButton")
 					.ContentPadding(FMargin(6.f, 3.f))
-					.ToolTipText(LOCTEXT("ExportJsonTip", "Export the sequence to a .json file"))
+					.ToolTipText(LOCTEXT("ExportJsonTip", "Export all tracks and steps to a .json file"))
 					.OnClicked(this, &SQuickTweenDirectorEditor::OnExportJsonClicked)
 					[
 						SNew(STextBlock).Text(LOCTEXT("ExportJson", "Export JSON"))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity(FLinearColor(0.55f, 0.55f, 0.55f))
+					]
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f, 6.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(6.f, 3.f))
+					.ToolTipText(LOCTEXT("ImportJsonTip", "Replace tracks and steps from a previously exported .json file"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnImportJsonClicked)
+					[
+						SNew(STextBlock).Text(LOCTEXT("ImportJson", "Import JSON"))
 						.Font(FAppStyle::GetFontStyle("TinyText"))
 						.ColorAndOpacity(FLinearColor(0.55f, 0.55f, 0.55f))
 					]
@@ -704,7 +662,6 @@ FReply SQuickTweenDirectorEditor::OnExportJsonClicked()
 {
 	if (!Asset) return FReply::Handled();
 
-	// Pick a save path
 	IDesktopPlatform* DP = FDesktopPlatformModule::Get();
 	TArray<FString> OutFiles;
 	bool bPicked = false;
@@ -721,13 +678,11 @@ FReply SQuickTweenDirectorEditor::OnExportJsonClicked()
 	}
 	if (!bPicked || OutFiles.IsEmpty()) return FReply::Handled();
 
-	// Serialize
 	FString OutputJson;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputJson);
 	Writer->WriteObjectStart();
-
-	Writer->WriteValue(TEXT("asset"), Asset->GetName());
-	Writer->WriteValue(TEXT("loops"), Asset->Loops);
+	Writer->WriteValue(TEXT("asset"),         Asset->GetName());
+	Writer->WriteValue(TEXT("loops"),         Asset->Loops);
 	Writer->WriteValue(TEXT("totalDuration"), Asset->GetTotalDuration());
 
 	// Tracks
@@ -742,24 +697,75 @@ FReply SQuickTweenDirectorEditor::OnExportJsonClicked()
 	}
 	Writer->WriteArrayEnd();
 
-	// Steps
+	// Steps -- all fields for lossless import
 	Writer->WriteArrayStart(TEXT("steps"));
 	for (const FQTDStepData& S : Asset->Steps)
 	{
 		Writer->WriteObjectStart();
-		Writer->WriteValue(TEXT("id"),        S.StepId.ToString());
-		Writer->WriteValue(TEXT("trackId"),   S.TrackId.ToString());
-		Writer->WriteValue(TEXT("label"),     S.Label);
-		Writer->WriteValue(TEXT("type"),      (int32)S.StepType);
-		Writer->WriteValue(TEXT("startTime"), S.StartTime);
-		Writer->WriteValue(TEXT("duration"),  S.Duration);
-		Writer->WriteValue(TEXT("loops"),     S.Loops);
-		Writer->WriteValue(TEXT("easeType"),  (int32)S.EaseType);
-		Writer->WriteValue(TEXT("slot"),      S.SlotName.ToString());
+		Writer->WriteValue(TEXT("id"),            S.StepId.ToString());
+		Writer->WriteValue(TEXT("trackId"),       S.TrackId.ToString());
+		Writer->WriteValue(TEXT("label"),         S.Label);
+		Writer->WriteValue(TEXT("type"),          (int32)S.StepType);
+		Writer->WriteValue(TEXT("startTime"),     S.StartTime);
+		Writer->WriteValue(TEXT("duration"),      S.Duration);
+		Writer->WriteValue(TEXT("timeScale"),     S.TimeScale);
+		Writer->WriteValue(TEXT("loops"),         S.Loops);
+		Writer->WriteValue(TEXT("loopType"),      (int32)S.LoopType);
+		Writer->WriteValue(TEXT("easeType"),      (int32)S.EaseType);
+		Writer->WriteValue(TEXT("slot"),          S.SlotName.ToString());
+		Writer->WriteValue(TEXT("parameterName"), S.ParameterName.ToString());
+		switch (S.StepType)
+		{
+		case EQTDStepType::Vector:
+			Writer->WriteValue(TEXT("vectorProperty"),    (int32)S.VectorProperty);
+			Writer->WriteValue(TEXT("vectorFromCurrent"), S.bVectorFromCurrent);
+			Writer->WriteValue(TEXT("vectorFromX"), S.VectorFrom.X);
+			Writer->WriteValue(TEXT("vectorFromY"), S.VectorFrom.Y);
+			Writer->WriteValue(TEXT("vectorFromZ"), S.VectorFrom.Z);
+			Writer->WriteValue(TEXT("vectorToX"),   S.VectorTo.X);
+			Writer->WriteValue(TEXT("vectorToY"),   S.VectorTo.Y);
+			Writer->WriteValue(TEXT("vectorToZ"),   S.VectorTo.Z);
+			break;
+		case EQTDStepType::Rotator:
+			Writer->WriteValue(TEXT("rotatorProperty"),    (int32)S.RotatorProperty);
+			Writer->WriteValue(TEXT("rotatorFromCurrent"), S.bRotatorFromCurrent);
+			Writer->WriteValue(TEXT("rotatorFromPitch"), S.RotatorFrom.Pitch);
+			Writer->WriteValue(TEXT("rotatorFromYaw"),   S.RotatorFrom.Yaw);
+			Writer->WriteValue(TEXT("rotatorFromRoll"),  S.RotatorFrom.Roll);
+			Writer->WriteValue(TEXT("rotatorToPitch"),   S.RotatorTo.Pitch);
+			Writer->WriteValue(TEXT("rotatorToYaw"),     S.RotatorTo.Yaw);
+			Writer->WriteValue(TEXT("rotatorToRoll"),    S.RotatorTo.Roll);
+			break;
+		case EQTDStepType::Float:
+			Writer->WriteValue(TEXT("floatTarget"),      (int32)S.FloatTarget);
+			Writer->WriteValue(TEXT("floatFromCurrent"), S.bFloatFromCurrent);
+			Writer->WriteValue(TEXT("floatFrom"), S.FloatFrom);
+			Writer->WriteValue(TEXT("floatTo"),   S.FloatTo);
+			break;
+		case EQTDStepType::LinearColor:
+			Writer->WriteValue(TEXT("colorTarget"),      (int32)S.ColorTarget);
+			Writer->WriteValue(TEXT("colorFromCurrent"), S.bColorFromCurrent);
+			Writer->WriteValue(TEXT("colorFromR"), S.ColorFrom.R);
+			Writer->WriteValue(TEXT("colorFromG"), S.ColorFrom.G);
+			Writer->WriteValue(TEXT("colorFromB"), S.ColorFrom.B);
+			Writer->WriteValue(TEXT("colorFromA"), S.ColorFrom.A);
+			Writer->WriteValue(TEXT("colorToR"),   S.ColorTo.R);
+			Writer->WriteValue(TEXT("colorToG"),   S.ColorTo.G);
+			Writer->WriteValue(TEXT("colorToB"),   S.ColorTo.B);
+			Writer->WriteValue(TEXT("colorToA"),   S.ColorTo.A);
+			break;
+		default: break;
+		}
+		if (S.UserColor.A > 0.f)
+		{
+			Writer->WriteValue(TEXT("userColorR"), S.UserColor.R);
+			Writer->WriteValue(TEXT("userColorG"), S.UserColor.G);
+			Writer->WriteValue(TEXT("userColorB"), S.UserColor.B);
+			Writer->WriteValue(TEXT("userColorA"), S.UserColor.A);
+		}
 		Writer->WriteObjectEnd();
 	}
 	Writer->WriteArrayEnd();
-
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -890,57 +896,286 @@ void SQuickTweenDirectorEditor::PropagateSnapToRows()
 	}
 }
 
+
 // ──────────────────────────────────────────────────────────────────────────────
-// Playback (visual-only: advances the ruler playhead in real time)
+// Import JSON
 // ──────────────────────────────────────────────────────────────────────────────
 
-FReply SQuickTweenDirectorEditor::OnPlayClicked()
+FReply SQuickTweenDirectorEditor::OnImportJsonClicked()
 {
-	if (bIsPlaying) return FReply::Handled();
-	bIsPlaying = true;
+	if (!Asset) return FReply::Handled();
 
-	// Clamp playhead to valid range
-	const float TotalDur = Asset ? Asset->GetTotalDuration() : 0.f;
-	if (PlayheadTime >= TotalDur) PlayheadTime = 0.f;
-
-	// Register a per-frame active timer
-	RegisterActiveTimer(0.0f,
-		FWidgetActiveTimerDelegate::CreateSP(this, &SQuickTweenDirectorEditor::HandlePlaybackTick));
-
-	return FReply::Handled();
-}
-
-FReply SQuickTweenDirectorEditor::OnPauseClicked()
-{
-	bIsPlaying = false;
-	// Unregistering is handled automatically via EActiveTimerReturnType::Stop
-	return FReply::Handled();
-}
-
-FReply SQuickTweenDirectorEditor::OnStopClicked()
-{
-	bIsPlaying   = false;
-	PlayheadTime = 0.f;
-	if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
-	return FReply::Handled();
-}
-
-EActiveTimerReturnType SQuickTweenDirectorEditor::HandlePlaybackTick(double /*InCurrentTime*/, float InDeltaTime)
-{
-	if (!bIsPlaying) return EActiveTimerReturnType::Stop;
-
-	const float TotalDur = Asset ? Asset->GetTotalDuration() : 0.f;
-	PlayheadTime += InDeltaTime;
-	if (PlayheadTime >= TotalDur)
+	// ── 1. Pick file
+	IDesktopPlatform* DP = FDesktopPlatformModule::Get();
+	TArray<FString> OutFiles;
+	bool bPicked = false;
+	if (DP)
 	{
-		PlayheadTime = TotalDur;
-		bIsPlaying   = false;
-		if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
-		return EActiveTimerReturnType::Stop;
+		bPicked = DP->OpenFileDialog(
+			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(AsShared()),
+			TEXT("Import Director Asset from JSON"),
+			FPaths::ProjectContentDir(),
+			TEXT(""),
+			TEXT("JSON files (*.json)|*.json"),
+			EFileDialogFlags::None,
+			OutFiles);
+	}
+	if (!bPicked || OutFiles.IsEmpty()) return FReply::Handled();
+
+	// ── 2. Read file
+	FString JsonContent;
+	if (!FFileHelper::LoadFileToString(JsonContent, *OutFiles[0]))
+	{
+		FMessageDialog::Open(EAppMsgType::Ok,
+			FText::Format(LOCTEXT("ImportReadError", "Failed to read file:\n{0}"),
+				FText::FromString(OutFiles[0])));
+		return FReply::Handled();
 	}
 
-	if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
-	return EActiveTimerReturnType::Continue;
+	// ── 3. Parse JSON
+	TSharedPtr<FJsonObject> RootObj;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonContent);
+	if (!FJsonSerializer::Deserialize(Reader, RootObj) || !RootObj.IsValid())
+	{
+		FMessageDialog::Open(EAppMsgType::Ok,
+			LOCTEXT("ImportParseError",
+				"Failed to parse JSON. The file may be corrupt or not a valid Director export."));
+		return FReply::Handled();
+	}
+
+	// ── 4. Confirm replacement
+	if (Asset->Tracks.Num() > 0 || Asset->Steps.Num() > 0)
+	{
+		const EAppReturnType::Type Ans = FMessageDialog::Open(EAppMsgType::YesNo,
+			LOCTEXT("ImportConfirm",
+				"This will replace ALL existing tracks and steps in the current asset with the imported data.\n\nContinue?"));
+		if (Ans != EAppReturnType::Yes) return FReply::Handled();
+	}
+
+	// ── 5. Parse tracks
+	TArray<FString>       Warnings;
+	TArray<FQTDTrackData> ImportedTracks;
+	TSet<FGuid>           ImportedTrackIds;
+
+	const TArray<TSharedPtr<FJsonValue>>* TracksArr = nullptr;
+	if (RootObj->TryGetArrayField(TEXT("tracks"), TracksArr) && TracksArr)
+	{
+		for (int32 i = 0; i < TracksArr->Num(); ++i)
+		{
+			const TSharedPtr<FJsonObject>* TrackObjPtr = nullptr;
+			if (!(*TracksArr)[i]->TryGetObject(TrackObjPtr) || !TrackObjPtr)
+			{
+				Warnings.Add(FString::Printf(TEXT("tracks[%d]: not a valid JSON object - skipped."), i));
+				continue;
+			}
+			const TSharedPtr<FJsonObject>& TrackObj = *TrackObjPtr;
+
+			FString IdStr;
+			if (!TrackObj->TryGetStringField(TEXT("id"), IdStr))
+			{
+				Warnings.Add(FString::Printf(TEXT("tracks[%d]: missing id field - skipped."), i));
+				continue;
+			}
+			FGuid TrackId;
+			if (!FGuid::Parse(IdStr, TrackId))
+			{
+				Warnings.Add(FString::Printf(TEXT("tracks[%d]: invalid GUID - skipped."), i));
+				continue;
+			}
+
+			FQTDTrackData Track;
+			Track.TrackId = TrackId;
+			TrackObj->TryGetStringField(TEXT("label"), Track.TrackLabel);
+			FString CompName;
+			if (TrackObj->TryGetStringField(TEXT("component"), CompName))
+				Track.ComponentVariableName = FName(*CompName);
+
+			// Try to resolve ComponentClass from the current Blueprint SCS
+			if (!CompName.IsEmpty())
+			{
+				UBlueprint* BP = Blueprint.Get();
+				if (BP && BP->SimpleConstructionScript)
+				{
+					bool bFound = false;
+					for (const USCS_Node* Node : BP->SimpleConstructionScript->GetAllNodes())
+					{
+						if (Node && Node->GetVariableName().ToString() == CompName)
+						{
+							Track.ComponentClass = Node->ComponentClass;
+							bFound = true;
+							break;
+						}
+					}
+					if (!bFound)
+					{
+						Warnings.Add(FString::Printf(
+							TEXT("Track '%s': component '%s' not found in the current Blueprint - auto-binding may fail at runtime."),
+							*Track.TrackLabel, *CompName));
+					}
+				}
+			}
+
+			ImportedTracks.Add(Track);
+			ImportedTrackIds.Add(TrackId);
+		}
+	}
+	else
+	{
+		Warnings.Add(TEXT("No tracks array found in the JSON - no tracks will be imported."));
+	}
+
+	// ── 6. Parse steps
+	TArray<FQTDStepData> ImportedSteps;
+
+	const TArray<TSharedPtr<FJsonValue>>* StepsArr = nullptr;
+	if (RootObj->TryGetArrayField(TEXT("steps"), StepsArr) && StepsArr)
+	{
+		for (int32 i = 0; i < StepsArr->Num(); ++i)
+		{
+			const TSharedPtr<FJsonObject>* StepObjPtr = nullptr;
+			if (!(*StepsArr)[i]->TryGetObject(StepObjPtr) || !StepObjPtr)
+			{
+				Warnings.Add(FString::Printf(TEXT("steps[%d]: not a valid JSON object - skipped."), i));
+				continue;
+			}
+			const TSharedPtr<FJsonObject>& StepObj = *StepObjPtr;
+
+			FString IdStr;
+			if (!StepObj->TryGetStringField(TEXT("id"), IdStr))
+			{
+				Warnings.Add(FString::Printf(TEXT("steps[%d]: missing id - skipped."), i));
+				continue;
+			}
+			FGuid StepId;
+			if (!FGuid::Parse(IdStr, StepId))
+			{
+				Warnings.Add(FString::Printf(TEXT("steps[%d]: invalid GUID - skipped."), i));
+				continue;
+			}
+
+			FString TrackIdStr;
+			FGuid   TrackId;
+			if (!StepObj->TryGetStringField(TEXT("trackId"), TrackIdStr) || !FGuid::Parse(TrackIdStr, TrackId))
+			{
+				Warnings.Add(FString::Printf(
+					TEXT("steps[%d] (id=%s): invalid or missing trackId - skipped."), i, *IdStr));
+				continue;
+			}
+			if (!ImportedTrackIds.Contains(TrackId))
+			{
+				Warnings.Add(FString::Printf(
+					TEXT("steps[%d] (id=%s): trackId does not match any imported track - skipped."), i, *IdStr));
+				continue;
+			}
+
+			FQTDStepData Step;
+			Step.StepId  = StepId;
+			Step.TrackId = TrackId;
+			StepObj->TryGetStringField(TEXT("label"), Step.Label);
+
+			// Timing
+			double Tmp   = 0.0;
+			int32  IntTmp = 0;
+			if (StepObj->TryGetNumberField(TEXT("startTime"), Tmp)) Step.StartTime = FMath::Max(0.f, (float)Tmp);
+			if (StepObj->TryGetNumberField(TEXT("duration"),  Tmp)) Step.Duration  = FMath::Max(0.001f, (float)Tmp);
+			if (StepObj->TryGetNumberField(TEXT("timeScale"), Tmp)) Step.TimeScale = FMath::Max(0.01f, (float)Tmp);
+			if (StepObj->TryGetNumberField(TEXT("loops"),    IntTmp)) Step.Loops   = IntTmp;
+			if (StepObj->TryGetNumberField(TEXT("loopType"), IntTmp))
+				Step.LoopType = (ELoopType)FMath::Clamp(IntTmp, 0, 1);
+			if (StepObj->TryGetNumberField(TEXT("type"), IntTmp))
+				Step.StepType = (EQTDStepType)FMath::Clamp(IntTmp, 0, (int32)EQTDStepType::Empty);
+			if (StepObj->TryGetNumberField(TEXT("easeType"), IntTmp))
+				Step.EaseType = (EEaseType)IntTmp;
+
+			// Target
+			FString SlotStr, ParamStr;
+			if (StepObj->TryGetStringField(TEXT("slot"),          SlotStr))  Step.SlotName      = FName(*SlotStr);
+			if (StepObj->TryGetStringField(TEXT("parameterName"), ParamStr)) Step.ParameterName = FName(*ParamStr);
+
+			// Type-specific fields
+			switch (Step.StepType)
+			{
+			case EQTDStepType::Vector:
+				if (StepObj->TryGetNumberField(TEXT("vectorProperty"), IntTmp))
+					Step.VectorProperty = (EQTDVectorProperty)FMath::Clamp(IntTmp, 0, 3);
+				StepObj->TryGetBoolField(TEXT("vectorFromCurrent"), Step.bVectorFromCurrent);
+				if (StepObj->TryGetNumberField(TEXT("vectorFromX"), Tmp)) Step.VectorFrom.X = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vectorFromY"), Tmp)) Step.VectorFrom.Y = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vectorFromZ"), Tmp)) Step.VectorFrom.Z = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vectorToX"),   Tmp)) Step.VectorTo.X   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vectorToY"),   Tmp)) Step.VectorTo.Y   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vectorToZ"),   Tmp)) Step.VectorTo.Z   = (float)Tmp;
+				break;
+			case EQTDStepType::Rotator:
+				if (StepObj->TryGetNumberField(TEXT("rotatorProperty"), IntTmp))
+					Step.RotatorProperty = (EQTDRotatorProperty)FMath::Clamp(IntTmp, 0, 1);
+				StepObj->TryGetBoolField(TEXT("rotatorFromCurrent"), Step.bRotatorFromCurrent);
+				if (StepObj->TryGetNumberField(TEXT("rotatorFromPitch"), Tmp)) Step.RotatorFrom.Pitch = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("rotatorFromYaw"),   Tmp)) Step.RotatorFrom.Yaw   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("rotatorFromRoll"),  Tmp)) Step.RotatorFrom.Roll  = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("rotatorToPitch"),   Tmp)) Step.RotatorTo.Pitch   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("rotatorToYaw"),     Tmp)) Step.RotatorTo.Yaw     = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("rotatorToRoll"),    Tmp)) Step.RotatorTo.Roll    = (float)Tmp;
+				break;
+			case EQTDStepType::Float:
+				if (StepObj->TryGetNumberField(TEXT("floatTarget"), IntTmp))
+					Step.FloatTarget = (EQTDFloatTarget)FMath::Clamp(IntTmp, 0, 0);
+				StepObj->TryGetBoolField(TEXT("floatFromCurrent"), Step.bFloatFromCurrent);
+				if (StepObj->TryGetNumberField(TEXT("floatFrom"), Tmp)) Step.FloatFrom = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("floatTo"),   Tmp)) Step.FloatTo   = (float)Tmp;
+				break;
+			case EQTDStepType::LinearColor:
+				if (StepObj->TryGetNumberField(TEXT("colorTarget"), IntTmp))
+					Step.ColorTarget = (EQTDColorTarget)FMath::Clamp(IntTmp, 0, 0);
+				StepObj->TryGetBoolField(TEXT("colorFromCurrent"), Step.bColorFromCurrent);
+				if (StepObj->TryGetNumberField(TEXT("colorFromR"), Tmp)) Step.ColorFrom.R = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorFromG"), Tmp)) Step.ColorFrom.G = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorFromB"), Tmp)) Step.ColorFrom.B = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorFromA"), Tmp)) Step.ColorFrom.A = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorToR"),   Tmp)) Step.ColorTo.R   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorToG"),   Tmp)) Step.ColorTo.G   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorToB"),   Tmp)) Step.ColorTo.B   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("colorToA"),   Tmp)) Step.ColorTo.A   = (float)Tmp;
+				break;
+			default: break;
+			}
+
+			// Custom color override
+			if (StepObj->TryGetNumberField(TEXT("userColorR"), Tmp)) Step.UserColor.R = (float)Tmp;
+			if (StepObj->TryGetNumberField(TEXT("userColorG"), Tmp)) Step.UserColor.G = (float)Tmp;
+			if (StepObj->TryGetNumberField(TEXT("userColorB"), Tmp)) Step.UserColor.B = (float)Tmp;
+			if (StepObj->TryGetNumberField(TEXT("userColorA"), Tmp)) Step.UserColor.A = (float)Tmp;
+
+			ImportedSteps.Add(Step);
+		}
+	}
+	else
+	{
+		Warnings.Add(TEXT("No steps array found in the JSON - no steps will be imported."));
+	}
+
+	// ── 7. Apply to asset
+	{
+		FScopedTransaction Tx(LOCTEXT("ImportJson", "Import from JSON"));
+		Asset->Modify();
+		Asset->Tracks = ImportedTracks;
+		Asset->Steps  = ImportedSteps;
+		Asset->MarkPackageDirty();
+	}
+	RefreshFromAsset();
+
+	// ── 8. Report warnings
+	if (Warnings.Num() > 0)
+	{
+		FString WarnStr = FString::Printf(
+			TEXT("Import completed: %d track(s), %d step(s) imported.\n\nWarnings:\n"),
+			ImportedTracks.Num(), ImportedSteps.Num());
+		for (const FString& W : Warnings)
+			WarnStr += FString(TEXT("- ")) + W + TEXT("\n");
+		FMessageDialog::Open(EAppMsgType::Ok, FText::FromString(WarnStr));
+	}
+
+	return FReply::Handled();
 }
 
 #undef LOCTEXT_NAMESPACE

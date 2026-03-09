@@ -25,9 +25,9 @@ Think of it as a lightweight in-editor Sequencer that lives inside your Blueprin
    - [Copying and pasting steps](#copying-and-pasting-steps)
    - [Deleting steps and tracks](#deleting-steps-and-tracks)
    - [Grid snapping](#grid-snapping)
-   - [In-editor playback preview](#in-editor-playback-preview)
    - [Zoom and fit](#zoom-and-fit)
    - [Exporting to JSON](#exporting-to-json)
+   - [Importing from JSON](#importing-from-json)
    - [Saving](#saving)
 6. [Playing the animation at runtime](#playing-the-animation-at-runtime)
 7. [Slot bindings](#slot-bindings)
@@ -101,7 +101,7 @@ Clicking an animation in the left column opens its timeline:
 
 ```
 ┌─ Toolbar ─────────────────────────────────────────────────────────────────────┐
-│ [Save] [+ Add Track] | [▶][⏸][⏹] 0.00s | Duration: 4.50s | [Snap] [Fit] ──○── │
+│ [Save] [+ Add Track] | Duration: 4.50s | [Snap] [Fit] ──○──  [Export] [Import]│
 ├────────────────────────┬──────────────────────────────────────────────────────┤
 │ TIMELINE               │  0s      1s      2s      3s      4s                  │
 ├─ StaticMesh            │  ████████ Relative Location ████│                    │
@@ -117,15 +117,12 @@ Clicking an animation in the left column opens its timeline:
 |-----------------|--------------|
 | **Save** | Saves the director asset to disk. |
 | **+ Add Track** | Opens the component picker dialog and adds a new track. |
-| **▶ Play** | Starts the in-editor visual playback preview from the current playhead position. Turns green while active. |
-| **⏸ Pause** | Pauses the in-editor preview at the current playhead position. |
-| **⏹ Stop** | Stops and resets the playhead to 0:00. |
-| **Playhead time** | Read-only display of the current playhead position in seconds. |
 | **Duration badge** | Shows the total animation duration (max step end time across all tracks). |
 | **Snap** | Toggle checkbox. When enabled, drag and resize operations snap to 0.05 s increments. Highlighted orange when active. |
 | **Fit** | Sets the zoom level so the entire animation fits in the visible timeline area. |
 | **Zoom slider** | Adjusts pixels per second (20–400 px/s). The percentage shown is relative to the 80 px/s default. |
-| **Export JSON** | Opens a save dialog and writes all tracks and steps to a `.json` file. |
+| **Export JSON** | Opens a save dialog and writes all tracks and steps to a `.json` file (lossless — all values included). |
+| **Import JSON** | Opens a file picker, reads a previously exported `.json`, and replaces the current asset's tracks and steps. |
 
 ---
 
@@ -230,16 +227,12 @@ The snap increment is fixed at **0.05 seconds** and is indicated in the toolbar 
 
 ---
 
-### In-editor playback preview
+### Ruler scrubbing
 
-The toolbar's Play/Pause/Stop controls drive a **visual playhead** — a green vertical line on the ruler that advances in real time.
+The green playhead on the ruler shows your current position in the timeline.
 
-- **▶ Play**: starts advancing the playhead from its current position. The play button glows green while active. Automatically stops when the playhead reaches the end of the animation.
-- **⏸ Pause**: freezes the playhead where it is.
-- **⏹ Stop**: resets the playhead to 0:00.
-- **Click or drag on the ruler** to scrub the playhead to any position manually.
-
-> This is a **visual-only preview** — it does not instantiate tweens or move actors. It lets you verify timings and read the step colors/labels against the ruler. Runtime playback (which actually moves your actors) happens via `Create Director Player → Play` in-game.
+- **Click or drag on the ruler** to scrub the playhead to any time position.
+- The playhead is a visual reference only — it does not drive any live actor movement in the editor. To preview the actual animation result, use **Play in Editor (PIE)** with `Create Director Player → Play` in your Blueprint's Begin Play.
 
 Easing curves are also previewed visually inside step blocks when the block is wide enough: a subtle curve line shows the shape of the chosen easing function.
 
@@ -256,12 +249,40 @@ Easing curves are also previewed visually inside step blocks when the block is w
 
 Click **Export JSON** in the toolbar to serialize the entire asset to a `.json` file.
 
-The dialog lets you choose a file path. The output contains:
-- Asset name and total duration
-- All tracks (ID, label, component variable name)
-- All steps (ID, track ID, label, type, start time, duration, loops, easing, slot name)
+The dialog lets you choose a file path. The output is **lossless** — it contains every field needed to fully restore the asset:
 
-This is useful for version-diffing, external tooling, or data inspection. The JSON file is not used at runtime.
+- Asset name, loop count, total duration
+- All tracks (GUID, label, component variable name)
+- All steps (GUID, track GUID, label, type, start time, duration, time scale, loops, loop type, easing, slot name, parameter name, all type-specific From/To values, custom color)
+
+Uses: version-diffing animations in source control, sharing animations between projects, external tooling, backup.
+
+> The JSON file is not read at runtime. It is purely an editor exchange format.
+
+---
+
+### Importing from JSON
+
+Click **Import JSON** in the toolbar to restore tracks and steps from a previously exported `.json` file.
+
+**What happens:**
+
+1. You pick the `.json` file.
+2. If the current asset already has tracks or steps, you are asked to confirm before replacing them.
+3. The import validates every entry:
+   - Invalid or missing GUIDs → entry is skipped with a warning.
+   - A step whose `trackId` does not match any imported track → skipped with a warning.
+   - A track whose component name is not found in the current Blueprint → imported but flagged: auto-binding may fail at runtime.
+4. After import, a summary dialog lists how many tracks/steps were imported and all warnings.
+
+**Common errors and fixes:**
+
+| Warning | Cause | Fix |
+|---------|-------|-----|
+| `tracks[N]: invalid GUID` | File was manually edited and the id field is corrupt | Restore from an unmodified export |
+| `steps[N]: trackId does not match any imported track` | Step references a track that failed to import (e.g. bad GUID) | Fix the track entry in the JSON |
+| `Track 'X': component 'Y' not found in the current Blueprint` | Animation was created for a different Blueprint, or the component was renamed | Rename the component in your Blueprint to match, or call `Bind Slot` manually at runtime |
+| `Failed to parse JSON` | File is corrupt or was not created by Export JSON | Re-export from the original asset |
 
 ---
 

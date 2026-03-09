@@ -56,6 +56,7 @@ private:
 	FReply OnSaveClicked();
 	FReply OnAddTrackClicked();
 	FReply OnExportJsonClicked();
+	FReply OnImportJsonClicked();
 
 	// ── Track / step actions ──────────────────────────────────────────────────
 	void DeleteTrack(FGuid TrackId);
@@ -73,15 +74,8 @@ private:
 	bool bSnapEnabled = false;
 	void PropagateSnapToRows();
 
-	// ── Playback ──────────────────────────────────────────────────────────────
+	// ── Ruler scrubbing ───────────────────────────────────────────────────────
 	float PlayheadTime = 0.f;
-	bool  bIsPlaying   = false;
-
-	FReply OnPlayClicked();
-	FReply OnPauseClicked();
-	FReply OnStopClicked();
-
-	EActiveTimerReturnType HandlePlaybackTick(double InCurrentTime, float InDeltaTime);
 
 	// ── Data ──────────────────────────────────────────────────────────────────
 	UQuickTweenDirectorAsset*    Asset           = nullptr;
