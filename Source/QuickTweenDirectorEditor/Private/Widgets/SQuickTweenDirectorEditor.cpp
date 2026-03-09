@@ -403,7 +403,6 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 	if (RulerWidget.IsValid())
 	{
 		ContentContainer->AddSlot().AutoHeight()[ RulerWidget.ToSharedRef() ];
-		ContentContainer->AddSlot().AutoHeight()[ SNew(SSeparator) ];
 		// Force ruler to repaint with current zoom
 		RulerWidget->Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
 	}
