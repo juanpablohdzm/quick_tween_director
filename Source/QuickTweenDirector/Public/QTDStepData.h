@@ -226,13 +226,25 @@ struct QUICKTWEENDIRECTOR_API FQTDStepData
 		meta = (EditCondition = "StepType == EQTDStepType::LinearColor", EditConditionHides))
 	bool bColorFromCurrent = false;
 
+	// ── Appearance ────────────────────────────────────────────────────────────
+
+	/**
+	 * Optional user-defined color override shown in the timeline editor.
+	 * Alpha == 0 means "use the default type color".
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Appearance")
+	FLinearColor UserColor = FLinearColor(0.f, 0.f, 0.f, 0.f);
+
 	// ── Helpers ───────────────────────────────────────────────────────────────
 
 	/** Returns start + duration * loops (total wall-clock time consumed). */
 	float GetEndTime() const { return StartTime + Duration * FMath::Max(Loops, 1); }
 
-	/** Returns the display color used by the timeline editor for this step type. */
+	/** Returns the intrinsic type color for this step. */
 	FLinearColor GetTypeColor() const;
+
+	/** Returns UserColor when its alpha > 0, otherwise GetTypeColor(). */
+	FLinearColor GetDisplayColor() const { return UserColor.A > 0.f ? UserColor : GetTypeColor(); }
 };
 
 // ──────────────────────────────────────────────────────────────────────────────

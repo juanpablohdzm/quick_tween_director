@@ -37,28 +37,11 @@ namespace QTDEditorConstants
 // SQuickTweenDirectorEditor
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Timeline editor widget for a single UQuickTweenDirectorAsset.
- * Hosted inside SQTDDirectorPanel — does not own its own window or toolkit.
- *
- * Layout:
- *   ┌─ Toolbar ──────────────────────────────────────────────────────┐
- *   │  [Save]  [+ Add Track]          Duration: X.XXs  Zoom: [──]   │
- *   ├─ Label col (200px) ──┬─ Single H-scroll box ───────────────────┤
- *   │  "Timeline" header   │  SQTDRuler (ticks)                      │
- *   │  Track1 label        │  Track1 step content                    │
- *   │  Track2 label        │  Track2 step content                    │
- *   └──────────────────────┴─ HScrollBar ────────────────────────────┘
- *
- * The ruler and all step content live inside ONE SScrollBox (horizontal)
- * so they always scroll in perfect sync.
- */
 class SQuickTweenDirectorEditor : public SCompoundWidget
 {
 public:
 	SLATE_BEGIN_ARGS(SQuickTweenDirectorEditor) {}
 		SLATE_ARGUMENT(UQuickTweenDirectorAsset*, Asset)
-		/** Weak ref to the Blueprint owning this asset — used by the component picker. */
 		SLATE_ARGUMENT(TWeakObjectPtr<UBlueprint>, Blueprint)
 	SLATE_END_ARGS()
 
@@ -72,9 +55,11 @@ private:
 	// ── Toolbar ───────────────────────────────────────────────────────────────
 	FReply OnSaveClicked();
 	FReply OnAddTrackClicked();
+	FReply OnExportJsonClicked();
 
 	// ── Track / step actions ──────────────────────────────────────────────────
 	void DeleteTrack(FGuid TrackId);
+	void ReorderTrack(FGuid TrackId, int32 Direction);
 	void AddStepToTrack(FQTDStepData PrefilledStep);
 	void OpenStepDialog(const FQTDStepData& Step);
 
@@ -82,28 +67,33 @@ private:
 	float PixelsPerSec = QTDEditorConstants::DefaultPixelsPerSec;
 	float OnGetZoomValue() const { return PixelsPerSec; }
 	void  OnZoomChanged(float NewValue);
+	FReply OnZoomToFitClicked();
+
+	// ── Snap ──────────────────────────────────────────────────────────────────
+	bool bSnapEnabled = false;
+	void PropagateSnapToRows();
+
+	// ── Playback ──────────────────────────────────────────────────────────────
+	float PlayheadTime = 0.f;
+	bool  bIsPlaying   = false;
+	FWidgetActiveTimerHandle PlaybackTimerHandle;
+
+	FReply OnPlayClicked();
+	FReply OnPauseClicked();
+	FReply OnStopClicked();
+
+	EActiveTimerReturnType HandlePlaybackTick(double InCurrentTime, float InDeltaTime);
 
 	// ── Data ──────────────────────────────────────────────────────────────────
 	UQuickTweenDirectorAsset*    Asset           = nullptr;
 	TWeakObjectPtr<UBlueprint>   Blueprint;
 	FGuid                        SelectedTrackId;
 
-	/**
-	 * Label column container — rebuilt by RefreshFromAsset().
-	 * Contains the ruler-label placeholder + one label row per track.
-	 */
 	TSharedPtr<SVerticalBox>     LabelContainer;
-
-	/**
-	 * Content column container — rebuilt by RefreshFromAsset().
-	 * Lives inside the single horizontal SScrollBox.
-	 * Contains SQTDRuler + one step-content widget per track.
-	 */
 	TSharedPtr<SVerticalBox>     ContentContainer;
-
-	/** The single shared horizontal scroll box (ruler + all step content). */
 	TSharedPtr<SScrollBox>       HScrollBox;
-
-	/** The ruler leaf widget — invalidated on zoom change. */
 	TSharedPtr<SWidget>          RulerWidget;
+
+	/** Weak pointers to the live track row widgets — for propagating snap changes. */
+	TArray<TWeakPtr<class SQTDTrackRow>> TrackRows;
 };

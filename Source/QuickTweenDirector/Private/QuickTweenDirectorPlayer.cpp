@@ -397,6 +397,15 @@ bool UQuickTweenDirectorPlayer::Build(UObject* WorldContext)
 							*Track.ComponentVariableName.ToString(), *Obj->GetName());
 					}
 				}
+
+				if (!SlotBindings.Contains(Track.ComponentVariableName))
+				{
+					const FString Msg = FString::Printf(
+						TEXT("Track '%s': slot '%s' could not be auto-bound — no matching component or property found on '%s'."),
+						*Track.TrackLabel, *Track.ComponentVariableName.ToString(), *OwnerActor->GetName());
+					BindingErrors.Add(Msg);
+					UE_LOG(LogQTDPlayer, Warning, TEXT("%s"), *Msg);
+				}
 			}
 		}
 	}
@@ -404,6 +413,8 @@ bool UQuickTweenDirectorPlayer::Build(UObject* WorldContext)
 	OwnedTweens.Empty();
 	BuiltSteps.Empty();
 	BuiltStepData.Empty();
+	ActiveStepIndices.Empty();
+	BindingErrors.Empty();
 
 	UQuickTweenManager* Manager = UQuickTweenManager::Get(WorldContextObject);
 
@@ -630,15 +641,34 @@ void UQuickTweenDirectorPlayer::Evaluate(const FQuickTweenEvaluatePayload& Paylo
 
 void UQuickTweenDirectorPlayer::SeekTime(float LoopLocalTime)
 {
+	CurrentLocalTime = LoopLocalTime;
 	const bool bForward = LoopLocalTime >= PreviousLoopLocalTime;
 
-	for (FQTDBuiltStep& Entry : BuiltSteps)
+	for (int32 i = 0; i < BuiltSteps.Num(); ++i)
 	{
+		FQTDBuiltStep& Entry = BuiltSteps[i];
 		if (!Entry.Tween) continue;
 
-		const float Start = Entry.StartTime;
-		const float End   = Start + Entry.TotalDuration;
-		const bool  bActive = (LoopLocalTime >= Start) && (LoopLocalTime <= End);
+		const float Start    = Entry.StartTime;
+		const float End      = Start + Entry.TotalDuration;
+		const bool  bActive  = (LoopLocalTime >= Start) && (LoopLocalTime <= End);
+		const bool  bWasActive = ActiveStepIndices.Contains(i);
+
+		// Fire begin/end step events on transitions.
+		if (bTriggerEvents && BuiltStepData.IsValidIndex(i))
+		{
+			const FQTDStepData& SD = BuiltStepData[i];
+			if (bActive && !bWasActive)
+			{
+				ActiveStepIndices.Add(i);
+				if (OnStepBegin.IsBound()) OnStepBegin.Broadcast(this, SD.SlotName, SD.StepId);
+			}
+			else if (!bActive && bWasActive)
+			{
+				ActiveStepIndices.Remove(i);
+				if (OnStepEnd.IsBound()) OnStepEnd.Broadcast(this, SD.SlotName, SD.StepId);
+			}
+		}
 
 		const float ChildAlpha = (Entry.TotalDuration > 0.0f)
 			? FMath::Clamp((LoopLocalTime - Start) / Entry.TotalDuration, 0.0f, 1.0f)
@@ -676,6 +706,7 @@ bool UQuickTweenDirectorPlayer::RequestStateTransition(EQuickTweenState NewState
 
 void UQuickTweenDirectorPlayer::HandleOnStart()
 {
+	ActiveStepIndices.Empty();
 	if (bTriggerEvents && OnStart.IsBound()) OnStart.Broadcast(this);
 }
 

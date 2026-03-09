@@ -82,6 +82,7 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 	WeakParentWindow = InArgs._ParentWindow;
 	EditColorFrom    = EditedStep.ColorFrom;
 	EditColorTo      = EditedStep.ColorTo;
+	EditUserColor    = EditedStep.UserColor;
 
 	// ── Shared timing fields ──────────────────────────────────────────────────
 
@@ -243,6 +244,44 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
 					[ MakeLabeledRow(LOCTEXT("ParameterName", "Parameter Name"), ParameterNameBox.ToSharedRef()) ]
+
+					// ── Color label override ───────────────────────────────────
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
+					[
+						MakeLabeledRow(LOCTEXT("UserColor", "Step Color (override)"),
+							SNew(SHorizontalBox)
+							+ SHorizontalBox::Slot().FillWidth(1.f)
+							[
+								SNew(SBox).HeightOverride(20.0f)
+								[
+									SAssignNew(UserColorSwatch, SBorder)
+									.BorderBackgroundColor_Lambda([this]() { return EditUserColor; })
+									.OnMouseButtonDown_Lambda([this](const FGeometry&, const FPointerEvent& E) -> FReply {
+										if (E.GetEffectingButton() != EKeys::LeftMouseButton) return FReply::Unhandled();
+										FColorPickerArgs Args;
+										Args.InitialColor     = EditUserColor;
+										Args.bUseAlpha        = true;
+										Args.OnColorCommitted = FOnLinearColorValueChanged::CreateLambda(
+											[this](FLinearColor C) { EditUserColor = C; });
+										OpenColorPicker(Args);
+										return FReply::Handled();
+									})
+								]
+							]
+							+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.f, 0.f, 0.f, 0.f)
+							[
+								SNew(SButton)
+								.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+								.ContentPadding(FMargin(4.f, 2.f))
+								.ToolTipText(LOCTEXT("ClearUserColor", "Reset to the default type color (set alpha to 0)"))
+								.OnClicked_Lambda([this]() -> FReply {
+									EditUserColor = FLinearColor(0.f, 0.f, 0.f, 0.f);
+									return FReply::Handled();
+								})
+								[ SNew(STextBlock).Text(LOCTEXT("Reset", "Reset")).Font(FAppStyle::GetFontStyle("TinyText")) ]
+							]
+						)
+					]
 
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 8, 0, 4)
 					[ SNew(SSeparator) ]
@@ -502,6 +541,8 @@ bool SQTDStepDialog::CollectValues()
 		EditedStep.ColorFrom = EditColorFrom;
 		EditedStep.ColorTo   = EditColorTo;
 	}
+
+	EditedStep.UserColor = EditUserColor;
 
 	return true;
 }

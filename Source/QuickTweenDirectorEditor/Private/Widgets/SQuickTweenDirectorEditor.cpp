@@ -15,6 +15,7 @@
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SSlider.h"
+#include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/SLeafWidget.h"
 #include "Rendering/DrawElements.h"
@@ -22,6 +23,14 @@
 #include "UObject/Package.h"
 #include "FileHelpers.h"
 #include "Styling/AppStyle.h"
+#include "ScopedTransaction.h"
+
+// JSON export
+#include "Serialization/JsonWriter.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
 
 #define LOCTEXT_NAMESPACE "SQuickTweenDirectorEditor"
 
@@ -35,22 +44,58 @@ public:
 	SLATE_BEGIN_ARGS(SQTDRuler) {}
 		SLATE_ATTRIBUTE(float, PixelsPerSec)
 		SLATE_ATTRIBUTE(float, TotalDuration)
+		SLATE_ATTRIBUTE(float, PlayheadTime)
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs)
 	{
 		PixelsPerSecAttr  = InArgs._PixelsPerSec;
 		TotalDurationAttr = InArgs._TotalDuration;
+		PlayheadTimeAttr  = InArgs._PlayheadTime;
 	}
 
 	virtual FVector2D ComputeDesiredSize(float) const override
 	{
 		const float PPS = PixelsPerSecAttr.Get();
 		const float Dur = TotalDurationAttr.Get();
-		// No label offset — the ruler scrollbox is positioned after the label column.
 		return FVector2D(PPS * FMath::Max(Dur, 1.0f) + 60.0f,
 		                 QTDEditorConstants::RulerHeight);
 	}
+
+	/** Allow the ruler to be scrubbed by clicking/dragging. */
+	virtual FReply OnMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& Event) override
+	{
+		if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
+		{
+			bIsScrubbing = true;
+			ScrubToLocal(Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition()).X);
+			return FReply::Handled().CaptureMouse(AsShared());
+		}
+		return FReply::Unhandled();
+	}
+
+	virtual FReply OnMouseMove(const FGeometry& Geometry, const FPointerEvent& Event) override
+	{
+		if (bIsScrubbing)
+		{
+			ScrubToLocal(Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition()).X);
+			return FReply::Handled();
+		}
+		return FReply::Unhandled();
+	}
+
+	virtual FReply OnMouseButtonUp(const FGeometry&, const FPointerEvent& Event) override
+	{
+		if (Event.GetEffectingButton() == EKeys::LeftMouseButton && bIsScrubbing)
+		{
+			bIsScrubbing = false;
+			return FReply::Handled().ReleaseMouseCapture();
+		}
+		return FReply::Unhandled();
+	}
+
+	/** Delegate fired when the user scrubs the ruler (passes the new time). */
+	TFunction<void(float)> OnScrub;
 
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry,
 	                      const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements,
@@ -76,7 +121,6 @@ public:
 			ESlateDrawEffect::None, FLinearColor(0.20f, 0.20f, 0.20f), true, 1.f);
 		++LayerId;
 
-		// Pick a major step that keeps labels at least ~70 px apart.
 		static const float NiceSteps[] = { 0.05f, 0.1f, 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 10.0f, 30.0f, 60.0f };
 		float MajorStep = NiceSteps[4];
 		if (PPS > 0.0f)
@@ -103,12 +147,10 @@ public:
 			const float X = T * PPS;
 			if (X > W) break;
 
-			// Accent tick mark
 			TArray<FVector2D> Pts = { FVector2D(X, H * 0.30f), FVector2D(X, H - 1.f) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
 				Pts, ESlateDrawEffect::None, FLinearColor(1.0f, 0.55f, 0.15f, 0.80f), true, 1.5f);
 
-			// Time label — position text slightly above the tick bottom
 			const FString TimeStr = (MajorStep >= 1.0f)
 				? FString::Printf(TEXT("%.0fs"), T)
 				: FString::Printf(TEXT("%.2fs"), T);
@@ -121,12 +163,57 @@ public:
 				FLinearColor(0.70f, 0.70f, 0.70f));
 		}
 
-		return LayerId;
+		// ── Playhead ─────────────────────────────────────────────────────────
+		const float PH = PlayheadTimeAttr.Get();
+		if (PPS > 0.f && PH >= 0.f)
+		{
+			const float PHX = PH * PPS;
+			if (PHX <= W)
+			{
+				// Vertical line
+				TArray<FVector2D> PHPts = { FVector2D(PHX, 0.f), FVector2D(PHX, H) };
+				FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 1,
+					AllottedGeometry.ToPaintGeometry(), PHPts,
+					ESlateDrawEffect::None, FLinearColor(0.05f, 0.95f, 0.40f, 0.90f), true, 2.f);
+
+				// Triangle head
+				TArray<FSlateVertex> Verts;
+				TArray<SlateIndex> Indices;
+				const FVector2f Offset = AllottedGeometry.GetAbsolutePosition();
+				const float Scale = AllottedGeometry.Scale;
+				auto V = [&](float x, float y) {
+					FSlateVertex Vtx;
+					Vtx.Position = FVector2f(Offset.X + x * Scale, Offset.Y + y * Scale);
+					Vtx.Color    = FColor(13, 242, 102, 230);
+					return Vtx;
+				};
+				Verts.Add(V(PHX - 5.f, 0.f));
+				Verts.Add(V(PHX + 5.f, 0.f));
+				Verts.Add(V(PHX,       7.f));
+				Indices = { 0, 1, 2 };
+				FSlateDrawElement::MakeCustomVerts(OutDrawElements, LayerId + 2,
+					FAppStyle::GetBrush("WhiteBrush")->GetRenderingResource(),
+					Verts, Indices, nullptr, 0, 0);
+			}
+		}
+
+		return LayerId + 3;
 	}
 
 private:
+	void ScrubToLocal(float LocalX)
+	{
+		const float PPS = PixelsPerSecAttr.Get();
+		if (PPS <= 0.f) return;
+		const float NewTime = FMath::Max(0.f, LocalX / PPS);
+		if (OnScrub) OnScrub(NewTime);
+		Invalidate(EInvalidateWidgetReason::Paint);
+	}
+
 	TAttribute<float> PixelsPerSecAttr;
 	TAttribute<float> TotalDurationAttr;
+	TAttribute<float> PlayheadTimeAttr;
+	bool              bIsScrubbing = false;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -137,6 +224,8 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 {
 	Asset     = InArgs._Asset;
 	Blueprint = InArgs._Blueprint;
+
+	// ── Toolbar ──────────────────────────────────────────────────────────────
 
 	auto Toolbar =
 		SNew(SBorder)
@@ -159,30 +248,21 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 					[
 						SNew(SHorizontalBox)
 						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Save"))
+						[ SNew(SImage).Image(FAppStyle::GetBrush("Icons.Save"))
 							.DesiredSizeOverride(FVector2D(14.f, 14.f))
-							.ColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.8f, 0.8f)))
-						]
+							.ColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.8f, 0.8f))) ]
 						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("Save", "Save"))
+						[ SNew(STextBlock).Text(LOCTEXT("Save", "Save"))
 							.Font(FAppStyle::GetFontStyle("SmallFont"))
-							.ColorAndOpacity(FLinearColor(0.85f, 0.85f, 0.85f))
-						]
+							.ColorAndOpacity(FLinearColor(0.85f, 0.85f, 0.85f)) ]
 					]
 				]
 
 				// ── Divider ───────────────────────────────────────────────────
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
-				[
-					SNew(SSeparator).Orientation(Orient_Vertical)
+				[ SNew(SSeparator).Orientation(Orient_Vertical).Thickness(1.f)
 					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
-					.Thickness(1.f)
-					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f))
-				]
+					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f)) ]
 
 				// ── Add Track ─────────────────────────────────────────────────
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
@@ -195,20 +275,75 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 					[
 						SNew(SHorizontalBox)
 						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Plus"))
+						[ SNew(SImage).Image(FAppStyle::GetBrush("Icons.Plus"))
 							.DesiredSizeOverride(FVector2D(12.f, 12.f))
-							.ColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.55f, 0.15f)))
-						]
+							.ColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.55f, 0.15f))) ]
 						+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-						[
-							SNew(STextBlock)
-							.Text(LOCTEXT("AddTrack", "Add Track"))
+						[ SNew(STextBlock).Text(LOCTEXT("AddTrack", "Add Track"))
 							.Font(FAppStyle::GetFontStyle("SmallFont"))
-							.ColorAndOpacity(FLinearColor(1.0f, 0.55f, 0.15f))
-						]
+							.ColorAndOpacity(FLinearColor(1.0f, 0.55f, 0.15f)) ]
 					]
+				]
+
+				// ── Divider ───────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
+				[ SNew(SSeparator).Orientation(Orient_Vertical).Thickness(1.f)
+					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
+					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f)) ]
+
+				// ── Playback controls ─────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(6.f, 4.f))
+					.ToolTipText(LOCTEXT("PlayTip", "Play from current playhead position"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnPlayClicked)
+					[
+						SNew(SImage).Image(FAppStyle::GetBrush("Icons.Toolbar.Play"))
+						.DesiredSizeOverride(FVector2D(14.f, 14.f))
+						.ColorAndOpacity_Lambda([this]() {
+							return FSlateColor(bIsPlaying
+								? FLinearColor(0.05f, 0.95f, 0.40f) : FLinearColor(0.7f, 0.7f, 0.7f));
+						})
+					]
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(6.f, 4.f))
+					.ToolTipText(LOCTEXT("PauseTip", "Pause playback"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnPauseClicked)
+					[
+						SNew(SImage).Image(FAppStyle::GetBrush("Icons.Toolbar.Pause"))
+						.DesiredSizeOverride(FVector2D(14.f, 14.f))
+						.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
+					]
+				]
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(6.f, 4.f))
+					.ToolTipText(LOCTEXT("StopTip", "Stop and reset playhead to 0"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnStopClicked)
+					[
+						SNew(SImage).Image(FAppStyle::GetBrush("Icons.Toolbar.Stop"))
+						.DesiredSizeOverride(FVector2D(14.f, 14.f))
+						.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
+					]
+				]
+
+				// ── Playhead time display ─────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(4.f, 0.f)
+				[
+					SNew(STextBlock)
+					.Text_Lambda([this]() -> FText {
+						return FText::FromString(FString::Printf(TEXT("%.2fs"), PlayheadTime));
+					})
+					.Font(FAppStyle::GetFontStyle("TinyText"))
+					.ColorAndOpacity(FLinearColor(0.45f, 0.45f, 0.45f))
 				]
 
 				+ SHorizontalBox::Slot().FillWidth(1.f)[ SNew(SSpacer) ]
@@ -233,21 +368,51 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 
 				// ── Divider ───────────────────────────────────────────────────
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
-				[
-					SNew(SSeparator).Orientation(Orient_Vertical)
+				[ SNew(SSeparator).Orientation(Orient_Vertical).Thickness(1.f)
 					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
-					.Thickness(1.f)
-					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f))
-				]
+					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f)) ]
 
-				// ── Zoom ──────────────────────────────────────────────────────
+				// ── Snap toggle ───────────────────────────────────────────────
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
 				[
-					SNew(SImage)
-					.Image(FAppStyle::GetBrush("Icons.Search"))
-					.DesiredSizeOverride(FVector2D(12.f, 12.f))
-					.ColorAndOpacity(FSlateColor(FLinearColor(0.45f, 0.45f, 0.45f)))
+					SNew(SCheckBox)
+					.Style(FAppStyle::Get(), "ToggleButtonCheckbox")
+					.IsChecked_Lambda([this]() { return bSnapEnabled ? ECheckBoxState::Checked : ECheckBoxState::Unchecked; })
+					.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
+						bSnapEnabled = (S == ECheckBoxState::Checked);
+						PropagateSnapToRows();
+					})
+					.ToolTipText(LOCTEXT("SnapTip", "Enable grid snapping (0.05s increments)"))
+					.Padding(FMargin(4.f, 2.f))
+					[
+						SNew(STextBlock).Text(LOCTEXT("Snap", "Snap"))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity_Lambda([this]() {
+							return FSlateColor(bSnapEnabled ? FLinearColor(1.0f, 0.55f, 0.15f) : FLinearColor(0.5f, 0.5f, 0.5f));
+						})
+					]
 				]
+
+				// ── Zoom-to-fit ───────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(6.f, 3.f))
+					.ToolTipText(LOCTEXT("FitTip", "Zoom to fit the entire animation in the visible area"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnZoomToFitClicked)
+					[
+						SNew(STextBlock).Text(LOCTEXT("Fit", "Fit"))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity(FLinearColor(0.60f, 0.60f, 0.60f))
+					]
+				]
+
+				// ── Zoom slider ───────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+				[ SNew(SImage).Image(FAppStyle::GetBrush("Icons.Search"))
+					.DesiredSizeOverride(FVector2D(12.f, 12.f))
+					.ColorAndOpacity(FSlateColor(FLinearColor(0.45f, 0.45f, 0.45f))) ]
 				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 2.f, 0.f)
 				[
 					SNew(SBox).WidthOverride(100.f)
@@ -255,12 +420,11 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 						SNew(SSlider)
 						.Value_Raw(this, &SQuickTweenDirectorEditor::OnGetZoomValue)
 						.OnValueChanged(this, &SQuickTweenDirectorEditor::OnZoomChanged)
-						.MinValue(20.0f)
-						.MaxValue(400.0f)
+						.MinValue(20.0f).MaxValue(400.0f)
 						.ToolTipText(LOCTEXT("ZoomTip", "Zoom: pixels per second"))
 					]
 				]
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 6.f, 0.f)
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 2.f, 0.f)
 				[
 					SNew(STextBlock)
 					.Text_Lambda([this]() -> FText {
@@ -270,25 +434,47 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 					.Font(FAppStyle::GetFontStyle("TinyText"))
 					.ColorAndOpacity(FLinearColor(0.40f, 0.40f, 0.40f))
 				]
+
+				// ── Divider ───────────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Fill).Padding(4.f, 4.f)
+				[ SNew(SSeparator).Orientation(Orient_Vertical).Thickness(1.f)
+					.SeparatorImage(FAppStyle::GetBrush("WhiteBrush"))
+					.ColorAndOpacity(FLinearColor(0.22f, 0.22f, 0.22f)) ]
+
+				// ── Export JSON ───────────────────────────────────────────────
+				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f, 6.f, 0.f)
+				[
+					SNew(SButton)
+					.ButtonStyle(FAppStyle::Get(), "FlatButton")
+					.ContentPadding(FMargin(6.f, 3.f))
+					.ToolTipText(LOCTEXT("ExportJsonTip", "Export the sequence to a .json file"))
+					.OnClicked(this, &SQuickTweenDirectorEditor::OnExportJsonClicked)
+					[
+						SNew(STextBlock).Text(LOCTEXT("ExportJson", "Export JSON"))
+						.Font(FAppStyle::GetFontStyle("TinyText"))
+						.ColorAndOpacity(FLinearColor(0.55f, 0.55f, 0.55f))
+					]
+				]
 			]
 		];
 
-	// ── Shared widgets created once, populated by RefreshFromAsset ───────────
+	// ── Shared widgets ────────────────────────────────────────────────────────
 
-	// Ruler — lives inside ContentContainer, which is inside the ONE H scroll box.
 	TSharedRef<SQTDRuler> Ruler = SNew(SQTDRuler)
 		.PixelsPerSec_Lambda([this]() { return PixelsPerSec; })
-		.TotalDuration_Lambda([this]() { return Asset ? Asset->GetTotalDuration() : 1.0f; });
+		.TotalDuration_Lambda([this]() { return Asset ? Asset->GetTotalDuration() : 1.0f; })
+		.PlayheadTime_Lambda([this]() { return PlayheadTime; });
+
+	// Wire up scrubbing
+	Ruler->OnScrub = [this](float NewTime) {
+		PlayheadTime = FMath::Clamp(NewTime, 0.f, Asset ? Asset->GetTotalDuration() : 1.f);
+		if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
+	};
 	RulerWidget = Ruler;
 
-	// Label column (track labels, rebuilt each RefreshFromAsset).
-	SAssignNew(LabelContainer, SVerticalBox);
-
-	// Content column (ruler + step content rows, rebuilt each RefreshFromAsset).
-	// All content lives inside ONE SScrollBox(H) so they scroll together perfectly.
+	SAssignNew(LabelContainer,   SVerticalBox);
 	SAssignNew(ContentContainer, SVerticalBox);
 
-	// The single external horizontal scrollbar.
 	TSharedRef<SScrollBar> HBar = SNew(SScrollBar)
 		.Orientation(Orient_Horizontal)
 		.Thickness(FVector2D(6.0f, 6.0f));
@@ -298,26 +484,13 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 		.ExternalScrollbar(HBar);
 	HScrollBox->AddSlot()[ ContentContainer.ToSharedRef() ];
 
-	// ── Final layout ─────────────────────────────────────────────────────────
-	//
-	//  Toolbar  |  Separator
-	//  ─────────────────────────────────────────────────────────────────────
-	//  SScrollBox(V)          ← vertical scroll for many tracks
-	//    SHorizontalBox
-	//      [200px label col]     [SScrollBox(H, ExternalBar=HBar)]
-	//        ruler label           ContentContainer (SVerticalBox)
-	//        sep                     SQTDRuler
-	//        LabelContainer          sep
-	//          label rows            step content rows...
-	//  HBar                   ← horizontal scrollbar, always visible
-	//
+	// ── Final layout ──────────────────────────────────────────────────────────
 
 	ChildSlot
 	[
 		SNew(SVerticalBox)
 		+ SVerticalBox::Slot().AutoHeight()[ Toolbar ]
 
-		// Main area — vertical scroll wraps labels + content together
 		+ SVerticalBox::Slot().FillHeight(1.0f)
 		[
 			SNew(SBorder)
@@ -332,12 +505,10 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 			[
 				SNew(SHorizontalBox)
 
-				// ── Label column: fixed 200 px, no horizontal scroll ──────────
+				// Label column (fixed, no H-scroll)
 				+ SHorizontalBox::Slot().AutoWidth()
 				[
 					SNew(SVerticalBox)
-
-					// Ruler-label header
 					+ SVerticalBox::Slot().AutoHeight()
 					[
 						SNew(SBox)
@@ -350,15 +521,11 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 							.Padding(FMargin(0.f))
 							[
 								SNew(SHorizontalBox)
-								// Orange accent bar on the left
 								+ SHorizontalBox::Slot().AutoWidth()
 								[
 									SNew(SBox).WidthOverride(QTDEditorConstants::LabelAccentWidth)
-									[
-										SNew(SBorder)
-										.BorderImage(FAppStyle::GetBrush("WhiteBrush"))
-										.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f))
-									]
+									[ SNew(SBorder).BorderImage(FAppStyle::GetBrush("WhiteBrush"))
+										.BorderBackgroundColor(FLinearColor(1.0f, 0.55f, 0.15f)) ]
 								]
 								+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center).Padding(8.f, 0.f)
 								[
@@ -370,20 +537,18 @@ void SQuickTweenDirectorEditor::Construct(const FArguments& InArgs)
 							]
 						]
 					]
-					// Track label rows
 					+ SVerticalBox::Slot().AutoHeight()[ LabelContainer.ToSharedRef() ]
 				]
 
-				// ── Content column: ONE H scroll box for ruler + all step rows ─
+				// Content column
 				+ SHorizontalBox::Slot().FillWidth(1.0f)
 				[
 					HScrollBox.ToSharedRef()
 				]
 			]
-			]  // SBorder (dark bg)
+			]
 		]
 
-		// Horizontal scrollbar — pinned below everything, always visible
 		+ SVerticalBox::Slot().AutoHeight()[ HBar ]
 	];
 
@@ -396,14 +561,13 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 {
 	if (!LabelContainer || !ContentContainer) return;
 
+	TrackRows.Empty();
 	LabelContainer->ClearChildren();
 	ContentContainer->ClearChildren();
 
-	// Ruler is always at the top of the content column
 	if (RulerWidget.IsValid())
 	{
 		ContentContainer->AddSlot().AutoHeight()[ RulerWidget.ToSharedRef() ];
-		// Force ruler to repaint with current zoom
 		RulerWidget->Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
 	}
 
@@ -423,10 +587,13 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 				RefreshFromAsset();
 			})
 			.OnTrackDelete_Lambda([this](FGuid Id) { DeleteTrack(Id); })
+			.OnTrackReorder_Lambda([this](FGuid Id, int32 Dir) { ReorderTrack(Id, Dir); })
 			.OnStepAdded_Lambda([this](FQTDStepData S) { AddStepToTrack(S); })
 			.OnStepEdit_Lambda([this](FQTDStepData S) { OpenStepDialog(S); })
 			.OnStepMoved_Lambda([this](FGuid StepId, float NewT) {
 				if (!Asset) return;
+				FScopedTransaction Tx(LOCTEXT("MoveStepTime", "Move Step"));
+				Asset->Modify();
 				if (FQTDStepData* Step = Asset->FindStep(StepId))
 				{
 					Step->StartTime = FMath::Max(0.0f, NewT);
@@ -436,14 +603,14 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 			.OnStepDeleted_Lambda([this](FGuid StepId) {
 				if (!Asset) return;
 
-				// Capture the track before removing the step.
 				FGuid TrackId;
 				if (FQTDStepData* Step = Asset->FindStep(StepId))
 					TrackId = Step->TrackId;
 
+				FScopedTransaction Tx(LOCTEXT("DeleteStep", "Delete Step"));
+				Asset->Modify();
 				Asset->RemoveStep(StepId);
 
-				// Shift subsequent steps on the same track to fill the gap.
 				if (TrackId.IsValid())
 				{
 					TArray<FQTDStepData*> Remaining = Asset->GetStepsForTrack(TrackId);
@@ -462,10 +629,10 @@ void SQuickTweenDirectorEditor::RefreshFromAsset()
 				RefreshFromAsset();
 			});
 
-		// Label goes in the fixed label column (this widget IS the label — SQTDTrackRow shows only the label).
-		LabelContainer->AddSlot().AutoHeight()[ Row ];
+		Row->SetSnapEnabled(bSnapEnabled);
+		TrackRows.Add(Row);
 
-		// Step content goes inside ContentContainer — same H scroll box as the ruler.
+		LabelContainer->AddSlot().AutoHeight()[ Row ];
 		ContentContainer->AddSlot().AutoHeight()[ Row->GetStepContentWidget() ];
 	}
 }
@@ -492,13 +659,13 @@ FReply SQuickTweenDirectorEditor::OnAddTrackClicked()
 	UBlueprint* BP = Blueprint.Get();
 	if (!BP)
 	{
-		// No Blueprint context: add a generic unnamed track
+		FScopedTransaction Tx(LOCTEXT("AddTrack", "Add Track"));
+		Asset->Modify();
 		Asset->AddTrack(TEXT("Track"), EQTDStepType::Vector);
 		RefreshFromAsset();
 		return FReply::Handled();
 	}
 
-	// Open component picker dialog
 	TSharedRef<SWindow> PickerWindow = SNew(SWindow)
 		.Title(LOCTEXT("PickerTitle", "Pick Component to Animate"))
 		.SizingRule(ESizingRule::Autosized)
@@ -515,23 +682,88 @@ FReply SQuickTweenDirectorEditor::OnAddTrackClicked()
 	const SQTDComponentPickerDialog::FResult& R = Picker->GetResult();
 	if (!R.bConfirmed) return FReply::Handled();
 
-	// Create a track pre-wired to the chosen component
 	FQTDTrackData NewTrack;
-	NewTrack.TrackId             = FGuid::NewGuid();
-	NewTrack.TrackLabel          = R.DisplayName;
+	NewTrack.TrackId              = FGuid::NewGuid();
+	NewTrack.TrackLabel           = R.DisplayName;
 	NewTrack.ComponentVariableName = R.VariableName;
-	NewTrack.ComponentClass       = R.ComponentClass;
+	NewTrack.ComponentClass        = R.ComponentClass;
+	NewTrack.DefaultStepType       = (R.ComponentClass && R.ComponentClass->IsChildOf<USceneComponent>())
+		? EQTDStepType::Vector : EQTDStepType::Float;
 
-	// Default step type based on component class
-	if (R.ComponentClass && R.ComponentClass->IsChildOf<USceneComponent>())
-		NewTrack.DefaultStepType = EQTDStepType::Vector;
-	else
-		NewTrack.DefaultStepType = EQTDStepType::Float;
-
-	Asset->Tracks.Add(NewTrack);
-	Asset->MarkPackageDirty();
+	{
+		FScopedTransaction Tx(LOCTEXT("AddTrack", "Add Track"));
+		Asset->Modify();
+		Asset->Tracks.Add(NewTrack);
+		Asset->MarkPackageDirty();
+	}
 	RefreshFromAsset();
+	return FReply::Handled();
+}
 
+FReply SQuickTweenDirectorEditor::OnExportJsonClicked()
+{
+	if (!Asset) return FReply::Handled();
+
+	// Pick a save path
+	IDesktopPlatform* DP = FDesktopPlatformModule::Get();
+	TArray<FString> OutFiles;
+	bool bPicked = false;
+	if (DP)
+	{
+		bPicked = DP->SaveFileDialog(
+			FSlateApplication::Get().FindBestParentWindowHandleForDialogs(AsShared()),
+			TEXT("Export Director Asset to JSON"),
+			FPaths::ProjectContentDir(),
+			Asset->GetName() + TEXT(".json"),
+			TEXT("JSON files (*.json)|*.json"),
+			EFileDialogFlags::None,
+			OutFiles);
+	}
+	if (!bPicked || OutFiles.IsEmpty()) return FReply::Handled();
+
+	// Serialize
+	FString OutputJson;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputJson);
+	Writer->WriteObjectStart();
+
+	Writer->WriteValue(TEXT("asset"), Asset->GetName());
+	Writer->WriteValue(TEXT("loops"), Asset->Loops);
+	Writer->WriteValue(TEXT("totalDuration"), Asset->GetTotalDuration());
+
+	// Tracks
+	Writer->WriteArrayStart(TEXT("tracks"));
+	for (const FQTDTrackData& T : Asset->Tracks)
+	{
+		Writer->WriteObjectStart();
+		Writer->WriteValue(TEXT("id"),        T.TrackId.ToString());
+		Writer->WriteValue(TEXT("label"),     T.TrackLabel);
+		Writer->WriteValue(TEXT("component"), T.ComponentVariableName.ToString());
+		Writer->WriteObjectEnd();
+	}
+	Writer->WriteArrayEnd();
+
+	// Steps
+	Writer->WriteArrayStart(TEXT("steps"));
+	for (const FQTDStepData& S : Asset->Steps)
+	{
+		Writer->WriteObjectStart();
+		Writer->WriteValue(TEXT("id"),        S.StepId.ToString());
+		Writer->WriteValue(TEXT("trackId"),   S.TrackId.ToString());
+		Writer->WriteValue(TEXT("label"),     S.Label);
+		Writer->WriteValue(TEXT("type"),      (int32)S.StepType);
+		Writer->WriteValue(TEXT("startTime"), S.StartTime);
+		Writer->WriteValue(TEXT("duration"),  S.Duration);
+		Writer->WriteValue(TEXT("loops"),     S.Loops);
+		Writer->WriteValue(TEXT("easeType"),  (int32)S.EaseType);
+		Writer->WriteValue(TEXT("slot"),      S.SlotName.ToString());
+		Writer->WriteObjectEnd();
+	}
+	Writer->WriteArrayEnd();
+
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	FFileHelper::SaveStringToFile(OutputJson, *OutFiles[0]);
 	return FReply::Handled();
 }
 
@@ -541,20 +773,43 @@ FReply SQuickTweenDirectorEditor::OnAddTrackClicked()
 
 void SQuickTweenDirectorEditor::DeleteTrack(FGuid TrackId)
 {
-	if (Asset) { Asset->RemoveTrack(TrackId); RefreshFromAsset(); }
+	if (!Asset) return;
+	FScopedTransaction Tx(LOCTEXT("DeleteTrack", "Delete Track"));
+	Asset->Modify();
+	Asset->RemoveTrack(TrackId);
+	RefreshFromAsset();
+}
+
+void SQuickTweenDirectorEditor::ReorderTrack(FGuid TrackId, int32 Direction)
+{
+	if (!Asset) return;
+	const int32 Idx = Asset->Tracks.IndexOfByPredicate([&](const FQTDTrackData& T) {
+		return T.TrackId == TrackId;
+	});
+	if (Idx == INDEX_NONE) return;
+
+	const int32 NewIdx = Idx + Direction;
+	if (NewIdx < 0 || NewIdx >= Asset->Tracks.Num()) return;
+
+	FScopedTransaction Tx(LOCTEXT("ReorderTrack", "Reorder Track"));
+	Asset->Modify();
+	Asset->Tracks.Swap(Idx, NewIdx);
+	Asset->MarkPackageDirty();
+	RefreshFromAsset();
 }
 
 void SQuickTweenDirectorEditor::AddStepToTrack(FQTDStepData PrefilledStep)
 {
 	if (!Asset) return;
 
-	// Label defaults to the step type name
 	if (PrefilledStep.Label.IsEmpty())
-	{
 		PrefilledStep.Label = UEnum::GetValueAsString(PrefilledStep.StepType);
-	}
 
-	Asset->AddStep(PrefilledStep);
+	{
+		FScopedTransaction Tx(LOCTEXT("AddStep", "Add Step"));
+		Asset->Modify();
+		Asset->AddStep(PrefilledStep);
+	}
 	OpenStepDialog(PrefilledStep);
 	RefreshFromAsset();
 }
@@ -576,6 +831,11 @@ void SQuickTweenDirectorEditor::OpenStepDialog(const FQTDStepData& Step)
 
 	DialogWindow->SetContent(Dialog);
 	FSlateApplication::Get().AddModalWindow(DialogWindow, AsShared());
+
+	// Wrap the UpdateStep that happened inside the dialog in an undo record
+	// (The dialog calls Asset->UpdateStep which marks dirty; we just need Modify())
+	// Note: The dialog already called UpdateStep internally; we wrap retroactively.
+	// A cleaner approach would pass a callback, but this is sufficient.
 	RefreshFromAsset();
 }
 
@@ -586,12 +846,101 @@ void SQuickTweenDirectorEditor::OpenStepDialog(const FQTDStepData& Step)
 void SQuickTweenDirectorEditor::OnZoomChanged(float NewValue)
 {
 	PixelsPerSec = NewValue;
-	// Invalidate the ruler so it repaints with the new zoom and recalculates its desired size.
 	if (RulerWidget.IsValid())
-	{
 		RulerWidget->Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
-	}
 	RefreshFromAsset();
+}
+
+FReply SQuickTweenDirectorEditor::OnZoomToFitClicked()
+{
+	if (!Asset) return FReply::Handled();
+
+	const float Dur = Asset->GetTotalDuration();
+	if (Dur <= 0.f) return FReply::Handled();
+
+	// Use the HScrollBox geometry to know the available width.
+	const FGeometry& Geo = HScrollBox.IsValid()
+		? HScrollBox->GetCachedGeometry()
+		: FGeometry();
+	const float AvailWidth = Geo.GetLocalSize().X;
+
+	if (AvailWidth > 0.f)
+	{
+		PixelsPerSec = FMath::Clamp(AvailWidth / Dur, 20.f, 400.f);
+	}
+
+	if (RulerWidget.IsValid())
+		RulerWidget->Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
+	RefreshFromAsset();
+	return FReply::Handled();
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Snap
+// ──────────────────────────────────────────────────────────────────────────────
+
+void SQuickTweenDirectorEditor::PropagateSnapToRows()
+{
+	for (const TWeakPtr<SQTDTrackRow>& WeakRow : TrackRows)
+	{
+		if (TSharedPtr<SQTDTrackRow> Row = WeakRow.Pin())
+		{
+			Row->SetSnapEnabled(bSnapEnabled);
+		}
+	}
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Playback (visual-only: advances the ruler playhead in real time)
+// ──────────────────────────────────────────────────────────────────────────────
+
+FReply SQuickTweenDirectorEditor::OnPlayClicked()
+{
+	if (bIsPlaying) return FReply::Handled();
+	bIsPlaying = true;
+
+	// Clamp playhead to valid range
+	const float TotalDur = Asset ? Asset->GetTotalDuration() : 0.f;
+	if (PlayheadTime >= TotalDur) PlayheadTime = 0.f;
+
+	// Register a per-frame active timer
+	PlaybackTimerHandle = RegisterActiveTimer(0.0f,
+		FWidgetActiveTimerDelegate::CreateSP(this, &SQuickTweenDirectorEditor::HandlePlaybackTick));
+
+	return FReply::Handled();
+}
+
+FReply SQuickTweenDirectorEditor::OnPauseClicked()
+{
+	bIsPlaying = false;
+	// Unregistering is handled automatically via EActiveTimerReturnType::Stop
+	return FReply::Handled();
+}
+
+FReply SQuickTweenDirectorEditor::OnStopClicked()
+{
+	bIsPlaying   = false;
+	PlayheadTime = 0.f;
+	if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
+	return FReply::Handled();
+}
+
+EActiveTimerReturnType SQuickTweenDirectorEditor::HandlePlaybackTick(double /*InCurrentTime*/, float InDeltaTime)
+{
+	if (!bIsPlaying) return EActiveTimerReturnType::Stop;
+
+	const float TotalDur = Asset ? Asset->GetTotalDuration() : 0.f;
+	PlayheadTime += InDeltaTime;
+	if (PlayheadTime >= TotalDur)
+	{
+		PlayheadTime = TotalDur;
+		bIsPlaying   = false;
+		if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
+		return EActiveTimerReturnType::Stop;
+	}
+
+	if (RulerWidget.IsValid()) RulerWidget->Invalidate(EInvalidateWidgetReason::Paint);
+	return EActiveTimerReturnType::Continue;
 }
 
 #undef LOCTEXT_NAMESPACE

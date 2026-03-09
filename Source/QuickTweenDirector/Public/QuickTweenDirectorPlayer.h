@@ -15,6 +15,7 @@ class AActor;
 class USceneComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQTDPlayerEvent, UQuickTweenDirectorPlayer*, Player);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnQTDStepEvent, UQuickTweenDirectorPlayer*, Player, FName, SlotName, FGuid, StepId);
 
 /**
  * Internal entry pairing a built tween with its absolute timeline position.
@@ -144,6 +145,27 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
 	FOnQTDPlayerEvent OnLoop;
 
+	/** Fired when a step becomes active (localTime enters its [Start, End] window). */
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDStepEvent OnStepBegin;
+
+	/** Fired when an active step becomes inactive (localTime leaves its window). */
+	UPROPERTY(BlueprintAssignable, Category = "Director|Events")
+	FOnQTDStepEvent OnStepEnd;
+
+	// ── Debug / inspection ────────────────────────────────────────────────────
+
+	/**
+	 * Populated during Build(). Contains one entry per slot that could not be
+	 * automatically resolved. Empty on success.
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Director|Debug")
+	TArray<FString> BindingErrors;
+
+	/** Current loop-local playback time in seconds (updated every SeekTime call). */
+	UPROPERTY(BlueprintReadOnly, Category = "Director|Playback")
+	float CurrentLocalTime = 0.0f;
+
 private:
 
 	// ── Factory (Blueprint library only) ──────────────────────────────────────
@@ -197,6 +219,9 @@ private:
 	TArray<FQTDBuiltStep> BuiltSteps;
 
 	bool bIsBuilt = false;
+
+	/** Indices (into BuiltSteps) that were active on the last SeekTime call. Used to fire OnStepBegin/OnStepEnd. */
+	TSet<int32> ActiveStepIndices;
 
 	// ── Playback state ────────────────────────────────────────────────────────
 

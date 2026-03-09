@@ -9,7 +9,8 @@
 class UQuickTweenDirectorAsset;
 class SQTDStepContent;
 
-DECLARE_DELEGATE_OneParam (FOnTrackDelete,  FGuid        /*TrackId*/);
+DECLARE_DELEGATE_OneParam (FOnTrackDelete,   FGuid        /*TrackId*/);
+DECLARE_DELEGATE_TwoParams(FOnTrackReorder,  FGuid        /*TrackId*/, int32 /*Direction: +1=down, -1=up*/);
 /**
  * Fired when the user selects an animation type from the context submenu.
  * The step is pre-configured with StepType, SlotName (= ComponentVariableName),
@@ -44,6 +45,7 @@ public:
 		SLATE_ARGUMENT(bool,                      IsSelected)
 		SLATE_EVENT (FSimpleDelegate,             OnTrackSelected)
 		SLATE_EVENT (FOnTrackDelete,              OnTrackDelete)
+		SLATE_EVENT (FOnTrackReorder,             OnTrackReorder)
 		SLATE_EVENT (FOnStepAdded,                OnStepAdded)
 		SLATE_EVENT (FOnStepEdit,                 OnStepEdit)
 		SLATE_EVENT (FOnStepMoved,                OnStepMoved)
@@ -54,6 +56,9 @@ public:
 
 	/** Update zoom and propagate to the inner content widget. */
 	void SetPixelsPerSec(float NewPPS);
+
+	/** Enable/disable grid snapping in the inner content widget. */
+	void SetSnapEnabled(bool bEnabled);
 
 	/**
 	 * Returns the step content widget to be placed in the shared horizontal scroll box.
@@ -67,9 +72,10 @@ private:
 	float                     PixelsPerSec = 80.0f;
 	bool                      bIsSelected  = false;
 
-	FSimpleDelegate OnTrackSelected;
-	FOnTrackDelete  OnTrackDelete;
-	FOnStepAdded    OnStepAdded;
+	FSimpleDelegate  OnTrackSelected;
+	FOnTrackDelete   OnTrackDelete;
+	FOnTrackReorder  OnTrackReorder;
+	FOnStepAdded     OnStepAdded;
 	FOnStepEdit     OnStepEdit;
 	FOnStepMoved    OnStepMoved;
 	FOnStepDeleted  OnStepDeleted;

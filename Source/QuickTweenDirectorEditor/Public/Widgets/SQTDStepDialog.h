@@ -71,6 +71,10 @@ private:
 	TSharedPtr<SBorder>           ColorFromSwatch, ColorToSwatch;
 	FLinearColor                  EditColorFrom, EditColorTo;
 
+	// User color override
+	TSharedPtr<SBorder>           UserColorSwatch;
+	FLinearColor                  EditUserColor;
+
 	// ── Helper builders ───────────────────────────────────────────────────────
 	TSharedRef<SWidget> BuildVectorRow(const FText& Label, TSharedPtr<SEditableTextBox>& X,
 	                                   TSharedPtr<SEditableTextBox>& Y,

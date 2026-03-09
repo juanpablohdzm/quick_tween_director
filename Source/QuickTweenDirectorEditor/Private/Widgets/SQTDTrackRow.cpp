@@ -18,8 +18,43 @@
 #include "Styling/AppStyle.h"
 #include "Styling/SlateIconFinder.h"
 #include "Input/Reply.h"
+#include "ScopedTransaction.h"
 
 #define LOCTEXT_NAMESPACE "SQTDTrackRow"
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Clipboard — module-static so copy/paste works across tracks
+// ──────────────────────────────────────────────────────────────────────────────
+
+static TOptional<FQTDStepData> GQTDStepClipboard;
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Easing helper — evaluate an ease function for the curve preview
+// ──────────────────────────────────────────────────────────────────────────────
+
+static float EvalEase(EEaseType Type, float t)
+{
+	t = FMath::Clamp(t, 0.f, 1.f);
+	switch (Type)
+	{
+		case EEaseType::InSine:     return 1.f - FMath::Cos(t * UE_PI * 0.5f);
+		case EEaseType::OutSine:    return FMath::Sin(t * UE_PI * 0.5f);
+		case EEaseType::InOutSine:  return -(FMath::Cos(UE_PI * t) - 1.f) * 0.5f;
+		case EEaseType::InQuad:     return t * t;
+		case EEaseType::OutQuad:    return 1.f - (1.f - t) * (1.f - t);
+		case EEaseType::InOutQuad:  return t < 0.5f ? 2.f * t * t : 1.f - FMath::Pow(-2.f * t + 2.f, 2.f) * 0.5f;
+		case EEaseType::InCubic:    return t * t * t;
+		case EEaseType::OutCubic:   return 1.f - FMath::Pow(1.f - t, 3.f);
+		case EEaseType::InOutCubic: return t < 0.5f ? 4.f * t * t * t : 1.f - FMath::Pow(-2.f * t + 2.f, 3.f) * 0.5f;
+		case EEaseType::InQuart:    return t * t * t * t;
+		case EEaseType::OutQuart:   return 1.f - FMath::Pow(1.f - t, 4.f);
+		case EEaseType::InOutQuart: return t < 0.5f ? 8.f * t * t * t * t : 1.f - FMath::Pow(-2.f * t + 2.f, 4.f) * 0.5f;
+		case EEaseType::InQuint:    return t * t * t * t * t;
+		case EEaseType::OutQuint:   return 1.f - FMath::Pow(1.f - t, 5.f);
+		case EEaseType::InOutQuint: return t < 0.5f ? 16.f * t * t * t * t * t : 1.f - FMath::Pow(-2.f * t + 2.f, 5.f) * 0.5f;
+		default:                    return t; // Linear and everything else
+	}
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // SQTDStepContent — leaf widget: paints step boxes + handles mouse + context menu
@@ -33,6 +68,7 @@ public:
 		SLATE_ARGUMENT(UQuickTweenDirectorAsset*, Asset)
 		SLATE_ARGUMENT(float,                     PixelsPerSec)
 		SLATE_ARGUMENT(bool,                      IsSelected)
+		SLATE_ARGUMENT(bool,                      SnapEnabled)
 		SLATE_EVENT (FSimpleDelegate,             OnTrackSelected)
 		SLATE_EVENT (FOnStepAdded,                OnStepAdded)
 		SLATE_EVENT (FOnStepEdit,                 OnStepEdit)
@@ -42,18 +78,20 @@ public:
 
 	void Construct(const FArguments& InArgs)
 	{
-		Track            = InArgs._Track;
-		Asset            = InArgs._Asset;
-		PixelsPerSec     = InArgs._PixelsPerSec;
-		bIsSelected      = InArgs._IsSelected;
-		OnTrackSelected  = InArgs._OnTrackSelected;
-		OnStepAdded      = InArgs._OnStepAdded;
-		OnStepEdit       = InArgs._OnStepEdit;
-		OnStepMoved      = InArgs._OnStepMoved;
-		OnStepDeleted    = InArgs._OnStepDeleted;
+		Track           = InArgs._Track;
+		Asset           = InArgs._Asset;
+		PixelsPerSec    = InArgs._PixelsPerSec;
+		bIsSelected     = InArgs._IsSelected;
+		bSnapEnabled    = InArgs._SnapEnabled;
+		OnTrackSelected = InArgs._OnTrackSelected;
+		OnStepAdded     = InArgs._OnStepAdded;
+		OnStepEdit      = InArgs._OnStepEdit;
+		OnStepMoved     = InArgs._OnStepMoved;
+		OnStepDeleted   = InArgs._OnStepDeleted;
 	}
 
-	void SetPixelsPerSec(float PPS) { PixelsPerSec = PPS; Invalidate(EInvalidateWidgetReason::Paint); }
+	void SetPixelsPerSec(float PPS) { PixelsPerSec = PPS; Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout); }
+	void SetSnapEnabled(bool bEnabled) { bSnapEnabled = bEnabled; }
 
 	virtual FVector2D ComputeDesiredSize(float) const override
 	{
@@ -96,15 +134,16 @@ public:
 			const float X    = Info.X;
 			const float SW   = Info.W;
 
-			const FLinearColor TypeColor = Info.Step->GetTypeColor();
-			const bool  bHovered    = (HoveredStepId == Info.Step->StepId);
-			const bool  bPressed    = (PressedStepId  == Info.Step->StepId);
-			const bool  bDragged    = Info.bIsDragged;
+			const FLinearColor TypeColor = Info.Step->GetDisplayColor();
+			const bool bHovered    = (HoveredStepId == Info.Step->StepId);
+			const bool bPressed    = (PressedStepId  == Info.Step->StepId);
+			const bool bDragged    = Info.bIsDragged;
+			const bool bMultiSel   = SelectedStepIds.Contains(Info.Step->StepId);
 			const float FillOpacity = bDragged ? 0.36f : (bPressed ? 0.28f : (bHovered ? 0.22f : 0.16f));
 			const float TopOpacity  = bDragged ? 0.90f : (bPressed ? 0.60f : (bHovered ? 0.50f : 0.35f));
-			const float TopLineW    = bDragged ? 2.f   : 1.f;
+			const float TopLineW    = (bDragged || bMultiSel) ? 2.f : 1.f;
 
-			// ── Tinted fill (semi-transparent) ────────────────────────────────
+			// ── Tinted fill ────────────────────────────────────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId,
 				AllottedGeometry.ToPaintGeometry(
 					FVector2f(SW - 1.f, BH),
@@ -112,7 +151,7 @@ public:
 				FAppStyle::GetBrush("WhiteBrush"),
 				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(FillOpacity));
 
-			// ── Left accent stripe (4 px, full opacity) ───────────────────────
+			// ── Left accent stripe ─────────────────────────────────────────────
 			FSlateDrawElement::MakeBox(OutDrawElements, LayerId + 1,
 				AllottedGeometry.ToPaintGeometry(
 					FVector2f(4.f, BH),
@@ -120,11 +159,54 @@ public:
 				FAppStyle::GetBrush("WhiteBrush"),
 				ESlateDrawEffect::None, TypeColor);
 
+			// ── Multi-select outline ───────────────────────────────────────────
+			if (bMultiSel)
+			{
+				TArray<FVector2D> Outline = {
+					FVector2D(X, PadY), FVector2D(X + SW - 1.f, PadY),
+					FVector2D(X + SW - 1.f, PadY + BH), FVector2D(X, PadY + BH), FVector2D(X, PadY)
+				};
+				FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 2,
+					AllottedGeometry.ToPaintGeometry(), Outline,
+					ESlateDrawEffect::None, FLinearColor(1.f, 1.f, 1.f, 0.60f), true, 1.5f);
+			}
+
 			// ── Top edge highlight ─────────────────────────────────────────────
 			TArray<FVector2D> TopPts = { FVector2D(X + 4.f, PadY), FVector2D(X + SW - 1.f, PadY) };
 			FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 2,
 				AllottedGeometry.ToPaintGeometry(), TopPts,
 				ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(TopOpacity), true, TopLineW);
+
+			// ── Easing curve preview (when block is wide enough) ───────────────
+			if (SW > 80.f && Info.Step->EaseType != EEaseType::Linear)
+			{
+				const int32 Samples = 20;
+				TArray<FVector2D> CurvePts;
+				CurvePts.Reserve(Samples + 1);
+				for (int32 s = 0; s <= Samples; ++s)
+				{
+					const float T    = (float)s / Samples;
+					const float EVal = EvalEase(Info.Step->EaseType, T);
+					const float CX   = X + 4.f + T * (SW - 8.f);
+					// Invert Y: 0=bottom, 1=top within the block
+					const float CY   = PadY + BH * (1.f - EVal * 0.65f);
+					CurvePts.Add(FVector2D(CX, CY));
+				}
+				FSlateDrawElement::MakeLines(OutDrawElements, LayerId + 3,
+					AllottedGeometry.ToPaintGeometry(), CurvePts,
+					ESlateDrawEffect::None, TypeColor.CopyWithNewOpacity(0.40f), true, 1.f);
+			}
+
+			// ── Resize handle indicator (right edge, when hovered) ─────────────
+			if (bHovered && !bIsDragging && !bIsResizing)
+			{
+				FSlateDrawElement::MakeBox(OutDrawElements, LayerId + 3,
+					AllottedGeometry.ToPaintGeometry(
+						FVector2f(3.f, BH),
+						FSlateLayoutTransform(FVector2f(X + SW - 4.f, PadY))),
+					FAppStyle::GetBrush("WhiteBrush"),
+					ESlateDrawEffect::None, FLinearColor(1.f, 1.f, 1.f, 0.20f));
+			}
 
 			// ── Step label ────────────────────────────────────────────────────
 			if (SW > 18.f)
@@ -143,7 +225,7 @@ public:
 					FLinearColor(1.f, 1.f, 1.f, bDragged ? 1.0f : 0.88f));
 			}
 
-			// ── Duration chip (bottom-right, accent-tinted) ───────────────────
+			// ── Duration chip (bottom-right) ───────────────────────────────────
 			if (SW > 52.f)
 			{
 				FSlateDrawElement::MakeText(OutDrawElements, LayerId + 3,
@@ -156,7 +238,7 @@ public:
 					TypeColor.CopyWithNewOpacity(0.75f));
 			}
 
-			// ── Loop badge (bottom-left, when looping) ────────────────────────
+			// ── Loop badge ────────────────────────────────────────────────────
 			if (SW > 28.f && Info.Step->Loops != 1)
 			{
 				const FString LoopStr = (Info.Step->Loops < 0)
@@ -182,15 +264,48 @@ public:
 		if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
 		{
 			OnTrackSelected.ExecuteIfBound();
-
 			const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
+			const bool bCtrl = Event.IsControlDown();
+
 			if (const FQTDStepData* Hit = HitTestStep(Local))
 			{
+				// Check if cursor is within resize zone (right 6 px of step)
+				const float StepX = Hit->StartTime * PixelsPerSec;
+				const float StepW = FMath::Max(Hit->Duration * PixelsPerSec * FMath::Max(Hit->Loops, 1),
+				                               QTDEditorConstants::MinStepWidth);
+				const bool bNearRightEdge = (Local.X >= StepX + StepW - 6.f);
+
+				if (bNearRightEdge)
+				{
+					// Begin resize
+					bIsResizing            = true;
+					ResizedStepId          = Hit->StepId;
+					ResizeOriginalDuration = Hit->Duration;
+					ResizeStartMouseX      = Local.X;
+					Invalidate(EInvalidateWidgetReason::Paint);
+					return FReply::Handled().CaptureMouse(AsShared());
+				}
+
+				// Multi-select toggle (Ctrl+click)
+				if (bCtrl)
+				{
+					if (SelectedStepIds.Contains(Hit->StepId))
+						SelectedStepIds.Remove(Hit->StepId);
+					else
+						SelectedStepIds.Add(Hit->StepId);
+					Invalidate(EInvalidateWidgetReason::Paint);
+					return FReply::Handled();
+				}
+
+				// Clear multi-select if clicking a non-selected step without Ctrl
+				if (!SelectedStepIds.Contains(Hit->StepId))
+					SelectedStepIds.Empty();
+
+				// Begin drag-move
 				bIsDragging   = true;
 				DraggedStepId = Hit->StepId;
 				PressedStepId = Hit->StepId;
 
-				// Record the step's current slot index in the sorted order
 				const TArray<FQTDStepData*> Sorted = GetSortedTrackSteps();
 				DragTargetIndex = 0;
 				for (int32 i = 0; i < Sorted.Num(); ++i)
@@ -205,6 +320,10 @@ public:
 				Invalidate(EInvalidateWidgetReason::Paint);
 				return FReply::Handled().CaptureMouse(AsShared());
 			}
+
+			// Clicked on empty area — clear selection
+			if (!bCtrl) SelectedStepIds.Empty();
+			Invalidate(EInvalidateWidgetReason::Paint);
 			return FReply::Handled();
 		}
 
@@ -222,9 +341,25 @@ public:
 	{
 		if (Event.GetEffectingButton() == EKeys::LeftMouseButton)
 		{
+			// Commit resize
+			if (bIsResizing && ResizedStepId.IsValid() && Asset)
+			{
+				if (FQTDStepData* Step = Asset->FindStep(ResizedStepId))
+				{
+					const float MinDur = FMath::Max(0.05f, QTDEditorConstants::MinStepWidth / PixelsPerSec);
+					Step->Duration = FMath::Max(Step->Duration, MinDur);
+					FScopedTransaction Tx(LOCTEXT("ResizeStep", "Resize Step"));
+					Asset->Modify();
+					Asset->MarkPackageDirty();
+				}
+			}
+
+			// Commit reorder drag
 			if (bIsDragging && DraggedStepId.IsValid() && Asset)
 			{
-				// Commit reorder: rebuild sequential start times in the new slot order
+				FScopedTransaction Tx(LOCTEXT("MoveStep", "Move Step"));
+				Asset->Modify();
+
 				TArray<FQTDStepData*> Sorted = GetSortedTrackSteps();
 				TArray<FQTDStepData*> OtherSteps;
 				FQTDStepData* DraggedStep = nullptr;
@@ -254,8 +389,11 @@ public:
 					Asset->MarkPackageDirty();
 				}
 			}
-			bIsDragging = false;
+
+			bIsResizing   = false;
+			bIsDragging   = false;
 			DraggedStepId.Invalidate();
+			ResizedStepId.Invalidate();
 			PressedStepId.Invalidate();
 			Invalidate(EInvalidateWidgetReason::Paint);
 			return FReply::Handled().ReleaseMouseCapture();
@@ -267,6 +405,23 @@ public:
 	{
 		const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
 
+		// Resize drag
+		if (bIsResizing && ResizedStepId.IsValid() && Asset)
+		{
+			if (FQTDStepData* Step = Asset->FindStep(ResizedStepId))
+			{
+				const float DeltaX = Local.X - ResizeStartMouseX;
+				float NewDuration   = ResizeOriginalDuration + DeltaX / PixelsPerSec;
+				if (bSnapEnabled)
+					NewDuration = FMath::RoundToFloat(NewDuration / QTDEditorConstants::SnapIncrement) * QTDEditorConstants::SnapIncrement;
+				NewDuration = FMath::Max(NewDuration, QTDEditorConstants::MinStepWidth / PixelsPerSec);
+				Step->Duration = NewDuration;
+				Invalidate(EInvalidateWidgetReason::Paint | EInvalidateWidgetReason::Layout);
+			}
+			return FReply::Handled();
+		}
+
+		// Move drag
 		if (bIsDragging && DraggedStepId.IsValid())
 		{
 			const int32 NewTarget = ComputeDragTargetIndex(Local.X);
@@ -278,7 +433,7 @@ public:
 			return FReply::Handled();
 		}
 
-		// Hover tracking (no capture needed — called whenever cursor is over widget)
+		// Hover + resize cursor
 		const FQTDStepData* Hit = HitTestStep(Local);
 		const FGuid NewHovered  = Hit ? Hit->StepId : FGuid();
 		if (NewHovered != HoveredStepId)
@@ -287,13 +442,27 @@ public:
 			Invalidate(EInvalidateWidgetReason::Paint);
 		}
 
+		// Show resize cursor when near a step's right edge
+		if (Hit)
+		{
+			const float StepX = Hit->StartTime * PixelsPerSec;
+			const float StepW = FMath::Max(Hit->Duration * PixelsPerSec * FMath::Max(Hit->Loops, 1),
+			                               QTDEditorConstants::MinStepWidth);
+			if (Local.X >= StepX + StepW - 6.f)
+			{
+				return FReply::Handled().SetMouseCursor(EMouseCursor::ResizeLeftRight);
+			}
+		}
+
 		return FReply::Unhandled();
 	}
 
 	virtual void OnMouseLeave(const FPointerEvent&) override
 	{
 		bIsDragging = false;
+		bIsResizing = false;
 		DraggedStepId.Invalidate();
+		ResizedStepId.Invalidate();
 		if (HoveredStepId.IsValid())
 		{
 			HoveredStepId.Invalidate();
@@ -319,6 +488,14 @@ public:
 
 private:
 
+	// ── Snapping ───────────────────────────────────────────────────────────────
+
+	float SnapTime(float T) const
+	{
+		if (!bSnapEnabled) return T;
+		return FMath::RoundToFloat(T / QTDEditorConstants::SnapIncrement) * QTDEditorConstants::SnapIncrement;
+	}
+
 	// ── Render helpers ─────────────────────────────────────────────────────────
 
 	struct FStepRenderInfo
@@ -339,7 +516,6 @@ private:
 		return Steps;
 	}
 
-	// Returns the insertion index (among non-dragged steps) that cursor X maps to.
 	int32 ComputeDragTargetIndex(float CursorX) const
 	{
 		float T = 0.f;
@@ -355,8 +531,6 @@ private:
 		return Target;
 	}
 
-	// Builds the list of steps with their draw positions.
-	// During a drag, positions reflect the preview (dragged step at DragTargetIndex).
 	TArray<FStepRenderInfo> BuildRenderList() const
 	{
 		TArray<FStepRenderInfo> List;
@@ -379,7 +553,7 @@ private:
 			return List;
 		}
 
-		// During drag: show steps rearranged with dragged step at DragTargetIndex
+		// During drag: show preview reorder
 		TArray<FQTDStepData*> OtherSteps;
 		FQTDStepData* DraggedStep = nullptr;
 		for (FQTDStepData* S : Sorted)
@@ -420,8 +594,8 @@ private:
 	void ShowContextMenu(FVector2D ScreenPos, FVector2D LocalPos)
 	{
 		const FQTDStepData* HitStep = HitTestStep(LocalPos);
+		const bool bHasSelection    = SelectedStepIds.Num() > 1;
 
-		// New steps always append after the last step on this track
 		float NewStepStart = 0.f;
 		if (Asset)
 		{
@@ -440,6 +614,33 @@ private:
 		if (HitStep)
 		{
 			const FGuid StepId = HitStep->StepId;
+
+			Builder.AddMenuEntry(
+				LOCTEXT("CopyStep", "Copy Step"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateLambda([this, HitStep]()
+				{
+					GQTDStepClipboard = *HitStep;
+				})));
+
+			if (bHasSelection)
+			{
+				Builder.AddMenuEntry(
+					LOCTEXT("DeleteSelected", "Delete Selected"),
+					FText::GetEmpty(), FSlateIcon(),
+					FUIAction(FExecuteAction::CreateLambda([this]()
+					{
+						if (!Asset) return;
+						FScopedTransaction Tx(LOCTEXT("DeleteSelectedSteps", "Delete Selected Steps"));
+						Asset->Modify();
+						for (const FGuid& Id : SelectedStepIds)
+						{
+							Asset->RemoveStep(Id);
+						}
+						SelectedStepIds.Empty();
+						Asset->MarkPackageDirty();
+					})));
+			}
+
 			Builder.AddMenuEntry(
 				LOCTEXT("DeleteStep", "Delete Step"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateLambda([this, StepId]() {
@@ -453,6 +654,26 @@ private:
 				LOCTEXT("AddStepTip", "Add a new step at the end of this track"),
 				FNewMenuDelegate::CreateSP(this, &SQTDStepContent::BuildAddStepSubmenu, NewStepStart)
 			);
+
+			if (GQTDStepClipboard.IsSet())
+			{
+				const float PasteTime = SnapTime(LocalPos.X / PixelsPerSec);
+				Builder.AddMenuEntry(
+					LOCTEXT("PasteStep", "Paste Step"),
+					FText::GetEmpty(), FSlateIcon(),
+					FUIAction(FExecuteAction::CreateLambda([this, PasteTime]()
+					{
+						if (!Asset || !GQTDStepClipboard.IsSet()) return;
+						FQTDStepData NewStep = GQTDStepClipboard.GetValue();
+						NewStep.StepId    = FGuid::NewGuid();
+						NewStep.TrackId   = Track.TrackId;
+						NewStep.SlotName  = Track.ComponentVariableName;
+						NewStep.StartTime = FMath::Max(0.f, PasteTime);
+						FScopedTransaction Tx(LOCTEXT("PasteStepTx", "Paste Step"));
+						Asset->Modify();
+						OnStepAdded.ExecuteIfBound(NewStep);
+					})));
+			}
 		}
 
 		FSlateApplication::Get().PushMenu(
@@ -468,82 +689,52 @@ private:
 		const bool bIsScene     = CompClass && CompClass->IsChildOf<USceneComponent>();
 		const bool bIsPrimitive = CompClass && CompClass->IsChildOf<UPrimitiveComponent>();
 
-		// ── Scene component types ──────────────────────────────────────────
 		if (bIsScene)
 		{
 			SubBuilder.BeginSection("Location", LOCTEXT("SecLocation", "Location"));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("RelLoc", "Relative Location"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+			SubBuilder.AddMenuEntry(LOCTEXT("RelLoc", "Relative Location"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeVectorStep(EQTDVectorProperty::RelativeLocation, SlotName, ClickTime))));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("WorldLoc", "World Location"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+					MakeVectorStep(EQTDVectorProperty::RelativeLocation, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("WorldLoc", "World Location"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeVectorStep(EQTDVectorProperty::WorldLocation, SlotName, ClickTime))));
+					MakeVectorStep(EQTDVectorProperty::WorldLocation, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 
 			SubBuilder.BeginSection("Rotation", LOCTEXT("SecRotation", "Rotation"));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("RelRot", "Relative Rotation"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+			SubBuilder.AddMenuEntry(LOCTEXT("RelRot", "Relative Rotation"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeRotatorStep(EQTDRotatorProperty::RelativeRotation, SlotName, ClickTime))));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("WorldRot", "World Rotation"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+					MakeRotatorStep(EQTDRotatorProperty::RelativeRotation, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("WorldRot", "World Rotation"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeRotatorStep(EQTDRotatorProperty::WorldRotation, SlotName, ClickTime))));
+					MakeRotatorStep(EQTDRotatorProperty::WorldRotation, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 
 			SubBuilder.BeginSection("Scale", LOCTEXT("SecScale", "Scale"));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("RelScale", "Relative Scale"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+			SubBuilder.AddMenuEntry(LOCTEXT("RelScale", "Relative Scale"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeVectorStep(EQTDVectorProperty::RelativeScale3D, SlotName, ClickTime))));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("WorldScale", "World Scale"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+					MakeVectorStep(EQTDVectorProperty::RelativeScale3D, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("WorldScale", "World Scale"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeVectorStep(EQTDVectorProperty::WorldScale3D, SlotName, ClickTime))));
+					MakeVectorStep(EQTDVectorProperty::WorldScale3D, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 		}
 
-		// ── Primitive / material types ─────────────────────────────────────
 		if (bIsPrimitive || !bIsScene)
 		{
 			SubBuilder.BeginSection("Material", LOCTEXT("SecMaterial", "Material"));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("MatFloat", "Material Scalar Parameter"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+			SubBuilder.AddMenuEntry(LOCTEXT("MatFloat", "Material Scalar Parameter"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeFloatStep(EQTDFloatTarget::MaterialScalar, SlotName, ClickTime))));
-			SubBuilder.AddMenuEntry(
-				LOCTEXT("MatColor", "Material Vector Parameter (Color)"),
-				FText::GetEmpty(),
-				FSlateIcon(),
+					MakeFloatStep(EQTDFloatTarget::MaterialScalar, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("MatColor", "Material Vector Parameter (Color)"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-					MakeColorStep(EQTDColorTarget::MaterialVector, SlotName, ClickTime))));
+					MakeColorStep(EQTDColorTarget::MaterialVector, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 		}
 
-		// ── Generic ───────────────────────────────────────────────────────
 		SubBuilder.BeginSection("Generic", LOCTEXT("SecGeneric", "Generic"));
-		SubBuilder.AddMenuEntry(
-			LOCTEXT("Delay", "Delay (Empty)"),
-			FText::GetEmpty(),
-			FSlateIcon(),
+		SubBuilder.AddMenuEntry(LOCTEXT("Delay", "Delay (Empty)"), FText::GetEmpty(), FSlateIcon(),
 			FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
-				MakeEmptyStep(SlotName, ClickTime))));
+				MakeEmptyStep(SlotName, SnapTime(ClickTime)))));
 		SubBuilder.EndSection();
 	}
 
@@ -632,6 +823,7 @@ private:
 	UQuickTweenDirectorAsset* Asset        = nullptr;
 	float                     PixelsPerSec = 80.0f;
 	bool                      bIsSelected  = false;
+	bool                      bSnapEnabled = false;
 
 	FSimpleDelegate OnTrackSelected;
 	FOnStepAdded    OnStepAdded;
@@ -639,11 +831,21 @@ private:
 	FOnStepMoved    OnStepMoved;
 	FOnStepDeleted  OnStepDeleted;
 
+	// Drag-move
 	bool  bIsDragging    = false;
 	FGuid DraggedStepId;
 	FGuid HoveredStepId;
 	FGuid PressedStepId;
 	int32 DragTargetIndex = 0;
+
+	// Resize
+	bool  bIsResizing           = false;
+	FGuid ResizedStepId;
+	float ResizeOriginalDuration = 1.f;
+	float ResizeStartMouseX      = 0.f;
+
+	// Multi-select
+	TSet<FGuid> SelectedStepIds;
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -658,17 +860,18 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 	bIsSelected     = InArgs._IsSelected;
 	OnTrackSelected = InArgs._OnTrackSelected;
 	OnTrackDelete   = InArgs._OnTrackDelete;
+	OnTrackReorder  = InArgs._OnTrackReorder;
 	OnStepAdded     = InArgs._OnStepAdded;
 	OnStepEdit      = InArgs._OnStepEdit;
 	OnStepMoved     = InArgs._OnStepMoved;
 	OnStepDeleted   = InArgs._OnStepDeleted;
 
-	// Build the step content widget (placed externally in the shared H-scroll box).
 	SAssignNew(StepContent, SQTDStepContent)
 		.Track(Track)
 		.Asset(Asset)
 		.PixelsPerSec(PixelsPerSec)
 		.IsSelected(bIsSelected)
+		.SnapEnabled(false)
 		.OnTrackSelected(OnTrackSelected)
 		.OnStepAdded(OnStepAdded)
 		.OnStepEdit(OnStepEdit)
@@ -679,10 +882,9 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 		? Track.ComponentClass->GetName().Replace(TEXT("Component"), TEXT(""))
 		: FString();
 
-	const float LabelBg      = bIsSelected ? 0.115f : 0.095f;
-	const float AccentAlpha  = bIsSelected ? 1.00f  : 0.50f;
+	const float LabelBg     = bIsSelected ? 0.115f : 0.095f;
+	const float AccentAlpha = bIsSelected ? 1.00f  : 0.50f;
 
-	// Label column widget — placed in the fixed left column (no horizontal scroll).
 	ChildSlot
 	[
 		SNew(SBox)
@@ -704,7 +906,7 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 				[
 					SNew(SHorizontalBox)
 
-					// Orange accent bar (left edge)
+					// Orange accent bar
 					+ SHorizontalBox::Slot().AutoWidth()
 					[
 						SNew(SBox).WidthOverride(QTDEditorConstants::LabelAccentWidth)
@@ -715,59 +917,99 @@ void SQTDTrackRow::Construct(const FArguments& InArgs)
 						]
 					]
 
-				// Icon
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(8.f, 0.f, 5.f, 0.f)
-				[
-					SNew(SImage)
-					.Image(FSlateIconFinder::FindIconBrushForClass(
-						Track.ComponentClass.Get(), TEXT("SCS.Component")))
-					.DesiredSizeOverride(FVector2D(14.f, 14.f))
-					.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
-					.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
-				]
-
-				// Track name + class subtitle
-				+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
-				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot().AutoHeight()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(Track.TrackLabel))
-						.Font(FAppStyle::GetFontStyle("SmallFont"))
-						.ColorAndOpacity(FLinearColor(0.85f, 0.85f, 0.85f))
-					]
-					+ SVerticalBox::Slot().AutoHeight()
-					[
-						SNew(STextBlock)
-						.Text(FText::FromString(ClassShortName))
-						.Font(FAppStyle::GetFontStyle("TinyText"))
-						.ColorAndOpacity(FLinearColor(0.38f, 0.38f, 0.38f))
-						.Visibility(ClassShortName.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible)
-					]
-				]
-
-				// Delete button (X icon)
-				+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
-				[
-					SNew(SButton)
-					.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-					.ToolTipText(LOCTEXT("DeleteTrack", "Remove this track"))
-					.OnClicked_Lambda([this]() -> FReply {
-						OnTrackSelected.ExecuteIfBound();
-						OnTrackDelete.ExecuteIfBound(Track.TrackId);
-						return FReply::Handled();
-					})
-					.ContentPadding(FMargin(3.f, 2.f))
+					// Icon
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(8.f, 0.f, 5.f, 0.f)
 					[
 						SNew(SImage)
-						.Image(FAppStyle::GetBrush("Icons.X"))
-						.DesiredSizeOverride(FVector2D(10.f, 10.f))
-						.ColorAndOpacity(FSlateColor(FLinearColor(0.55f, 0.22f, 0.22f)))
+						.Image(FSlateIconFinder::FindIconBrushForClass(
+							Track.ComponentClass.Get(), TEXT("SCS.Component")))
+						.DesiredSizeOverride(FVector2D(14.f, 14.f))
+						.ColorAndOpacity(FSlateColor(FLinearColor(0.7f, 0.7f, 0.7f)))
+						.Visibility(Track.ComponentClass ? EVisibility::Visible : EVisibility::Collapsed)
+					]
+
+					// Track name + class subtitle
+					+ SHorizontalBox::Slot().FillWidth(1.f).VAlign(VAlign_Center)
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString(Track.TrackLabel))
+							.Font(FAppStyle::GetFontStyle("SmallFont"))
+							.ColorAndOpacity(FLinearColor(0.85f, 0.85f, 0.85f))
+						]
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString(ClassShortName))
+							.Font(FAppStyle::GetFontStyle("TinyText"))
+							.ColorAndOpacity(FLinearColor(0.38f, 0.38f, 0.38f))
+							.Visibility(ClassShortName.IsEmpty() ? EVisibility::Collapsed : EVisibility::Visible)
+						]
+					]
+
+					// Reorder arrows (up / down)
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							SNew(SButton)
+							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+							.ContentPadding(FMargin(2.f, 1.f))
+							.ToolTipText(LOCTEXT("MoveUp", "Move track up"))
+							.OnClicked_Lambda([this]() -> FReply {
+								OnTrackReorder.ExecuteIfBound(Track.TrackId, -1);
+								return FReply::Handled();
+							})
+							[
+								SNew(SImage)
+								.Image(FAppStyle::GetBrush("Icons.ChevronUp"))
+								.DesiredSizeOverride(FVector2D(8.f, 8.f))
+								.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.5f, 0.5f)))
+							]
+						]
+						+ SVerticalBox::Slot().AutoHeight()
+						[
+							SNew(SButton)
+							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+							.ContentPadding(FMargin(2.f, 1.f))
+							.ToolTipText(LOCTEXT("MoveDown", "Move track down"))
+							.OnClicked_Lambda([this]() -> FReply {
+								OnTrackReorder.ExecuteIfBound(Track.TrackId, +1);
+								return FReply::Handled();
+							})
+							[
+								SNew(SImage)
+								.Image(FAppStyle::GetBrush("Icons.ChevronDown"))
+								.DesiredSizeOverride(FVector2D(8.f, 8.f))
+								.ColorAndOpacity(FSlateColor(FLinearColor(0.5f, 0.5f, 0.5f)))
+							]
+						]
+					]
+
+					// Delete button
+					+ SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(0.f, 0.f, 4.f, 0.f)
+					[
+						SNew(SButton)
+						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+						.ToolTipText(LOCTEXT("DeleteTrack", "Remove this track"))
+						.OnClicked_Lambda([this]() -> FReply {
+							OnTrackSelected.ExecuteIfBound();
+							OnTrackDelete.ExecuteIfBound(Track.TrackId);
+							return FReply::Handled();
+						})
+						.ContentPadding(FMargin(3.f, 2.f))
+						[
+							SNew(SImage)
+							.Image(FAppStyle::GetBrush("Icons.X"))
+							.DesiredSizeOverride(FVector2D(10.f, 10.f))
+							.ColorAndOpacity(FSlateColor(FLinearColor(0.55f, 0.22f, 0.22f)))
+						]
 					]
 				]
-			]
-		]  // SBorder
+			]  // SBorder
 		]  // SButton
 	];
 }
@@ -776,6 +1018,11 @@ void SQTDTrackRow::SetPixelsPerSec(float NewPPS)
 {
 	PixelsPerSec = NewPPS;
 	if (StepContent.IsValid()) StepContent->SetPixelsPerSec(NewPPS);
+}
+
+void SQTDTrackRow::SetSnapEnabled(bool bEnabled)
+{
+	if (StepContent.IsValid()) StepContent->SetSnapEnabled(bEnabled);
 }
 
 TSharedRef<SWidget> SQTDTrackRow::GetStepContentWidget() const
