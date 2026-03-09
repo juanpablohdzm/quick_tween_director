@@ -904,7 +904,7 @@ FReply SQuickTweenDirectorEditor::OnPlayClicked()
 	if (PlayheadTime >= TotalDur) PlayheadTime = 0.f;
 
 	// Register a per-frame active timer
-	PlaybackTimerHandle = RegisterActiveTimer(0.0f,
+	RegisterActiveTimer(0.0f,
 		FWidgetActiveTimerDelegate::CreateSP(this, &SQuickTweenDirectorEditor::HandlePlaybackTick));
 
 	return FReply::Handled();

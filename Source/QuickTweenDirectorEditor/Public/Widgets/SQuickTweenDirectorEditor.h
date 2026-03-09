@@ -76,7 +76,6 @@ private:
 	// ── Playback ──────────────────────────────────────────────────────────────
 	float PlayheadTime = 0.f;
 	bool  bIsPlaying   = false;
-	FWidgetActiveTimerHandle PlaybackTimerHandle;
 
 	FReply OnPlayClicked();
 	FReply OnPauseClicked();

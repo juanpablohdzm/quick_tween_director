@@ -651,19 +651,19 @@ void UQuickTweenDirectorPlayer::SeekTime(float LoopLocalTime)
 
 		const float Start    = Entry.StartTime;
 		const float End      = Start + Entry.TotalDuration;
-		const bool  bActive  = (LoopLocalTime >= Start) && (LoopLocalTime <= End);
-		const bool  bWasActive = ActiveStepIndices.Contains(i);
+		const bool  bActive        = (LoopLocalTime >= Start) && (LoopLocalTime <= End);
+		const bool  bStepWasActive = ActiveStepIndices.Contains(i);
 
 		// Fire begin/end step events on transitions.
 		if (bTriggerEvents && BuiltStepData.IsValidIndex(i))
 		{
 			const FQTDStepData& SD = BuiltStepData[i];
-			if (bActive && !bWasActive)
+			if (bActive && !bStepWasActive)
 			{
 				ActiveStepIndices.Add(i);
 				if (OnStepBegin.IsBound()) OnStepBegin.Broadcast(this, SD.SlotName, SD.StepId);
 			}
-			else if (!bActive && bWasActive)
+			else if (!bActive && bStepWasActive)
 			{
 				ActiveStepIndices.Remove(i);
 				if (OnStepEnd.IsBound()) OnStepEnd.Broadcast(this, SD.SlotName, SD.StepId);

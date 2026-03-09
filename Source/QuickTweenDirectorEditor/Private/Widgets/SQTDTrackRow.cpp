@@ -442,18 +442,6 @@ public:
 			Invalidate(EInvalidateWidgetReason::Paint);
 		}
 
-		// Show resize cursor when near a step's right edge
-		if (Hit)
-		{
-			const float StepX = Hit->StartTime * PixelsPerSec;
-			const float StepW = FMath::Max(Hit->Duration * PixelsPerSec * FMath::Max(Hit->Loops, 1),
-			                               QTDEditorConstants::MinStepWidth);
-			if (Local.X >= StepX + StepW - 6.f)
-			{
-				return FReply::Handled().SetMouseCursor(EMouseCursor::ResizeLeftRight);
-			}
-		}
-
 		return FReply::Unhandled();
 	}
 
@@ -482,6 +470,23 @@ public:
 			}
 		}
 		return FReply::Unhandled();
+	}
+
+	virtual FCursorReply OnCursorQuery(const FGeometry& MyGeometry, const FPointerEvent& CursorEvent) const override
+	{
+		if (bIsResizing) return FCursorReply::Cursor(EMouseCursor::ResizeLeftRight);
+
+		const FVector2D Local = MyGeometry.AbsoluteToLocal(CursorEvent.GetScreenSpacePosition());
+		const FQTDStepData* Hit = HitTestStep(Local);
+		if (Hit)
+		{
+			const float StepX = Hit->StartTime * PixelsPerSec;
+			const float StepW = FMath::Max(Hit->Duration * PixelsPerSec * FMath::Max(Hit->Loops, 1),
+			                               QTDEditorConstants::MinStepWidth);
+			if (Local.X >= StepX + StepW - 6.f)
+				return FCursorReply::Cursor(EMouseCursor::ResizeLeftRight);
+		}
+		return FCursorReply::Unhandled();
 	}
 
 	virtual bool SupportsKeyboardFocus() const override { return false; }
