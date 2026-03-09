@@ -712,6 +712,7 @@ FReply SQuickTweenDirectorEditor::OnExportJsonClicked()
 		Writer->WriteValue(TEXT("loops"),         S.Loops);
 		Writer->WriteValue(TEXT("loopType"),      (int32)S.LoopType);
 		Writer->WriteValue(TEXT("easeType"),      (int32)S.EaseType);
+		Writer->WriteValue(TEXT("easeCurve"),     S.EaseCurve.ToString());
 		Writer->WriteValue(TEXT("slot"),          S.SlotName.ToString());
 		Writer->WriteValue(TEXT("parameterName"), S.ParameterName.ToString());
 		switch (S.StepType)
@@ -1086,6 +1087,15 @@ FReply SQuickTweenDirectorEditor::OnImportJsonClicked()
 				Step.StepType = (EQTDStepType)FMath::Clamp(IntTmp, 0, (int32)EQTDStepType::Empty);
 			if (StepObj->TryGetNumberField(TEXT("easeType"), IntTmp))
 				Step.EaseType = (EEaseType)IntTmp;
+			{
+				FString CurvePath;
+				if (StepObj->TryGetStringField(TEXT("easeCurve"), CurvePath) && !CurvePath.IsEmpty())
+				{
+					Step.EaseCurve = TSoftObjectPtr<UCurveFloat>(FSoftObjectPath(CurvePath));
+					if (!Step.EaseCurve.IsValid())
+						Warnings.Add(FString::Printf(TEXT("steps[%d]: easeCurve path '%s' could not be resolved - curve will be loaded lazily at runtime."), i, *CurvePath));
+				}
+			}
 
 			// Target
 			FString SlotStr, ParamStr;

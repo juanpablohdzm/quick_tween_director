@@ -47,6 +47,7 @@ private:
 	TArray<TSharedPtr<FString>>   EaseTypeOptions;
 	TSharedPtr<STextBlock>        EaseTypeDisplay;
 	int32                         SelectedEaseIndex = 0;
+	TSoftObjectPtr<UCurveFloat>   EditEaseCurve;
 
 	// Loop type
 	TArray<TSharedPtr<FString>>   LoopTypeOptions;

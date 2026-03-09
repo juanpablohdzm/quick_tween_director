@@ -18,6 +18,8 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Styling/AppStyle.h"
 #include "Misc/FeedbackContext.h"
+#include "PropertyCustomizationHelpers.h"
+#include "Curves/CurveFloat.h"
 
 #define LOCTEXT_NAMESPACE "SQTDStepDialog"
 
@@ -83,6 +85,7 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 	EditColorFrom    = EditedStep.ColorFrom;
 	EditColorTo      = EditedStep.ColorTo;
 	EditUserColor    = EditedStep.UserColor;
+	EditEaseCurve    = EditedStep.EaseCurve;
 
 	// ── Shared timing fields ──────────────────────────────────────────────────
 
@@ -220,6 +223,22 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 							.InitiallySelectedItem(EaseTypeOptions.IsValidIndex(SelectedEaseIndex)
 								? EaseTypeOptions[SelectedEaseIndex] : nullptr)
 							[ EaseTypeDisplay.ToSharedRef() ])
+					]
+
+					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
+					[
+						MakeLabeledRow(LOCTEXT("EaseCurve", "Ease Curve (override)"),
+							SNew(SObjectPropertyEntryBox)
+							.AllowedClass(UCurveFloat::StaticClass())
+							.AllowClear(true)
+							.ObjectPath_Lambda([this]() -> FString {
+								return EditEaseCurve.IsNull() ? FString() : EditEaseCurve.ToSoftObjectPath().ToString();
+							})
+							.OnObjectChanged_Lambda([this](const FAssetData& Data) {
+								EditEaseCurve = TSoftObjectPtr<UCurveFloat>(Data.GetSoftObjectPath());
+							})
+							.ToolTipText(LOCTEXT("EaseCurveTip", "Optional UCurveFloat. When set, overrides the Ease Type for this step."))
+						)
 					]
 
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
@@ -543,6 +562,7 @@ bool SQTDStepDialog::CollectValues()
 	}
 
 	EditedStep.UserColor = EditUserColor;
+	EditedStep.EaseCurve = EditEaseCurve;
 
 	return true;
 }
