@@ -703,6 +703,12 @@ private:
 			SubBuilder.AddMenuEntry(LOCTEXT("WorldLoc", "World Location"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
 					MakeVectorStep(EQTDVectorProperty::WorldLocation, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("RelLocBy", "Relative Location By (Delta)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeVectorStep(EQTDVectorProperty::RelativeLocationBy, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("WorldLocBy", "World Location By (Delta)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeVectorStep(EQTDVectorProperty::WorldLocationBy, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 
 			SubBuilder.BeginSection("Rotation", LOCTEXT("SecRotation", "Rotation"));
@@ -712,6 +718,12 @@ private:
 			SubBuilder.AddMenuEntry(LOCTEXT("WorldRot", "World Rotation"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
 					MakeRotatorStep(EQTDRotatorProperty::WorldRotation, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("RelRotBy", "Relative Rotation By (Delta)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeRotatorStep(EQTDRotatorProperty::RelativeRotationBy, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("WorldRotBy", "World Rotation By (Delta)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeRotatorStep(EQTDRotatorProperty::WorldRotationBy, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 
 			SubBuilder.BeginSection("Scale", LOCTEXT("SecScale", "Scale"));
@@ -721,6 +733,12 @@ private:
 			SubBuilder.AddMenuEntry(LOCTEXT("WorldScale", "World Scale"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
 					MakeVectorStep(EQTDVectorProperty::WorldScale3D, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("RelScaleBy", "Relative Scale By (Delta)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeVectorStep(EQTDVectorProperty::RelativeScale3DBy, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("WorldScaleBy", "World Scale By (Delta)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeVectorStep(EQTDVectorProperty::WorldScale3DBy, SlotName, SnapTime(ClickTime)))));
 			SubBuilder.EndSection();
 		}
 
@@ -772,10 +790,14 @@ private:
 		S.VectorProperty = Prop;
 		switch (Prop)
 		{
-		case EQTDVectorProperty::RelativeLocation: S.Label = TEXT("Relative Location"); break;
-		case EQTDVectorProperty::WorldLocation:    S.Label = TEXT("World Location");    break;
-		case EQTDVectorProperty::RelativeScale3D:  S.Label = TEXT("Relative Scale");    break;
-		case EQTDVectorProperty::WorldScale3D:     S.Label = TEXT("World Scale");       break;
+		case EQTDVectorProperty::RelativeLocation:   S.Label = TEXT("Relative Location");    break;
+		case EQTDVectorProperty::WorldLocation:      S.Label = TEXT("World Location");      break;
+		case EQTDVectorProperty::RelativeScale3D:    S.Label = TEXT("Relative Scale");      break;
+		case EQTDVectorProperty::WorldScale3D:       S.Label = TEXT("World Scale");         break;
+		case EQTDVectorProperty::RelativeLocationBy: S.Label = TEXT("Relative Location By"); break;
+		case EQTDVectorProperty::WorldLocationBy:    S.Label = TEXT("World Location By");    break;
+		case EQTDVectorProperty::RelativeScale3DBy:  S.Label = TEXT("Relative Scale By");    break;
+		case EQTDVectorProperty::WorldScale3DBy:     S.Label = TEXT("World Scale By");       break;
 		}
 		return S;
 	}
@@ -784,8 +806,13 @@ private:
 	{
 		FQTDStepData S = MakeBaseStep(EQTDStepType::Rotator, SlotName, T);
 		S.RotatorProperty = Prop;
-		S.Label = (Prop == EQTDRotatorProperty::RelativeRotation)
-			? TEXT("Relative Rotation") : TEXT("World Rotation");
+		switch (Prop)
+		{
+		case EQTDRotatorProperty::RelativeRotation:   S.Label = TEXT("Relative Rotation");    break;
+		case EQTDRotatorProperty::WorldRotation:      S.Label = TEXT("World Rotation");       break;
+		case EQTDRotatorProperty::RelativeRotationBy: S.Label = TEXT("Relative Rotation By"); break;
+		case EQTDRotatorProperty::WorldRotationBy:    S.Label = TEXT("World Rotation By");    break;
+		}
 		return S;
 	}
 

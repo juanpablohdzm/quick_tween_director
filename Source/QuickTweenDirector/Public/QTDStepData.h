@@ -29,18 +29,30 @@ enum class EQTDStepType : uint8
 UENUM(BlueprintType)
 enum class EQTDVectorProperty : uint8
 {
-	WorldLocation    UMETA(DisplayName = "World Location"),
-	RelativeLocation UMETA(DisplayName = "Relative Location"),
-	WorldScale3D     UMETA(DisplayName = "World Scale 3D"),
-	RelativeScale3D  UMETA(DisplayName = "Relative Scale 3D"),
+	WorldLocation       UMETA(DisplayName = "World Location"),
+	RelativeLocation    UMETA(DisplayName = "Relative Location"),
+	WorldScale3D        UMETA(DisplayName = "World Scale 3D"),
+	RelativeScale3D     UMETA(DisplayName = "Relative Scale 3D"),
+	/** Adds the delta to the component's current world location at build time. */
+	WorldLocationBy     UMETA(DisplayName = "World Location By (Delta)"),
+	/** Adds the delta to the component's current relative location at build time. */
+	RelativeLocationBy  UMETA(DisplayName = "Relative Location By (Delta)"),
+	/** Adds the delta to the component's current world scale at build time. */
+	WorldScale3DBy      UMETA(DisplayName = "World Scale 3D By (Delta)"),
+	/** Adds the delta to the component's current relative scale at build time. */
+	RelativeScale3DBy   UMETA(DisplayName = "Relative Scale 3D By (Delta)"),
 };
 
 /** Which FRotator property on the target component to animate. */
 UENUM(BlueprintType)
 enum class EQTDRotatorProperty : uint8
 {
-	WorldRotation    UMETA(DisplayName = "World Rotation"),
-	RelativeRotation UMETA(DisplayName = "Relative Rotation"),
+	WorldRotation       UMETA(DisplayName = "World Rotation"),
+	RelativeRotation    UMETA(DisplayName = "Relative Rotation"),
+	/** Adds the delta to the component's current world rotation at build time. */
+	WorldRotationBy     UMETA(DisplayName = "World Rotation By (Delta)"),
+	/** Adds the delta to the component's current relative rotation at build time. */
+	RelativeRotationBy  UMETA(DisplayName = "Relative Rotation By (Delta)"),
 };
 
 /** How the float value is applied when the step type is Float. */

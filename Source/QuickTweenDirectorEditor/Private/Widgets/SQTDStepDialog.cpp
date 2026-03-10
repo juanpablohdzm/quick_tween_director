@@ -369,13 +369,18 @@ TSharedRef<SWidget> SQTDStepDialog::BuildTypeSpecificSection()
 
 	if (EditedStep.StepType == EQTDStepType::Vector)
 	{
+		const bool bIsByMode = (EditedStep.VectorProperty == EQTDVectorProperty::WorldLocationBy
+			|| EditedStep.VectorProperty == EQTDVectorProperty::RelativeLocationBy
+			|| EditedStep.VectorProperty == EQTDVectorProperty::WorldScale3DBy
+			|| EditedStep.VectorProperty == EQTDVectorProperty::RelativeScale3DBy);
+
 		Box->AddSlot().AutoHeight().Padding(0, 4)
 		[
 			SNew(STextBlock).Text(LOCTEXT("VecSection", "Vector Parameters"))
 			.Font(FAppStyle::GetFontStyle("SmallFontBold"))
 		];
 
-		if (!EditedStep.bVectorFromCurrent)
+		if (!bIsByMode && !EditedStep.bVectorFromCurrent)
 		{
 			Box->AddSlot().AutoHeight().Padding(0, 4)
 			[
@@ -386,29 +391,35 @@ TSharedRef<SWidget> SQTDStepDialog::BuildTypeSpecificSection()
 
 		Box->AddSlot().AutoHeight().Padding(0, 4)
 		[
-			BuildVectorRow(LOCTEXT("VecTo", "To (X,Y,Z)"),
+			BuildVectorRow(bIsByMode ? LOCTEXT("VecBy", "By / Delta (X,Y,Z)") : LOCTEXT("VecTo", "To (X,Y,Z)"),
 				VecToXBox, VecToYBox, VecToZBox, EditedStep.VectorTo)
 		];
 
-		Box->AddSlot().AutoHeight().Padding(0, 4)
-		[
-			MakeLabeledRow(LOCTEXT("VecFromCur", "From Current"),
-				SNew(SCheckBox)
-				.IsChecked(EditedStep.bVectorFromCurrent ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-				.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
-					EditedStep.bVectorFromCurrent = (S == ECheckBoxState::Checked);
-				}))
-		];
+		if (!bIsByMode)
+		{
+			Box->AddSlot().AutoHeight().Padding(0, 4)
+			[
+				MakeLabeledRow(LOCTEXT("VecFromCur", "From Current"),
+					SNew(SCheckBox)
+					.IsChecked(EditedStep.bVectorFromCurrent ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+					.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
+						EditedStep.bVectorFromCurrent = (S == ECheckBoxState::Checked);
+					}))
+			];
+		}
 	}
 	else if (EditedStep.StepType == EQTDStepType::Rotator)
 	{
+		const bool bIsByMode = (EditedStep.RotatorProperty == EQTDRotatorProperty::WorldRotationBy
+			|| EditedStep.RotatorProperty == EQTDRotatorProperty::RelativeRotationBy);
+
 		Box->AddSlot().AutoHeight().Padding(0, 4)
 		[
 			SNew(STextBlock).Text(LOCTEXT("RotSection", "Rotator Parameters"))
 			.Font(FAppStyle::GetFontStyle("SmallFontBold"))
 		];
 
-		if (!EditedStep.bRotatorFromCurrent)
+		if (!bIsByMode && !EditedStep.bRotatorFromCurrent)
 		{
 			Box->AddSlot().AutoHeight().Padding(0, 4)
 			[
@@ -420,20 +431,23 @@ TSharedRef<SWidget> SQTDStepDialog::BuildTypeSpecificSection()
 
 		Box->AddSlot().AutoHeight().Padding(0, 4)
 		[
-			BuildVectorRow(LOCTEXT("RotTo", "To (P,Y,R)"),
+			BuildVectorRow(bIsByMode ? LOCTEXT("RotBy", "By / Delta (P,Y,R)") : LOCTEXT("RotTo", "To (P,Y,R)"),
 				RotToPitch, RotToYaw, RotToRoll,
 				FVector(EditedStep.RotatorTo.Pitch, EditedStep.RotatorTo.Yaw, EditedStep.RotatorTo.Roll))
 		];
 
-		Box->AddSlot().AutoHeight().Padding(0, 4)
-		[
-			MakeLabeledRow(LOCTEXT("RotFromCur", "From Current"),
-				SNew(SCheckBox)
-				.IsChecked(EditedStep.bRotatorFromCurrent ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
-				.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
-					EditedStep.bRotatorFromCurrent = (S == ECheckBoxState::Checked);
-				}))
-		];
+		if (!bIsByMode)
+		{
+			Box->AddSlot().AutoHeight().Padding(0, 4)
+			[
+				MakeLabeledRow(LOCTEXT("RotFromCur", "From Current"),
+					SNew(SCheckBox)
+					.IsChecked(EditedStep.bRotatorFromCurrent ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+					.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
+						EditedStep.bRotatorFromCurrent = (S == ECheckBoxState::Checked);
+					}))
+			];
+		}
 	}
 	else if (EditedStep.StepType == EQTDStepType::Float)
 	{

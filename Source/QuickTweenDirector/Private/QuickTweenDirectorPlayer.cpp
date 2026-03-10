@@ -193,6 +193,51 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 					if (WeakComp.IsValid()) WeakComp->SetRelativeScale3D(V);
 				});
 				break;
+
+			case EQTDVectorProperty::WorldLocationBy:
+			{
+				const FVector Snapshot = Comp->GetComponentLocation();
+				const FVector Target   = Snapshot + ToVal;
+				GetterFrom = FNativeVectorGetter::CreateLambda([Snapshot](UQuickVectorTween*) { return Snapshot; });
+				GetterTo   = FNativeVectorGetter::CreateLambda([Target](UQuickVectorTween*)   { return Target; });
+				Setter     = FNativeVectorSetter::CreateWeakLambda(Comp, [WeakComp](const FVector& V, UQuickVectorTween*) {
+					if (WeakComp.IsValid()) WeakComp->SetWorldLocation(V);
+				});
+				break;
+			}
+			case EQTDVectorProperty::RelativeLocationBy:
+			{
+				const FVector Snapshot = Comp->GetRelativeLocation();
+				const FVector Target   = Snapshot + ToVal;
+				GetterFrom = FNativeVectorGetter::CreateLambda([Snapshot](UQuickVectorTween*) { return Snapshot; });
+				GetterTo   = FNativeVectorGetter::CreateLambda([Target](UQuickVectorTween*)   { return Target; });
+				Setter     = FNativeVectorSetter::CreateWeakLambda(Comp, [WeakComp](const FVector& V, UQuickVectorTween*) {
+					if (WeakComp.IsValid()) WeakComp->SetRelativeLocation(V);
+				});
+				break;
+			}
+			case EQTDVectorProperty::WorldScale3DBy:
+			{
+				const FVector Snapshot = Comp->GetComponentScale();
+				const FVector Target   = Snapshot + ToVal;
+				GetterFrom = FNativeVectorGetter::CreateLambda([Snapshot](UQuickVectorTween*) { return Snapshot; });
+				GetterTo   = FNativeVectorGetter::CreateLambda([Target](UQuickVectorTween*)   { return Target; });
+				Setter     = FNativeVectorSetter::CreateWeakLambda(Comp, [WeakComp](const FVector& V, UQuickVectorTween*) {
+					if (WeakComp.IsValid()) WeakComp->SetWorldScale3D(V);
+				});
+				break;
+			}
+			case EQTDVectorProperty::RelativeScale3DBy:
+			{
+				const FVector Snapshot = Comp->GetRelativeScale3D();
+				const FVector Target   = Snapshot + ToVal;
+				GetterFrom = FNativeVectorGetter::CreateLambda([Snapshot](UQuickVectorTween*) { return Snapshot; });
+				GetterTo   = FNativeVectorGetter::CreateLambda([Target](UQuickVectorTween*)   { return Target; });
+				Setter     = FNativeVectorSetter::CreateWeakLambda(Comp, [WeakComp](const FVector& V, UQuickVectorTween*) {
+					if (WeakComp.IsValid()) WeakComp->SetRelativeScale3D(V);
+				});
+				break;
+			}
 		}
 
 		return UQuickVectorTween::CreateTween(
@@ -247,6 +292,29 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 					if (WeakComp.IsValid()) WeakComp->SetRelativeRotation(R);
 				});
 				break;
+
+			case EQTDRotatorProperty::WorldRotationBy:
+			{
+				const FRotator Snapshot = Comp->GetComponentRotation();
+				const FRotator Target   = Snapshot + ToVal;
+				GetterFrom = FNativeRotatorGetter::CreateLambda([Snapshot](UQuickRotatorTween*) { return Snapshot; });
+				GetterTo   = FNativeRotatorGetter::CreateLambda([Target](UQuickRotatorTween*)   { return Target; });
+				Setter     = FNativeRotatorSetter::CreateWeakLambda(Comp, [WeakComp](const FRotator& R, UQuickRotatorTween*) {
+					if (WeakComp.IsValid()) WeakComp->SetWorldRotation(R);
+				});
+				break;
+			}
+			case EQTDRotatorProperty::RelativeRotationBy:
+			{
+				const FRotator Snapshot = Comp->GetRelativeRotation();
+				const FRotator Target   = Snapshot + ToVal;
+				GetterFrom = FNativeRotatorGetter::CreateLambda([Snapshot](UQuickRotatorTween*) { return Snapshot; });
+				GetterTo   = FNativeRotatorGetter::CreateLambda([Target](UQuickRotatorTween*)   { return Target; });
+				Setter     = FNativeRotatorSetter::CreateWeakLambda(Comp, [WeakComp](const FRotator& R, UQuickRotatorTween*) {
+					if (WeakComp.IsValid()) WeakComp->SetRelativeRotation(R);
+				});
+				break;
+			}
 		}
 
 		return UQuickRotatorTween::CreateTween(
