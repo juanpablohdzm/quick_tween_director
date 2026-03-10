@@ -203,7 +203,10 @@ void SQTDStepDialog::Construct(const FArguments& InArgs)
 					[ MakeLabeledRow(LOCTEXT("TimeScale", "Time Scale"), TimeScaleBox.ToSharedRef()) ]
 
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
-					[ MakeLabeledRow(LOCTEXT("Loops", "Loops (-1=∞)"), LoopsBox.ToSharedRef()) ]
+					[ MakeLabeledRow(LOCTEXT("Loops", "Loops (min 1)"),
+					SNew(SBox)
+					.ToolTipText(LOCTEXT("LoopsTip", "Infinite loops are not supported inside a Director sequence. Minimum value is 1."))
+					[ LoopsBox.ToSharedRef() ]) ]
 
 					+ SVerticalBox::Slot().AutoHeight().Padding(0, 4)
 					[
@@ -612,7 +615,7 @@ bool SQTDStepDialog::CollectValues()
 	if (LabelBox.IsValid())   EditedStep.Label    = LabelBox->GetText().ToString();
 	if (DurationBox.IsValid()) EditedStep.Duration = FMath::Max(0.001f, ParseFloat(DurationBox, 1.0f));
 	if (TimeScaleBox.IsValid()) EditedStep.TimeScale = FMath::Max(0.01f, ParseFloat(TimeScaleBox, 1.0f));
-	if (LoopsBox.IsValid())     EditedStep.Loops     = ParseInt(LoopsBox, 1);
+	if (LoopsBox.IsValid())     EditedStep.Loops     = FMath::Max(1, ParseInt(LoopsBox, 1));
 
 	EditedStep.EaseType  = (EEaseType)FMath::Clamp(SelectedEaseIndex, 0, EaseTypeOptions.Num() - 1);
 	EditedStep.LoopType  = (ELoopType)FMath::Clamp(SelectedLoopTypeIndex, 0, LoopTypeOptions.Num() - 1);

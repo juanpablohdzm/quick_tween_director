@@ -113,6 +113,15 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 {
 	UCurveFloat* Curve = Step.EaseCurve.IsValid() ? Step.EaseCurve.Get() : nullptr;
 
+	// Infinite loops are not supported inside a director sequence (the player needs a finite duration).
+	if (Step.Loops <= 0)
+	{
+		UE_LOG(LogQTDPlayer, Warning,
+			TEXT("Step '%s': Loops=%d is invalid inside a Director sequence; clamped to 1."),
+			*Step.Label, Step.Loops);
+		const_cast<FQTDStepData&>(Step).Loops = 1;
+	}
+
 	// ── Empty / delay ─────────────────────────────────────────────────────────
 	if (Step.StepType == EQTDStepType::Empty)
 	{

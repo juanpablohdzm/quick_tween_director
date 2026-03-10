@@ -132,8 +132,8 @@ struct QUICKTWEENDIRECTOR_API FQTDStepData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Timing", meta = (ClampMin = "0.01"))
 	float TimeScale = 1.0f;
 
-	/** Number of times this step loops (1 = play once, -1 = infinite). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Timing")
+	/** Number of times this step loops (minimum 1; infinite loops are not allowed inside a director sequence). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Timing", meta = (ClampMin = "1"))
 	int32 Loops = 1;
 
 	/** Loop behavior. */
