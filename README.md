@@ -151,14 +151,16 @@ A **step** is a colored block on a track that represents one tween animation.
 
 | Component type | Available step types |
 |----------------|---------------------|
-| Any `USceneComponent` | Relative Location, World Location, Relative Rotation, World Rotation, Relative Scale, World Scale |
-| Any `UPrimitiveComponent` | All of the above + Material Scalar Parameter, Material Vector Parameter (Color) |
+| Any `USceneComponent` | Relative Location, World Location, Relative Location By, World Location By, Relative Rotation, World Rotation, Relative Rotation By, World Rotation By, Relative Scale, World Scale, Relative Scale By, World Scale By |
+| Any `UPrimitiveComponent` | All of the above + Material Scalar Parameter, Material Vector Parameter (Color), Material Vector2D Parameter (UV), Material Scalar (Integer) |
 | All tracks | Delay (Empty) |
 
-3. Select a type. The **Edit Step** dialog opens so you can set From/To values and timing.
+3. Select a type. The **Edit Step** dialog opens so you can set values and timing.
 4. Click **Apply**. The step appears on the track as a colored block.
 
-Steps on different tracks overlap freely and play in parallel at runtime. New steps are appended after the last existing step on the same track by default.
+Steps on different tracks overlap freely and play in parallel at runtime.
+
+> **"By" vs "To" steps:** Steps labelled **"By (Delta)"** add a delta to the component's value at the moment the animation is built (just before first play), rather than animating to an absolute target. Use them when you want an animation that works regardless of the component's starting position — for example, "move 100 units to the right from wherever it currently is."
 
 ---
 
@@ -253,7 +255,7 @@ The dialog lets you choose a file path. The output is **lossless** — it contai
 
 - Asset name, loop count, total duration
 - All tracks (GUID, label, component variable name)
-- All steps (GUID, track GUID, label, type, start time, duration, time scale, loops, loop type, easing, slot name, parameter name, all type-specific From/To values, custom color)
+- All steps (GUID, track GUID, label, type, start time, duration, time scale, loops, loop type, easing, ease curve path, slot name, parameter name, all type-specific From/To/By values, custom color)
 
 Uses: version-diffing animations in source control, sharing animations between projects, external tooling, backup.
 
@@ -361,7 +363,7 @@ At runtime, `Build()` (called automatically on first `Play`) maps each track's c
 | Animation created for this Blueprint's component | Automatically bound — no action needed |
 | `Bind Slot(Name, Object)` called before `Play()` | Manual binding takes priority over the automatic one |
 | Slot name is empty | Falls back to the world context object (actor's root component) |
-| Slot bound to `UMaterialInstanceDynamic` | Used for Material Scalar / Material Vector steps |
+| Slot bound to `UMaterialInstanceDynamic` | Required for all Material step types (Scalar, Color, Vector2D, Integer) |
 | Component not found, no manual binding | Step is skipped; error logged to `BindingErrors` |
 
 **Binding a Material Instance Dynamic (for material steps):**
@@ -421,8 +423,10 @@ All events are `BlueprintAssignable` multicast delegates. Drag from the player r
 
 ## Supported step types
 
-### Vector
-Animates an `FVector` property on a `USceneComponent`. Sub-types:
+### Vector — Location and Scale
+Animates an `FVector` property on a `USceneComponent`.
+
+**Absolute ("To") variants** — interpolate from a start value to a fixed target:
 
 | Label | Drives |
 |-------|--------|
@@ -431,17 +435,39 @@ Animates an `FVector` property on a `USceneComponent`. Sub-types:
 | Relative Scale | `SetRelativeScale3D` |
 | World Scale | `SetWorldScale3D` |
 
+**Relative ("By") variants** — snapshot the component's current value at build time and add a delta:
+
+| Label | Drives |
+|-------|--------|
+| Relative Location By | `SetRelativeLocation` (current + delta) |
+| World Location By | `SetWorldLocation` (current + delta) |
+| Relative Scale By | `SetRelativeScale3D` (current + delta) |
+| World Scale By | `SetWorldScale3D` (current + delta) |
+
 Color in the timeline: **orange** (location) or **amber** (scale).
 
+---
+
 ### Rotator
-Animates an `FRotator` on a `USceneComponent`, always taking the shortest angular path. Sub-types:
+Animates an `FRotator` on a `USceneComponent`, always taking the shortest angular path.
+
+**Absolute ("To") variants:**
 
 | Label | Drives |
 |-------|--------|
 | Relative Rotation | `SetRelativeRotation` |
 | World Rotation | `SetWorldRotation` |
 
+**Relative ("By") variants** — snapshot the current rotation at build time and add a delta:
+
+| Label | Drives |
+|-------|--------|
+| Relative Rotation By | `SetRelativeRotation` (current + delta) |
+| World Rotation By | `SetWorldRotation` (current + delta) |
+
 Color in the timeline: **teal**.
+
+---
 
 ### Float (Material Scalar Parameter)
 Sets a scalar parameter on a `UMaterialInstanceDynamic`. Requires:
@@ -450,12 +476,38 @@ Sets a scalar parameter on a `UMaterialInstanceDynamic`. Requires:
 
 Color in the timeline: **blue**.
 
+---
+
 ### Linear Color (Material Vector Parameter)
 Sets an RGB vector parameter on a `UMaterialInstanceDynamic`. Requires:
 - **Parameter Name** — the material vector parameter name.
 - The slot must be manually bound to a `UMaterialInstanceDynamic` before `Play`.
 
 Color in the timeline: **purple**.
+
+---
+
+### Vector2D (Material Vector2D Parameter / UV)
+Animates the **XY channels** of a material vector parameter on a `UMaterialInstanceDynamic` — useful for UV offset and UV tiling animations. The ZW channels of the parameter are preserved (snapshotted at build time and written back each tick).
+
+Requires:
+- **Parameter Name** — the material vector parameter name.
+- The slot must be manually bound to a `UMaterialInstanceDynamic` before `Play`.
+
+Color in the timeline: **green**.
+
+---
+
+### Integer (Material Scalar — Integer)
+Animates a scalar parameter on a `UMaterialInstanceDynamic` using integer interpolation (the float interpolation result is rounded to the nearest integer each tick). Use this for parameters that represent discrete states (e.g. texture atlas indices, enum-like values).
+
+Requires:
+- **Parameter Name** — the material scalar parameter name.
+- The slot must be manually bound to a `UMaterialInstanceDynamic` before `Play`.
+
+Color in the timeline: **coral**.
+
+---
 
 ### Empty (Delay)
 A no-op step that consumes time on its track without animating anything. Use it to introduce a pause before the next step on the same track, without affecting steps on parallel tracks.
@@ -480,15 +532,16 @@ Double-click any step block to open the Edit Step dialog.
 |-------|-------------|
 | **Duration (s)** | Length of one loop playthrough in seconds. |
 | **Time Scale** | Speed multiplier. `2.0` plays twice as fast; `0.5` plays at half speed. |
-| **Loops (-1=∞)** | Number of times this step repeats. `-1` = infinite (only meaningful when the parent animation also loops). |
-| **Ease Type** | Easing curve applied to the interpolation. Choices include Linear, Ease In/Out Sine/Quad/Cubic/Quart/Quint/Expo/Circ/Back/Elastic/Bounce and combinations. A small preview curve is drawn on the step block when it is wide enough. |
+| **Loops (min 1)** | Number of times this step repeats. Minimum value is **1**. Infinite loops (`-1`) are not supported inside a Director sequence because the player requires a known, finite step duration to seek correctly. |
+| **Ease Type** | Easing curve applied to the interpolation. Choices include Linear, Ease In/Out Sine/Quad/Cubic/Quart/Quint and combinations. A small preview curve is drawn on the step block when it is wide enough. |
+| **Ease Curve (override)** | Optional `UCurveFloat` asset. When set, this curve replaces the **Ease Type** for this step. Clear the field to fall back to the Ease Type selection. |
 | **Loop Type** | `Restart` — repeats from the start each loop. `Ping Pong` — alternates forward and backward. |
 
 ### Target
 
 | Field | Description |
 |-------|-------------|
-| **Parameter Name** | Material parameter name. Required for Float (Material Scalar) and Color (Material Vector) steps. |
+| **Parameter Name** | Material parameter name. Required for Float, Color, Vector2D, and Integer steps. |
 
 ### Appearance
 
@@ -498,13 +551,33 @@ Double-click any step block to open the Edit Step dialog.
 
 ### Type-specific fields
 
-**Vector / Rotator steps:**
+**Vector steps (absolute — To):**
 
 | Field | Description |
 |-------|-------------|
-| **From** | Start value. Hidden when **From Current** is checked. |
-| **To** | End value. |
-| **From Current** | When checked, the component's actual value at the moment the step starts is used as the From value, so the animation always picks up from where the component is. |
+| **From (X,Y,Z)** | Start value. Hidden when **From Current** is checked. |
+| **To (X,Y,Z)** | End value. |
+| **From Current** | When checked, the component's actual value at the moment the animation is built is used as the From value. |
+
+**Vector steps (relative — By):**
+
+| Field | Description |
+|-------|-------------|
+| **By / Delta (X,Y,Z)** | The amount to add to the component's value at build time. The From value is always the snapshot taken when `Play` is first called — the From and From Current controls are hidden. |
+
+**Rotator steps (absolute — To):**
+
+| Field | Description |
+|-------|-------------|
+| **From (P,Y,R)** | Start rotation in Pitch/Yaw/Roll. Hidden when **From Current** is checked. |
+| **To (P,Y,R)** | End rotation. |
+| **From Current** | Reads the component's current rotation at build time as the start. |
+
+**Rotator steps (relative — By):**
+
+| Field | Description |
+|-------|-------------|
+| **By / Delta (P,Y,R)** | The rotation delta added to the component's current rotation at build time. |
 
 **Float steps:**
 
@@ -512,7 +585,7 @@ Double-click any step block to open the Edit Step dialog.
 |-------|-------------|
 | **From** | Starting scalar value (ignored when **From Current** is checked). |
 | **To** | Ending scalar value. |
-| **From Current** | Reads the live material parameter value when the step begins. |
+| **From Current** | Reads the live material parameter value when the animation is built. |
 
 **Color steps:**
 
@@ -520,6 +593,22 @@ Double-click any step block to open the Edit Step dialog.
 |--------|-------------|
 | **From (click)** | Click to open a color picker for the starting color. |
 | **To (click)** | Click to open a color picker for the ending color. |
+
+**Vector2D steps:**
+
+| Field | Description |
+|-------|-------------|
+| **From (X, Y)** | Starting XY value. Hidden when **From Current** is checked. |
+| **To (X, Y)** | Ending XY value. |
+| **From Current** | Reads the XY of the material vector parameter at build time as the start. The ZW channels are always preserved (snapshotted at build time). |
+
+**Integer steps:**
+
+| Field | Description |
+|-------|-------------|
+| **From** | Starting integer value (ignored when **From Current** is checked). |
+| **To** | Ending integer value. |
+| **From Current** | Reads the live material scalar parameter at build time and rounds it to the nearest integer. |
 
 ---
 
@@ -563,7 +652,7 @@ All nodes are available in Blueprint on a `UQuickTweenDirectorPlayer` reference.
 
 | Node | Description |
 |------|-------------|
-| `Bind Slot (Name, Object)` | Manually bind a slot name to an Actor or SceneComponent. Must be called before `Play` / `Build`. Overrides auto-binding for that slot. |
+| `Bind Slot (Name, Object)` | Manually bind a slot name to an Actor, SceneComponent, or `UMaterialInstanceDynamic`. Must be called before `Play` / `Build`. Overrides auto-binding for that slot. |
 | `Build (WorldContext)` | Force a rebuild of the internal tween list. Called automatically by `Play` if not yet built. Call manually if you need to inspect tweens before playing. |
 
 ---
@@ -589,3 +678,5 @@ Or play a Director animation in parallel with other tweens:
 ```
 
 The Director Player behaves identically to a `UQuickTweenSequence` from the parent sequence's perspective.
+
+> **Note:** When nesting a Director Player inside a sequence, ensure all steps inside it have a finite loop count (minimum 1). Infinite loops are not supported — the parent sequence needs a known duration to calculate seek times correctly.
