@@ -20,6 +20,8 @@ enum class EQTDStepType : uint8
 	Rotator     UMETA(DisplayName = "Rotator"),
 	Float       UMETA(DisplayName = "Float"),
 	LinearColor UMETA(DisplayName = "Linear Color"),
+	Vector2D    UMETA(DisplayName = "Vector 2D"),
+	Int         UMETA(DisplayName = "Integer"),
 	Empty       UMETA(DisplayName = "Empty (Delay)"),
 };
 
@@ -55,6 +57,22 @@ enum class EQTDColorTarget : uint8
 {
 	/** Sets a vector parameter on a UMaterialInstanceDynamic. */
 	MaterialVector      UMETA(DisplayName = "Material Vector Parameter"),
+};
+
+/** How the Vector2D value is applied when the step type is Vector2D. */
+UENUM(BlueprintType)
+enum class EQTDVector2DTarget : uint8
+{
+	/** Animates the XY components of a material vector parameter (e.g. UV tiling/offset). */
+	MaterialVector2D UMETA(DisplayName = "Material Vector2D Parameter (UV)"),
+};
+
+/** How the integer value is applied when the step type is Int. */
+UENUM(BlueprintType)
+enum class EQTDIntTarget : uint8
+{
+	/** Sets a scalar parameter on a UMaterialInstanceDynamic using a rounded integer value. */
+	MaterialScalarInt UMETA(DisplayName = "Material Scalar (Integer)"),
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -225,6 +243,50 @@ struct QUICKTWEENDIRECTOR_API FQTDStepData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Color",
 		meta = (EditCondition = "StepType == EQTDStepType::LinearColor", EditConditionHides))
 	bool bColorFromCurrent = false;
+
+	// ── Vector2D-specific ─────────────────────────────────────────────────
+
+	/** How the Vector2D value is delivered to the target. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Vector2D",
+		meta = (EditCondition = "StepType == EQTDStepType::Vector2D", EditConditionHides))
+	EQTDVector2DTarget Vector2DTarget = EQTDVector2DTarget::MaterialVector2D;
+
+	/** Start XY value. Ignored when bVector2DFromCurrent is true. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Vector2D",
+		meta = (EditCondition = "StepType == EQTDStepType::Vector2D && !bVector2DFromCurrent", EditConditionHides))
+	FVector2D Vector2DFrom = FVector2D::ZeroVector;
+
+	/** End XY value. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Vector2D",
+		meta = (EditCondition = "StepType == EQTDStepType::Vector2D", EditConditionHides))
+	FVector2D Vector2DTo = FVector2D::ZeroVector;
+
+	/** When true the current XY of the parameter is used as the start. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Vector2D",
+		meta = (EditCondition = "StepType == EQTDStepType::Vector2D", EditConditionHides))
+	bool bVector2DFromCurrent = false;
+
+	// ── Int-specific ──────────────────────────────────────────────────────
+
+	/** How the integer value is delivered to the target. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Int",
+		meta = (EditCondition = "StepType == EQTDStepType::Int", EditConditionHides))
+	EQTDIntTarget IntTarget = EQTDIntTarget::MaterialScalarInt;
+
+	/** Start integer value. Ignored when bIntFromCurrent is true. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Int",
+		meta = (EditCondition = "StepType == EQTDStepType::Int && !bIntFromCurrent", EditConditionHides))
+	int32 IntFrom = 0;
+
+	/** End integer value. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Int",
+		meta = (EditCondition = "StepType == EQTDStepType::Int", EditConditionHides))
+	int32 IntTo = 1;
+
+	/** When true the current value of the scalar parameter is used as the start (rounded). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Step|Int",
+		meta = (EditCondition = "StepType == EQTDStepType::Int", EditConditionHides))
+	bool bIntFromCurrent = false;
 
 	// ── Appearance ────────────────────────────────────────────────────────────
 

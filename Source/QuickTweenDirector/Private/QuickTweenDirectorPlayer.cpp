@@ -8,6 +8,8 @@
 #include "Tweens/QuickRotatorTween.h"
 #include "Tweens/QuickFloatTween.h"
 #include "Tweens/QuickEmptyTween.h"
+#include "Tweens/QuickVector2DTween.h"
+#include "Tweens/QuickIntTween.h"
 #include "Utils/CommonValues.h"
 #include "GameFramework/Actor.h"
 #include "Components/SceneComponent.h"
@@ -99,6 +101,12 @@ USceneComponent* UQuickTweenDirectorPlayer::ResolveComponentSlot(FName SlotName)
 	if (AActor* Actor = Cast<AActor>(Obj))                  return Actor->GetRootComponent();
 
 	return nullptr;
+}
+
+UMaterialInstanceDynamic* UQuickTweenDirectorPlayer::ResolveMIDSlot(FName SlotName) const
+{
+	const TWeakObjectPtr<UObject>* Found = SlotBindings.Find(SlotName);
+	return Found ? Cast<UMaterialInstanceDynamic>(Found->Get()) : nullptr;
 }
 
 UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepData& Step)
@@ -256,10 +264,7 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 	{
 		if (Step.FloatTarget == EQTDFloatTarget::MaterialScalar)
 		{
-			const TWeakObjectPtr<UObject>* FoundObj = SlotBindings.Find(Step.SlotName);
-			UMaterialInstanceDynamic* MID = FoundObj
-				? Cast<UMaterialInstanceDynamic>(FoundObj->Get()) : nullptr;
-
+			UMaterialInstanceDynamic* MID = ResolveMIDSlot(Step.SlotName);
 			if (!MID)
 			{
 				UE_LOG(LogQTDPlayer, Warning,
@@ -303,10 +308,7 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 	{
 		if (Step.ColorTarget == EQTDColorTarget::MaterialVector)
 		{
-			const TWeakObjectPtr<UObject>* FoundObj = SlotBindings.Find(Step.SlotName);
-			UMaterialInstanceDynamic* MID = FoundObj
-				? Cast<UMaterialInstanceDynamic>(FoundObj->Get()) : nullptr;
-
+			UMaterialInstanceDynamic* MID = ResolveMIDSlot(Step.SlotName);
 			if (!MID)
 			{
 				UE_LOG(LogQTDPlayer, Warning,
@@ -325,7 +327,7 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 
 			FNativeVectorGetter GetterFrom = Step.bColorFromCurrent
 				? FNativeVectorGetter::CreateLambda([WeakMID, ParamName](UQuickVectorTween*) {
-					  FLinearColor C;
+					  FLinearColor C = FLinearColor::Black;
 					  if (WeakMID.IsValid()) WeakMID->GetVectorParameterValue(ParamName, C);
 					  return FVector(C.R, C.G, C.B);
 				  })
@@ -346,6 +348,90 @@ UQuickTweenBase* UQuickTweenDirectorPlayer::CreateTweenForStep(const FQTDStepDat
 				/*bAutoKill*/ false, /*WhilePaused*/ false, /*AutoPlay*/ false);
 		}
 
+		return nullptr;
+	}
+
+	// ── Vector2D (material UV) ───────────────────────────────────────────────
+	if (Step.StepType == EQTDStepType::Vector2D)
+	{
+		if (Step.Vector2DTarget == EQTDVector2DTarget::MaterialVector2D)
+		{
+			UMaterialInstanceDynamic* MID = ResolveMIDSlot(Step.SlotName);
+			if (!MID)
+			{
+				UE_LOG(LogQTDPlayer, Warning,
+					TEXT("Step '%s': slot '%s' is not a UMaterialInstanceDynamic."),
+					*Step.Label, *Step.SlotName.ToString());
+				return nullptr;
+			}
+			TWeakObjectPtr<UMaterialInstanceDynamic> WeakMID(MID);
+			const FName     ParamName = Step.ParameterName;
+			const FVector2D ToVal     = Step.Vector2DTo;
+			const FVector2D FromVal   = Step.Vector2DFrom;
+			FNativeVector2DGetter GetterFrom = Step.bVector2DFromCurrent
+				? FNativeVector2DGetter::CreateLambda([WeakMID, ParamName](UQuickVector2DTween*) {
+					  FLinearColor C = FLinearColor::Black;
+					  if (WeakMID.IsValid()) WeakMID->GetVectorParameterValue(ParamName, C);
+					  return FVector2D(C.R, C.G);
+				  })
+				: FNativeVector2DGetter::CreateLambda([FromVal](UQuickVector2DTween*) { return FromVal; });
+			FNativeVector2DGetter GetterTo = FNativeVector2DGetter::CreateLambda([ToVal](UQuickVector2DTween*) { return ToVal; });
+			// Snapshot ZW channels once so the setter never needs to read back from GPU.
+			FLinearColor ZWSnapshot;
+			MID->GetVectorParameterValue(ParamName, ZWSnapshot);
+			const float SnapshotB = ZWSnapshot.B;
+			const float SnapshotA = ZWSnapshot.A;
+FNativeVector2DSetter Setter = FNativeVector2DSetter::CreateWeakLambda(MID,
+				[WeakMID, ParamName, SnapshotB, SnapshotA](const FVector2D& V, UQuickVector2DTween*) {
+					if (WeakMID.IsValid())
+						WeakMID->SetVectorParameterValue(ParamName, FLinearColor(V.X, V.Y, SnapshotB, SnapshotA));
+				});
+			return UQuickVector2DTween::CreateTween(
+				const_cast<UObject*>(WorldContextObject),
+				MoveTemp(GetterFrom), MoveTemp(GetterTo), MoveTemp(Setter),
+				Step.Duration, Step.TimeScale, Step.EaseType, Curve,
+				Step.Loops, Step.LoopType, Step.Label,
+				/*bAutoKill*/ false, /*WhilePaused*/ false, /*AutoPlay*/ false);
+		}
+		return nullptr;
+	}
+
+	// ── Int (material scalar as integer) ─────────────────────────────────────
+	if (Step.StepType == EQTDStepType::Int)
+	{
+		if (Step.IntTarget == EQTDIntTarget::MaterialScalarInt)
+		{
+			UMaterialInstanceDynamic* MID = ResolveMIDSlot(Step.SlotName);
+			if (!MID)
+			{
+				UE_LOG(LogQTDPlayer, Warning,
+					TEXT("Step '%s': slot '%s' is not a UMaterialInstanceDynamic."),
+					*Step.Label, *Step.SlotName.ToString());
+				return nullptr;
+			}
+			TWeakObjectPtr<UMaterialInstanceDynamic> WeakMID(MID);
+			const FName ParamName = Step.ParameterName;
+			const int32 ToVal   = Step.IntTo;
+			const int32 FromVal = Step.IntFrom;
+			FNativeIntGetter GetterFrom = Step.bIntFromCurrent
+				? FNativeIntGetter::CreateLambda([WeakMID, ParamName](UQuickIntTween*) {
+					  float V = 0.0f;
+					  if (WeakMID.IsValid()) WeakMID->GetScalarParameterValue(ParamName, V);
+					  return FMath::RoundToInt(V);
+				  })
+				: FNativeIntGetter::CreateLambda([FromVal](UQuickIntTween*) { return FromVal; });
+			FNativeIntGetter GetterTo = FNativeIntGetter::CreateLambda([ToVal](UQuickIntTween*) { return ToVal; });
+			FNativeIntSetter Setter = FNativeIntSetter::CreateWeakLambda(MID,
+				[WeakMID, ParamName](const int32 V, UQuickIntTween*) {
+					if (WeakMID.IsValid()) WeakMID->SetScalarParameterValue(ParamName, (float)V);
+				});
+			return UQuickIntTween::CreateTween(
+				const_cast<UObject*>(WorldContextObject),
+				MoveTemp(GetterFrom), MoveTemp(GetterTo), MoveTemp(Setter),
+				Step.Duration, Step.TimeScale, Step.EaseType, Curve,
+				Step.Loops, Step.LoopType, Step.Label,
+				/*bAutoKill*/ false, /*WhilePaused*/ false, /*AutoPlay*/ false);
+		}
 		return nullptr;
 	}
 

@@ -61,6 +61,13 @@ private:
 	TSharedPtr<SEditableTextBox>  VecFromXBox, VecFromYBox, VecFromZBox;
 	TSharedPtr<SEditableTextBox>  VecToXBox,   VecToYBox,   VecToZBox;
 
+	// Vector2D
+	TSharedPtr<SEditableTextBox>  Vec2DFromXBox, Vec2DFromYBox;
+	TSharedPtr<SEditableTextBox>  Vec2DToXBox,   Vec2DToYBox;
+
+	// Int
+	TSharedPtr<SEditableTextBox>  IntFromBox, IntToBox;
+
 	// Rotator
 	TSharedPtr<SEditableTextBox>  RotFromPitch, RotFromYaw, RotFromRoll;
 	TSharedPtr<SEditableTextBox>  RotToPitch,   RotToYaw,   RotToRoll;

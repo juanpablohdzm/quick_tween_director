@@ -495,6 +495,75 @@ TSharedRef<SWidget> SQTDStepDialog::BuildTypeSpecificSection()
 		];
 	}
 
+	else if (EditedStep.StepType == EQTDStepType::Vector2D)
+	{
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[
+			SNew(STextBlock).Text(LOCTEXT("Vec2DSection", "Vector2D Parameters"))
+			.Font(FAppStyle::GetFontStyle("SmallFontBold"))
+		];
+
+		if (!EditedStep.bVector2DFromCurrent)
+		{
+			SAssignNew(Vec2DFromXBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.Vector2DFrom.X)));
+			SAssignNew(Vec2DFromYBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.Vector2DFrom.Y)));
+			Box->AddSlot().AutoHeight().Padding(0, 4)
+			[
+				MakeLabeledRow(LOCTEXT("Vec2DFrom", "From (X, Y)"),
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot().FillWidth(1.0f).Padding(2, 0)[ Vec2DFromXBox.ToSharedRef() ]
+					+ SHorizontalBox::Slot().FillWidth(1.0f).Padding(2, 0)[ Vec2DFromYBox.ToSharedRef() ]
+				)
+			];
+		}
+
+		SAssignNew(Vec2DToXBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.Vector2DTo.X)));
+		SAssignNew(Vec2DToYBox, SEditableTextBox).Text(FText::FromString(FString::SanitizeFloat(EditedStep.Vector2DTo.Y)));
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[
+			MakeLabeledRow(LOCTEXT("Vec2DTo", "To (X, Y)"),
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot().FillWidth(1.0f).Padding(2, 0)[ Vec2DToXBox.ToSharedRef() ]
+				+ SHorizontalBox::Slot().FillWidth(1.0f).Padding(2, 0)[ Vec2DToYBox.ToSharedRef() ]
+			)
+		];
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[
+			MakeLabeledRow(LOCTEXT("Vec2DFromCur", "From Current"),
+				SNew(SCheckBox)
+				.IsChecked(EditedStep.bVector2DFromCurrent ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+				.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
+					EditedStep.bVector2DFromCurrent = (S == ECheckBoxState::Checked);
+				}))
+		];
+	}
+	else if (EditedStep.StepType == EQTDStepType::Int)
+	{
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[
+			SNew(STextBlock).Text(LOCTEXT("IntSection", "Integer Parameters"))
+			.Font(FAppStyle::GetFontStyle("SmallFontBold"))
+		];
+
+		SAssignNew(IntFromBox, SEditableTextBox).Text(FText::FromString(FString::FromInt(EditedStep.IntFrom)));
+		SAssignNew(IntToBox,   SEditableTextBox).Text(FText::FromString(FString::FromInt(EditedStep.IntTo)));
+
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[ MakeLabeledRow(LOCTEXT("IntFrom", "From"), IntFromBox.ToSharedRef()) ];
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[ MakeLabeledRow(LOCTEXT("IntTo", "To"), IntToBox.ToSharedRef()) ];
+
+		Box->AddSlot().AutoHeight().Padding(0, 4)
+		[
+			MakeLabeledRow(LOCTEXT("IntFromCur", "From Current"),
+				SNew(SCheckBox)
+				.IsChecked(EditedStep.bIntFromCurrent ? ECheckBoxState::Checked : ECheckBoxState::Unchecked)
+				.OnCheckStateChanged_Lambda([this](ECheckBoxState S) {
+					EditedStep.bIntFromCurrent = (S == ECheckBoxState::Checked);
+				}))
+		];
+	}
+
 	return Box;
 }
 
@@ -559,6 +628,17 @@ bool SQTDStepDialog::CollectValues()
 	{
 		EditedStep.ColorFrom = EditColorFrom;
 		EditedStep.ColorTo   = EditColorTo;
+	}
+	else if (EditedStep.StepType == EQTDStepType::Vector2D)
+	{
+		if (!EditedStep.bVector2DFromCurrent)
+			EditedStep.Vector2DFrom = FVector2D(ParseFloat(Vec2DFromXBox), ParseFloat(Vec2DFromYBox));
+		EditedStep.Vector2DTo = FVector2D(ParseFloat(Vec2DToXBox), ParseFloat(Vec2DToYBox));
+	}
+	else if (EditedStep.StepType == EQTDStepType::Int)
+	{
+		EditedStep.IntFrom = ParseInt(IntFromBox, 0);
+		EditedStep.IntTo   = ParseInt(IntToBox,   1);
 	}
 
 	EditedStep.UserColor = EditUserColor;

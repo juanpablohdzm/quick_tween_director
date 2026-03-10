@@ -755,6 +755,20 @@ FReply SQuickTweenDirectorEditor::OnExportJsonClicked()
 			Writer->WriteValue(TEXT("colorToB"),   S.ColorTo.B);
 			Writer->WriteValue(TEXT("colorToA"),   S.ColorTo.A);
 			break;
+		case EQTDStepType::Vector2D:
+			Writer->WriteValue(TEXT("vector2DTarget"),      (int32)S.Vector2DTarget);
+			Writer->WriteValue(TEXT("vector2DFromCurrent"), S.bVector2DFromCurrent);
+			Writer->WriteValue(TEXT("vector2DFromX"), S.Vector2DFrom.X);
+			Writer->WriteValue(TEXT("vector2DFromY"), S.Vector2DFrom.Y);
+			Writer->WriteValue(TEXT("vector2DToX"),   S.Vector2DTo.X);
+			Writer->WriteValue(TEXT("vector2DToY"),   S.Vector2DTo.Y);
+			break;
+		case EQTDStepType::Int:
+			Writer->WriteValue(TEXT("intTarget"),      (int32)S.IntTarget);
+			Writer->WriteValue(TEXT("intFromCurrent"), S.bIntFromCurrent);
+			Writer->WriteValue(TEXT("intFrom"), S.IntFrom);
+			Writer->WriteValue(TEXT("intTo"),   S.IntTo);
+			break;
 		default: break;
 		}
 		if (S.UserColor.A > 0.f)
@@ -1146,6 +1160,18 @@ FReply SQuickTweenDirectorEditor::OnImportJsonClicked()
 				if (StepObj->TryGetNumberField(TEXT("colorToG"),   Tmp)) Step.ColorTo.G   = (float)Tmp;
 				if (StepObj->TryGetNumberField(TEXT("colorToB"),   Tmp)) Step.ColorTo.B   = (float)Tmp;
 				if (StepObj->TryGetNumberField(TEXT("colorToA"),   Tmp)) Step.ColorTo.A   = (float)Tmp;
+				break;
+			case EQTDStepType::Vector2D:
+				StepObj->TryGetBoolField(TEXT("vector2DFromCurrent"), Step.bVector2DFromCurrent);
+				if (StepObj->TryGetNumberField(TEXT("vector2DFromX"), Tmp)) Step.Vector2DFrom.X = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vector2DFromY"), Tmp)) Step.Vector2DFrom.Y = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vector2DToX"),   Tmp)) Step.Vector2DTo.X   = (float)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("vector2DToY"),   Tmp)) Step.Vector2DTo.Y   = (float)Tmp;
+				break;
+			case EQTDStepType::Int:
+				StepObj->TryGetBoolField(TEXT("intFromCurrent"), Step.bIntFromCurrent);
+				if (StepObj->TryGetNumberField(TEXT("intFrom"), Tmp)) Step.IntFrom = (int32)Tmp;
+				if (StepObj->TryGetNumberField(TEXT("intTo"),   Tmp)) Step.IntTo   = (int32)Tmp;
 				break;
 			default: break;
 			}

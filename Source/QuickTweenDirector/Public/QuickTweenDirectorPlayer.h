@@ -194,6 +194,9 @@ private:
 	/** Resolve a slot name to a USceneComponent (may cast from Actor). */
 	USceneComponent* ResolveComponentSlot(FName SlotName) const;
 
+	/** Resolve a slot name to a UMaterialInstanceDynamic, or nullptr if not bound / wrong type. */
+	UMaterialInstanceDynamic* ResolveMIDSlot(FName SlotName) const;
+
 	// ── Data ──────────────────────────────────────────────────────────────────
 
 	UPROPERTY()

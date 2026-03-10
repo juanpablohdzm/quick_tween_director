@@ -733,6 +733,13 @@ private:
 			SubBuilder.AddMenuEntry(LOCTEXT("MatColor", "Material Vector Parameter (Color)"), FText::GetEmpty(), FSlateIcon(),
 				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
 					MakeColorStep(EQTDColorTarget::MaterialVector, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("MatVector2D", "Material Vector2D Parameter (UV)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeVector2DStep(EQTDVector2DTarget::MaterialVector2D, SlotName, SnapTime(ClickTime)))));
+			SubBuilder.AddMenuEntry(LOCTEXT("MatInt", "Material Scalar (Integer)"), FText::GetEmpty(), FSlateIcon(),
+				FUIAction(FExecuteAction::CreateSP(this, &SQTDStepContent::FireStepAdded,
+					MakeIntStep(EQTDIntTarget::MaterialScalarInt, SlotName, SnapTime(ClickTime)))));
+
 			SubBuilder.EndSection();
 		}
 
@@ -795,6 +802,22 @@ private:
 		FQTDStepData S = MakeBaseStep(EQTDStepType::LinearColor, SlotName, T);
 		S.ColorTarget = Target;
 		S.Label = TEXT("Material Color");
+		return S;
+	}
+
+	FQTDStepData MakeVector2DStep(EQTDVector2DTarget Target, FName SlotName, float T) const
+	{
+		FQTDStepData S = MakeBaseStep(EQTDStepType::Vector2D, SlotName, T);
+		S.Vector2DTarget = Target;
+		S.Label = TEXT("Material UV");
+		return S;
+	}
+
+	FQTDStepData MakeIntStep(EQTDIntTarget Target, FName SlotName, float T) const
+	{
+		FQTDStepData S = MakeBaseStep(EQTDStepType::Int, SlotName, T);
+		S.IntTarget = Target;
+		S.Label = TEXT("Material Int");
 		return S;
 	}
 

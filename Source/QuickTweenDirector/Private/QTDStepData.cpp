@@ -21,6 +21,10 @@ FLinearColor FQTDStepData::GetTypeColor() const
 			return FLinearColor(0.23f, 0.53f, 1.0f);  // blue
 		case EQTDStepType::LinearColor:
 			return FLinearColor(0.51f, 0.22f, 0.93f); // purple
+		case EQTDStepType::Vector2D:
+			return FLinearColor(0.20f, 0.80f, 0.40f); // green
+		case EQTDStepType::Int:
+			return FLinearColor(1.00f, 0.29f, 0.42f); // coral
 		case EQTDStepType::Empty:
 		default:
 			return FLinearColor(0.42f, 0.46f, 0.49f); // gray
