@@ -1,0 +1,51 @@
+\doxysection{SQTDNew\+Animation\+Dialog.\+h}
+\hypertarget{_s_q_t_d_new_animation_dialog_8h_source}{}\label{_s_q_t_d_new_animation_dialog_8h_source}\index{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDNewAnimationDialog.h@{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDNewAnimationDialog.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Widgets/SCompoundWidget.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}Utils/LoopType.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }SWindow;}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00015\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_new_animation_dialog}{SQTDNewAnimationDialog}}\ :\ \textcolor{keyword}{public}\ SCompoundWidget}
+\DoxyCodeLine{00016\ \{}
+\DoxyCodeLine{00017\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00018\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_s_q_t_d_new_animation_dialog_1_1_f_result}{FResult}}}
+\DoxyCodeLine{00019\ \ \ \ \ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ FString\ \ \ Name;}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ int32\ \ \ \ \ Loops\ \ \ \ \ \ \ \ \ \ \ =\ 1;}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ ELoopType\ LoopType\ \ \ \ \ \ \ \ =\ ELoopType::Restart;}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ bAutoKill\ \ \ \ \ \ \ =\ \textcolor{keyword}{true};}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ bPlayWhilePaused\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ bConfirmed\ \ \ \ \ \ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00026\ \ \ \ \ \};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ SLATE\_BEGIN\_ARGS(\mbox{\hyperlink{class_s_q_t_d_new_animation_dialog}{SQTDNewAnimationDialog}})\ \{\}}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(FString,\ \ \ \ \ \ \ \ \ \ \ \ \ DefaultName)}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(TSharedPtr<SWindow>,\ ParentWindow)}
+\DoxyCodeLine{00031\ \ \ \ \ SLATE\_END\_ARGS()}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ void\ Construct(const\ FArguments\&\ InArgs);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00035\ \ \ \ \ const\ FResult\&\ GetResult()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ Result;\ \}}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00038\ \ \ \ \ FReply\ OnConfirm();}
+\DoxyCodeLine{00039\ \ \ \ \ FReply\ OnCancel();}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \mbox{\hyperlink{struct_s_q_t_d_new_animation_dialog_1_1_f_result}{FResult}}\ Result;}
+\DoxyCodeLine{00042\ \ \ \ \ TWeakPtr<SWindow>\ WeakParentWindow;}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ \ \ \ \ \ \ NameBox;}
+\DoxyCodeLine{00045\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ \ \ \ \ \ \ LoopsBox;}
+\DoxyCodeLine{00046\ \ \ \ \ TArray<TSharedPtr<FString>>\ \ \ \ \ \ \ \ \ LoopTypeOptions;}
+\DoxyCodeLine{00047\ \ \ \ \ int32\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SelectedLoopTypeIndex\ =\ 0;}
+\DoxyCodeLine{00048\ \ \ \ \ TSharedPtr<STextBlock>\ \ \ \ \ \ \ \ \ \ \ \ \ \ LoopTypeDisplay;}
+\DoxyCodeLine{00049\ \};}
+
+\end{DoxyCode}

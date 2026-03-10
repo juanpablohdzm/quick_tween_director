@@ -1,0 +1,902 @@
+\chapter{Welcome to Quick\+Tween\+Director }
+\hypertarget{index}{}\label{index}\index{Welcome to QuickTweenDirector@{Welcome to QuickTweenDirector}}
+\hypertarget{index_autotoc_md0}{}\doxysection{\texorpdfstring{Welcome to Quick\+Tween\+Director}{Welcome to Quick\+Tween\+Director}}\label{index_autotoc_md0}
+{\bfseries{\doxylink{class_quick_tween_director}{Quick\+Tween\+Director}}} is a visual timeline editor and runtime playback system built on top of the {\bfseries{Quick\+Tween}} plugin. It lets you design multi-\/track tween animations directly inside the Blueprint editor, store them as reusable data assets, and play them back at runtime with just a couple of Blueprint nodes — no code required.
+
+Think of it as a lightweight in-\/editor Sequencer that lives inside your Blueprint. You place colored step blocks on component tracks, arrange their timing visually, save the result as an asset, and then drive it all from a single {\ttfamily Create Director Player → Play} call at runtime.
+
+\begin{quote}
+{\bfseries{Requires\+:}} The {\bfseries{Quick\+Tween}} plugin must be installed and enabled in your project alongside this one. \end{quote}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md2}{}\doxysubsection{\texorpdfstring{Why Quick\+Tween\+Director?}{Why Quick\+Tween\+Director?}}\label{index_autotoc_md2}
+If you have ever built a complex animation using Quick\+Tween alone, you know the problem. You end up with a wall of Begin\+Play nodes, magic delay numbers, and timing logic spread across multiple event graphs. When something needs to change, you have to hunt through all of it.
+
+\doxylink{class_quick_tween_director}{Quick\+Tween\+Director} solves this by giving you a proper timeline. You can see all your component animations at once, drag steps around to get the timing right, and when you are done you have a clean asset that can be reused across multiple Blueprints.
+
+Here is what it makes easy\+:
+
+
+\begin{DoxyItemize}
+\item Designing animations visually instead of guessing delay values
+\item Running multiple component animations in parallel without manually coordinating them
+\item Storing animations as data assets that serialize with your project
+\item Reusing the same animation asset from any Blueprint that has matching components
+\item Reacting to playback events — globally or per individual step
+\item Exporting and importing animations as JSON for version control or sharing
+\item Nesting Director animations inside larger Quick\+Tween sequences
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md4}{}\doxysubsection{\texorpdfstring{Installation}{Installation}}\label{index_autotoc_md4}
+
+\begin{DoxyEnumerate}
+\item Copy the {\ttfamily \doxylink{class_quick_tween_director}{Quick\+Tween\+Director}} folder into your project\textquotesingle{}s {\ttfamily Plugins/} directory, next to the {\ttfamily Quick\+Tween} folder\+:
+\end{DoxyEnumerate}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{YourProject/}
+\DoxyCodeLine{\ \ Plugins/}
+\DoxyCodeLine{\ \ \ \ QuickTween/}
+\DoxyCodeLine{\ \ \ \ QuickTweenDirector/}
+
+\end{DoxyCode}
+
+
+
+\begin{DoxyEnumerate}
+\item Right-\/click your {\ttfamily .uproject} file and select {\bfseries{Generate Visual Studio Project Files}}.
+\item Open your project. Unreal will ask you to compile the new plugin — click {\bfseries{Yes}}.
+\item Go to {\bfseries{Edit → Plugins}}, search for {\bfseries{\doxylink{class_quick_tween_director}{Quick\+Tween\+Director}}}, and confirm it is enabled.
+\item Restart the editor if prompted.
+\end{DoxyEnumerate}
+
+No additional C++ setup is needed to use the plugin from Blueprints.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md6}{}\doxysubsection{\texorpdfstring{Opening the Director Panel}{Opening the Director Panel}}\label{index_autotoc_md6}
+The Director editor is embedded inside the {\bfseries{Blueprint editor}}. It is not a standalone window or Content Browser tool.
+
+
+\begin{DoxyEnumerate}
+\item Open any {\bfseries{Actor Blueprint}} by double-\/clicking it in the Content Browser.
+\item In the Blueprint editor toolbar, click the {\bfseries{Director}} button.
+\item The {\bfseries{Quick\+Tween Director}} panel opens as a dockable tab. Drag it wherever is comfortable — below the viewport, next to the event graph, or as a floating window.
+\end{DoxyEnumerate}
+
+The panel tracks the last-\/focused Actor Blueprint automatically. If you have multiple Blueprint editors open, clicking {\bfseries{Director}} from the right one switches the panel\textquotesingle{}s context.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md8}{}\doxysubsection{\texorpdfstring{Creating an Animation Asset}{Creating an Animation Asset}}\label{index_autotoc_md8}
+With the Director panel open and an Actor Blueprint focused\+:
+
+
+\begin{DoxyEnumerate}
+\item Click {\bfseries{+ New Animation}} in the left column.
+\item A {\ttfamily \doxylink{class_u_quick_tween_director_asset}{UQuick\+Tween\+Director\+Asset}} file is created alongside your Blueprint in the Content folder, and a Blueprint variable referencing it is added automatically.
+\item Double-\/click the animation entry to rename it.
+\item Click the {\bfseries{✕}} button next to an entry to remove the variable reference. The asset file stays on disk — only the variable link is removed.
+\end{DoxyEnumerate}
+
+You can have as many animations per Blueprint as you need. All of them appear in the left column and each one has its own independent timeline.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md10}{}\doxysubsection{\texorpdfstring{The Timeline Editor}{The Timeline Editor}}\label{index_autotoc_md10}
+Clicking an animation in the left column opens its timeline. This is where you build the animation.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{┌─\ Toolbar\ ─────────────────────────────────────────────────────────────────────┐}
+\DoxyCodeLine{│\ [Save]\ [+\ Add\ Track]\ |\ Duration:\ 4.50s\ |\ [Snap]\ [Fit]\ ──○──\ \ [Export]\ [Import]│}
+\DoxyCodeLine{├────────────────────────┬──────────────────────────────────────────────────────┤}
+\DoxyCodeLine{│\ TIMELINE\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ 0s\ \ \ \ \ \ 1s\ \ \ \ \ \ 2s\ \ \ \ \ \ 3s\ \ \ \ \ \ 4s\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ StaticMesh\ \ \ \ \ \ \ \ \ \ \ \ │\ \ ████████\ Relative\ Location\ ████│\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ StaticMeshComponent\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{├─\ Light\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │\ \ \ \ \ \ \ \ \ \ ████\ Material\ Float\ ████████\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{│\ \ \ PointLightComponent\ \ │\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ │}
+\DoxyCodeLine{└────────────────────────┴──────────────────────────────────────────────────────┘}
+
+\end{DoxyCode}
+
+
+The total animation {\bfseries{Duration}} shown in the toolbar is calculated automatically as the furthest step end time across all tracks. You do not set it manually.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md12}{}\doxysubsubsection{\texorpdfstring{Toolbar Reference}{Toolbar Reference}}\label{index_autotoc_md12}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Control  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}What it does  \\
+{\bfseries{Save}}  &Saves the Director asset to disk.  \\
+{\bfseries{+ Add Track}}  &Opens the component picker and adds a new track.  \\
+{\bfseries{Duration badge}}  &Shows the total animation duration. Read-\/only — it updates as you add or move steps.  \\
+{\bfseries{Snap}}  &Toggle. When active, drag and resize operations snap to 0.\+05 s boundaries. Turns orange when enabled.  \\
+{\bfseries{Fit}}  &Adjusts zoom so the entire animation fits in the visible area.  \\
+{\bfseries{Zoom slider}}  &Drag right for more detail, left to see more of the timeline. Shown as a percentage of the 80 px/s default.  \\
+{\bfseries{Export JSON}}  &Saves all tracks and steps to a {\ttfamily .json} file.  \\
+{\bfseries{Import JSON}}  &Replaces current tracks and steps from a previously exported {\ttfamily .json} file.  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md14}{}\doxysubsubsection{\texorpdfstring{Adding Tracks}{Adding Tracks}}\label{index_autotoc_md14}
+Each {\bfseries{track}} targets one component from your Blueprint\textquotesingle{}s component hierarchy. Tracks run in parallel at runtime — steps on different tracks can overlap freely.
+
+{\bfseries{To add a track\+:}}
+\begin{DoxyEnumerate}
+\item Click {\bfseries{+ Add Track}} in the toolbar.
+\item The {\bfseries{Select Component}} dialog shows the component tree of your Blueprint.
+\item Select a component and click {\bfseries{OK}}.
+\end{DoxyEnumerate}
+
+\begin{quote}
+Only Blueprint SCS components (the ones you added yourself) appear in the picker. Inherited C++ native components can still be animated by calling {\ttfamily Bind Slot} manually at runtime. \end{quote}
+
+
+{\bfseries{To reorder tracks\+:}} Use the {\bfseries{▲ / ▼}} arrow buttons on the left edge of each track label. The change is undoable with Ctrl+Z.
+
+{\bfseries{To delete a track (and all its steps)\+:}} Click the {\bfseries{✕}} button on the track label. This is undoable.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md16}{}\doxysubsubsection{\texorpdfstring{Adding Steps}{Adding Steps}}\label{index_autotoc_md16}
+A {\bfseries{step}} is a colored block on a track that represents one tween animation. Steps on the same track play sequentially relative to each other based on their start times, but steps across different tracks always play in parallel.
+
+{\bfseries{To add a step\+:}}
+\begin{DoxyEnumerate}
+\item {\bfseries{Right-\/click}} on an empty area of a track row.
+\item The {\bfseries{Add Step}} submenu appears, filtered to step types that make sense for that component class.
+\item Select a type. The {\bfseries{Edit Step}} dialog opens so you can configure values and timing.
+\item Click {\bfseries{Apply}}. The step appears on the track as a colored block.
+\end{DoxyEnumerate}
+
+The start time of the new step is placed at the position where you right-\/clicked, snapping to 0.\+05 s if Snap is enabled.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md18}{}\doxysubsubsection{\texorpdfstring{Moving Steps}{Moving Steps}}\label{index_autotoc_md18}
+
+\begin{DoxyItemize}
+\item {\bfseries{Left-\/click and drag}} a step block horizontally to change its start time.
+\item With {\bfseries{Snap}} enabled, the start time snaps to 0.\+05 s boundaries.
+\item Release to commit. Undoable.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md20}{}\doxysubsubsection{\texorpdfstring{Resizing Steps}{Resizing Steps}}\label{index_autotoc_md20}
+
+\begin{DoxyItemize}
+\item Hover over the {\bfseries{right edge}} of a step block. The cursor changes to a resize arrow.
+\item {\bfseries{Left-\/click and drag}} to change the step\textquotesingle{}s duration.
+\item With {\bfseries{Snap}} enabled, the duration snaps to 0.\+05 s boundaries.
+\item Release to commit. Undoable.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md22}{}\doxysubsubsection{\texorpdfstring{Editing Step Values}{Editing Step Values}}\label{index_autotoc_md22}
+{\bfseries{Double-\/click}} any step block to re-\/open the Edit Step dialog and change any of its settings — timing, easing, target values, or appearance.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md24}{}\doxysubsubsection{\texorpdfstring{Multi-\/\+Selecting Steps}{Multi-\/\+Selecting Steps}}\label{index_autotoc_md24}
+
+\begin{DoxyItemize}
+\item {\bfseries{Ctrl + left-\/click}} steps to add or remove them from the selection. Selected steps show a white outline.
+\item Click on empty track space (without Ctrl) to clear the selection.
+\item Right-\/clicking with multiple steps selected adds a {\bfseries{Delete Selected}} option to the context menu.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md26}{}\doxysubsubsection{\texorpdfstring{Copying and Pasting Steps}{Copying and Pasting Steps}}\label{index_autotoc_md26}
+
+\begin{DoxyItemize}
+\item {\bfseries{Right-\/click}} a step → {\bfseries{Copy Step}} — copies it to the clipboard.
+\item {\bfseries{Right-\/click}} on empty space in any track → {\bfseries{Paste Step}} — pastes a copy at the click position on that track. The pasted step gets a new ID but inherits everything else\+: type, duration, easing, and all values.
+\end{DoxyItemize}
+
+This is useful for duplicating a step across tracks or creating similar steps with slightly different timing.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md28}{}\doxysubsubsection{\texorpdfstring{Deleting Steps}{Deleting Steps}}\label{index_autotoc_md28}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}What  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}How  \\
+Delete one step  &Right-\/click it → {\bfseries{Delete Step}}  \\
+Delete multiple steps  &Select them with Ctrl+click, then right-\/click → {\bfseries{Delete Selected}}  \\
+Delete a whole track  &Click the {\bfseries{✕}} on the track label (also removes all steps on it)  \\
+\end{DoxyTable}
+
+
+All deletions are undoable.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md30}{}\doxysubsubsection{\texorpdfstring{Grid Snapping}{Grid Snapping}}\label{index_autotoc_md30}
+Click the {\bfseries{Snap}} toggle in the toolbar to enable grid snapping. The snap increment is fixed at {\bfseries{0.\+05 seconds}}. When active\+:
+
+
+\begin{DoxyItemize}
+\item Dragging a step snaps its start time to the nearest 0.\+05 s boundary.
+\item Resizing a step snaps its duration to 0.\+05 s boundaries.
+\item New steps placed via right-\/click snap their start time.
+\end{DoxyItemize}
+
+Snap is shown in orange in the toolbar when it is on.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md32}{}\doxysubsubsection{\texorpdfstring{Ruler Scrubbing}{Ruler Scrubbing}}\label{index_autotoc_md32}
+The green playhead on the ruler shows your current position in the timeline.
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Click or drag on the ruler}} to move the playhead to any time.
+\item The playhead is a visual reference only — it does not drive live actor movement in the editor.
+\end{DoxyItemize}
+
+To actually preview the result, use {\bfseries{Play in Editor (PIE)}} with {\ttfamily Create Director Player → Play} hooked up in Begin\+Play. Easing curve shapes are also previewed visually inside step blocks when the block is wide enough — a subtle curve line shows the shape of the chosen easing function.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md34}{}\doxysubsubsection{\texorpdfstring{Zoom and Fit}{Zoom and Fit}}\label{index_autotoc_md34}
+
+\begin{DoxyItemize}
+\item {\bfseries{Zoom slider}}\+: drag right to zoom in (see more detail per second), left to zoom out (see more of the animation).
+\item {\bfseries{Fit}}\+: one click to set the zoom level so the full animation duration fits the visible area. Useful after adding long steps.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md36}{}\doxysubsubsection{\texorpdfstring{Exporting to JSON}{Exporting to JSON}}\label{index_autotoc_md36}
+Click {\bfseries{Export JSON}} in the toolbar to write the entire asset to a {\ttfamily .json} file. The export is {\bfseries{lossless}} — it contains every field needed to fully restore the asset\+:
+
+
+\begin{DoxyItemize}
+\item Asset name, loop count, total duration
+\item All tracks (GUID, label, component variable name)
+\item All steps (GUID, track GUID, label, type, start time, duration, time scale, loops, loop type, easing, ease curve path, slot name, parameter name, all type-\/specific values, custom color)
+\end{DoxyItemize}
+
+{\bfseries{When to use this\+:}}
+\begin{DoxyItemize}
+\item Diffing animation changes in source control
+\item Sharing animations between projects
+\item Backing up before a large restructure
+\end{DoxyItemize}
+
+\begin{quote}
+The JSON file is not used at runtime. It is an editor-\/only exchange format. \end{quote}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md38}{}\doxysubsubsection{\texorpdfstring{Importing from JSON}{Importing from JSON}}\label{index_autotoc_md38}
+Click {\bfseries{Import JSON}} and pick a previously exported {\ttfamily .json} file. If the current asset already has content, you will be asked to confirm before anything is replaced.
+
+The importer validates every entry and skips anything that is malformed, showing a warning for each issue. After import, a summary dialog lists how many tracks and steps were imported and all warnings.
+
+{\bfseries{Common import warnings\+:}}
+
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Warning  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Cause  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Fix  \\
+{\ttfamily tracks\mbox{[}N\mbox{]}\+: invalid GUID}  &The id field in the JSON is corrupt  &Restore from an unmodified export  \\
+{\ttfamily steps\mbox{[}N\mbox{]}\+: track\+Id does not match any imported track}  &The step references a track that failed to import  &Fix the track entry in the JSON  \\
+{\ttfamily Track \textquotesingle{}X\textquotesingle{}\+: component \textquotesingle{}Y\textquotesingle{} not found in the current Blueprint}  &Animation was made for a different Blueprint or the component was renamed  &Rename the component or call {\ttfamily Bind Slot} manually at runtime  \\
+{\ttfamily Failed to parse JSON}  &File is corrupt or was not created by Export JSON  &Re-\/export from the original asset  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md40}{}\doxysubsubsection{\texorpdfstring{Saving}{Saving}}\label{index_autotoc_md40}
+Click {\bfseries{Save}} in the toolbar (or Ctrl+S while the Director panel is focused) to save the Director asset. The asset is a standard {\ttfamily UData\+Asset} file in your Content folder. The Blueprint variable pointing to it is saved when you save the Blueprint normally.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md42}{}\doxysubsection{\texorpdfstring{Step Types}{Step Types}}\label{index_autotoc_md42}
+When you right-\/click a track to add a step, the available types depend on the component class of that track. Here is the full list.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md44}{}\doxysubsubsection{\texorpdfstring{Location and Scale (Vector)}{Location and Scale (Vector)}}\label{index_autotoc_md44}
+These animate an {\ttfamily FVector} property on any {\ttfamily UScene\+Component}. The timeline block color is {\bfseries{orange}} for location and {\bfseries{amber}} for scale.
+
+{\bfseries{Absolute ("{}\+To"{}) — animates from a start value to a fixed target\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Step Type  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}What it drives  \\
+Relative Location  &{\ttfamily Set\+Relative\+Location}  \\
+World Location  &{\ttfamily Set\+World\+Location}  \\
+Relative Scale  &{\ttfamily Set\+Relative\+Scale3D}  \\
+World Scale  &{\ttfamily Set\+World\+Scale3D}  \\
+\end{DoxyTable}
+
+
+{\bfseries{Relative ("{}\+By"{}) — adds a delta to the component\textquotesingle{}s value at build time\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Step Type  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}What it drives  \\
+Relative Location By  &{\ttfamily Set\+Relative\+Location} (current + delta)  \\
+World Location By  &{\ttfamily Set\+World\+Location} (current + delta)  \\
+Relative Scale By  &{\ttfamily Set\+Relative\+Scale3D} (current + delta)  \\
+World Scale By  &{\ttfamily Set\+World\+Scale3D} (current + delta)  \\
+\end{DoxyTable}
+
+
+\begin{quote}
+{\bfseries{"{}\+To"{} vs "{}\+By"{}\+:}} Use {\bfseries{To}} when you want to animate to a specific position in the world. Use {\bfseries{By}} when you want the animation to work relative to wherever the component happens to be — for example "{}move 200 units forward from wherever it starts."{} \end{quote}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md46}{}\doxysubsubsection{\texorpdfstring{Rotation (Rotator)}{Rotation (Rotator)}}\label{index_autotoc_md46}
+Animates an {\ttfamily FRotator} on a {\ttfamily UScene\+Component}, always taking the shortest angular path. Timeline color\+: {\bfseries{teal}}.
+
+{\bfseries{Absolute ("{}\+To"{})\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Step Type  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}What it drives  \\
+Relative Rotation  &{\ttfamily Set\+Relative\+Rotation}  \\
+World Rotation  &{\ttfamily Set\+World\+Rotation}  \\
+\end{DoxyTable}
+
+
+{\bfseries{Relative ("{}\+By"{})\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Step Type  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}What it drives  \\
+Relative Rotation By  &{\ttfamily Set\+Relative\+Rotation} (current + delta)  \\
+World Rotation By  &{\ttfamily Set\+World\+Rotation} (current + delta)  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md48}{}\doxysubsubsection{\texorpdfstring{Material Scalar Parameter (Float)}{Material Scalar Parameter (Float)}}\label{index_autotoc_md48}
+Animates a scalar (float) parameter on a {\ttfamily UMaterial\+Instance\+Dynamic}. Timeline color\+: {\bfseries{blue}}.
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Parameter Name}} must exactly match the parameter name in your material.
+\item The slot must be manually bound to a {\ttfamily UMaterial\+Instance\+Dynamic} before {\ttfamily Play}. See the Slot Bindings section.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md50}{}\doxysubsubsection{\texorpdfstring{Material Vector Parameter (Linear Color)}{Material Vector Parameter (Linear Color)}}\label{index_autotoc_md50}
+Animates an RGB color vector parameter on a {\ttfamily UMaterial\+Instance\+Dynamic}. Timeline color\+: {\bfseries{purple}}.
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Parameter Name}} must match the vector parameter in your material.
+\item Requires a manual {\ttfamily Bind Slot} to a {\ttfamily UMaterial\+Instance\+Dynamic}.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md52}{}\doxysubsubsection{\texorpdfstring{Material Vector2D Parameter (UV)}{Material Vector2D Parameter (UV)}}\label{index_autotoc_md52}
+Animates the {\bfseries{XY channels}} of a material vector parameter on a {\ttfamily UMaterial\+Instance\+Dynamic} — ideal for UV offset and UV tiling animations. The ZW channels are preserved (snapshotted at build time). Timeline color\+: {\bfseries{green}}.
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Parameter Name}} must match the vector parameter in your material.
+\item Requires a manual {\ttfamily Bind Slot} to a {\ttfamily UMaterial\+Instance\+Dynamic}.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md54}{}\doxysubsubsection{\texorpdfstring{Material Scalar Integer}{Material Scalar Integer}}\label{index_autotoc_md54}
+Animates a scalar parameter on a {\ttfamily UMaterial\+Instance\+Dynamic} using integer interpolation — the result is rounded to the nearest integer each tick. Use this for discrete states like texture atlas indices. Timeline color\+: {\bfseries{coral}}.
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Parameter Name}} must match the scalar parameter in your material.
+\item Requires a manual {\ttfamily Bind Slot} to a {\ttfamily UMaterial\+Instance\+Dynamic}.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md56}{}\doxysubsubsection{\texorpdfstring{Delay (Empty)}{Delay (Empty)}}\label{index_autotoc_md56}
+A no-\/op step that occupies time on a track without animating anything. Use it to introduce a pause before the next step on the same track, without affecting other tracks. Timeline color\+: {\bfseries{gray}}.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md58}{}\doxysubsection{\texorpdfstring{Edit Step Dialog — Field Reference}{Edit Step Dialog — Field Reference}}\label{index_autotoc_md58}
+Double-\/click any step block to open the Edit Step dialog. Here is what every field does.\hypertarget{index_autotoc_md59}{}\doxysubsubsection{\texorpdfstring{Identity}{Identity}}\label{index_autotoc_md59}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{Label}}  &The name shown inside the step block on the timeline. Use something descriptive — you can also find a step by label using {\ttfamily Get Tween By Label} at runtime.  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md60}{}\doxysubsubsection{\texorpdfstring{Timing}{Timing}}\label{index_autotoc_md60}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{Duration (s)}}  &How long one loop playthrough lasts, in seconds.  \\
+{\bfseries{Time Scale}}  &Speed multiplier. {\ttfamily 2.\+0} plays twice as fast. {\ttfamily 0.\+5} plays at half speed. The visual block width on the timeline reflects the real playback time after time scale is applied.  \\
+{\bfseries{Loops (min 1)}}  &How many times this step repeats. Minimum is {\ttfamily 1}. Infinite loops ({\ttfamily -\/1}) are {\bfseries{not supported}} inside a Director sequence because the player needs a known, finite total duration.  \\
+{\bfseries{Loop Type}}  &{\ttfamily Restart} — resets to the start value each loop. {\ttfamily Ping Pong} — alternates forward and backward.  \\
+{\bfseries{Ease Type}}  &The easing curve applied to the interpolation. Options include Linear, Sine, Quad, Cubic, Quart, Quint, Expo, Circ, Back, Elastic, and Bounce — each in In, Out, and In\+Out variants. A preview curve is drawn on the step block when it is wide enough.  \\
+{\bfseries{Ease Curve (override)}}  &Assign a {\ttfamily UCurve\+Float} asset here to replace the Ease Type for this step. Clear it to fall back to the Ease Type dropdown.  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md61}{}\doxysubsubsection{\texorpdfstring{Target}{Target}}\label{index_autotoc_md61}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{Parameter Name}}  &The material parameter name. Required for Float, Color, Vector2D, and Integer steps. Must match exactly what is in your material.  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md62}{}\doxysubsubsection{\texorpdfstring{Appearance}{Appearance}}\label{index_autotoc_md62}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{Step Color (override)}}  &Click the swatch to pick a custom color for this step block. When alpha is greater than 0, the custom color replaces the default type color. Click {\bfseries{Reset}} to go back to the type color (sets alpha to 0).  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md63}{}\doxysubsubsection{\texorpdfstring{Type-\/\+Specific Fields}{Type-\/\+Specific Fields}}\label{index_autotoc_md63}
+{\bfseries{Vector steps — absolute (To)\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{From (X, Y, Z)}}  &The starting value. Hidden when {\bfseries{From Current}} is checked.  \\
+{\bfseries{To (X, Y, Z)}}  &The ending value.  \\
+{\bfseries{From Current}}  &When checked, the component\textquotesingle{}s actual value at the moment the animation is built is used as the From value. Useful for animations that start from wherever the component currently is.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Vector steps — relative (By)\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{By / Delta (X, Y, Z)}}  &The amount added to the component\textquotesingle{}s value at build time. The From value is always the snapshot taken when {\ttfamily Play} is first called — From and From Current are hidden.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Rotator steps — absolute (To)\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{From (Pitch, Yaw, Roll)}}  &Start rotation. Hidden when {\bfseries{From Current}} is checked.  \\
+{\bfseries{To (Pitch, Yaw, Roll)}}  &End rotation.  \\
+{\bfseries{From Current}}  &Uses the component\textquotesingle{}s current rotation at build time as the start.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Rotator steps — relative (By)\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{By / Delta (Pitch, Yaw, Roll)}}  &The rotation delta added to the component\textquotesingle{}s current rotation at build time.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Float steps\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{From}}  &Starting scalar value. Ignored when {\bfseries{From Current}} is checked.  \\
+{\bfseries{To}}  &Ending scalar value.  \\
+{\bfseries{From Current}}  &Reads the live material parameter value when the animation is built.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Color steps\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{From}}  &Click the color swatch to pick the starting color.  \\
+{\bfseries{To}}  &Click the color swatch to pick the ending color.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Vector2D steps\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{From (X, Y)}}  &Starting XY value. Hidden when {\bfseries{From Current}} is checked.  \\
+{\bfseries{To (X, Y)}}  &Ending XY value.  \\
+{\bfseries{From Current}}  &Reads the XY of the material vector parameter at build time. ZW channels are always preserved.  \\
+\end{DoxyTable}
+
+
+{\bfseries{Integer steps\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Field  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\bfseries{From}}  &Starting integer value. Ignored when {\bfseries{From Current}} is checked.  \\
+{\bfseries{To}}  &Ending integer value.  \\
+{\bfseries{From Current}}  &Reads the live material scalar at build time and rounds it to the nearest integer.  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md65}{}\doxysubsection{\texorpdfstring{Playing the Animation at Runtime}{Playing the Animation at Runtime}}\label{index_autotoc_md65}
+\hypertarget{index_autotoc_md66}{}\doxysubsubsection{\texorpdfstring{Basic Playback}{Basic Playback}}\label{index_autotoc_md66}
+Because the Director panel already added a Blueprint variable pointing at your animation asset, using it at runtime only takes two nodes.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Event\ BeginPlay]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Create\ Director\ Player]\ \ ←\ Asset:\ drag\ your\ animation\ variable\ here}
+\DoxyCodeLine{\ \ \ \ World\ Context\ Object\ \ ←\ self}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Play]}
+
+\end{DoxyCode}
+
+
+Blueprint SCS components are {\bfseries{automatically bound by name}} — no {\ttfamily Bind Slot} calls needed for components that belong to the same Blueprint.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md68}{}\doxysubsubsection{\texorpdfstring{Storing the Player for Later Control}{Storing the Player for Later Control}}\label{index_autotoc_md68}
+If you want to pause, reverse, or restart the animation after it has started, store the player in a variable\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Event\ BeginPlay]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Create\ Director\ Player]\ ──►\ [SET\ MyDirectorPlayer]\ ──►\ [Play]}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Event\ OnTriggerEnter]\ \ \ ──►\ [GET\ MyDirectorPlayer]\ ──►\ [Pause]}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Event\ OnTriggerExit]\ \ \ \ ──►\ [GET\ MyDirectorPlayer]\ ──►\ [Play]}
+
+\end{DoxyCode}
+
+
+This pattern works for anything — buttons, overlap events, timers, game state changes.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md70}{}\doxysubsubsection{\texorpdfstring{Reacting When the Animation Finishes}{Reacting When the Animation Finishes}}\label{index_autotoc_md70}
+Bind to {\ttfamily On\+Complete} before calling {\ttfamily Play}\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Director\ Player]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Assign\ OnComplete\ ←\ My\ Callback\ Event]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ └──►\ [Play]}
+\DoxyCodeLine{}
+\DoxyCodeLine{[My\ Callback\ Event]\ ──►\ [Do\ something\ when\ animation\ ends]}
+
+\end{DoxyCode}
+
+
+You can also bind {\ttfamily On\+Start}, {\ttfamily On\+Loop}, {\ttfamily On\+Killed}, and {\ttfamily On\+Update} the same way.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md72}{}\doxysubsubsection{\texorpdfstring{Reacting to Individual Step Boundaries}{Reacting to Individual Step Boundaries}}\label{index_autotoc_md72}
+{\ttfamily On\+Step\+Begin} fires when a step\textquotesingle{}s time window becomes active. {\ttfamily On\+Step\+End} fires when it becomes inactive. Both receive the {\bfseries{slot name}} (the component variable name) and the {\bfseries{step ID}} (a {\ttfamily FGuid}).
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Director\ Player]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Assign\ OnStepBegin\ ←\ HandleStepBegin]}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Assign\ OnStepEnd\ \ \ ←\ HandleStepEnd]}
+\DoxyCodeLine{\ \ \ \ └──►\ [Play]}
+\DoxyCodeLine{}
+\DoxyCodeLine{[HandleStepBegin]\ \ ──\ inputs:\ Player,\ SlotName\ (FName),\ StepId\ (FGuid)}
+\DoxyCodeLine{[HandleStepEnd]\ \ \ \ ──\ same\ inputs}
+
+\end{DoxyCode}
+
+
+This is useful for triggering sound effects, particle systems, or other game events at precise moments in the animation without adding separate timers.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md74}{}\doxysubsubsection{\texorpdfstring{Accessing a Specific Step\textquotesingle{}s Tween}{Accessing a Specific Step\textquotesingle{}s Tween}}\label{index_autotoc_md74}
+If you want to bind a callback to one specific step rather than all steps, get it by label\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Director\ Player]\ ──►\ [Play]}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ──►\ [Get\ Tween\ By\ Label\ "{}DoorOpen"{}]\ ──►\ [Assign\ OnComplete\ ←\ HandleDoorOpened]}
+
+\end{DoxyCode}
+
+
+Or by step ID (the {\ttfamily FGuid} shown in the Edit Step dialog)\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Director\ Player]\ ──►\ [Play]}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ──►\ [Get\ Tween\ By\ Step\ Id]\ ──►\ [Assign\ OnComplete\ ←\ HandleSpecificStep]}
+
+\end{DoxyCode}
+
+
+Call these {\bfseries{after}} {\ttfamily Create Director Player} and {\bfseries{before or after}} {\ttfamily Play} — the tweens are created during {\ttfamily Build}, which is called automatically on the first {\ttfamily Play}.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md76}{}\doxysubsection{\texorpdfstring{Slot Bindings}{Slot Bindings}}\label{index_autotoc_md76}
+At runtime, the player calls {\ttfamily Build()} automatically the first time you call {\ttfamily Play}. Build walks through all the tracks and tries to find a matching component on the owning actor by name.
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Situation  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Result  \\
+Animation created for this Blueprint\textquotesingle{}s component  &Automatically bound — no action needed  \\
+{\ttfamily Bind Slot(\+Name, Object)} called before {\ttfamily Play}  &Manual binding takes priority over the automatic one  \\
+Slot name is empty  &Falls back to the world context object  \\
+Slot bound to a {\ttfamily UMaterial\+Instance\+Dynamic}  &Required for all material step types  \\
+Component not found and no manual binding  &Step is skipped; error is added to {\ttfamily Binding Errors}  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md77}{}\doxysubsubsection{\texorpdfstring{Binding a Material Instance Dynamic}{Binding a Material Instance Dynamic}}\label{index_autotoc_md77}
+Material step types (Float, Color, Vector2D, Integer) cannot auto-\/bind because they need a {\ttfamily UMaterial\+Instance\+Dynamic}, not a component. You must create the MID yourself and bind it before calling {\ttfamily Play}\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Event\ BeginPlay]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Create\ Dynamic\ Material\ Instance]}
+\DoxyCodeLine{\ \ \ \ Source\ Material\ ←\ your\ material}
+\DoxyCodeLine{\ \ \ \ ──►\ MID}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Create\ Director\ Player]\ ──►\ Player}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Player\ →\ Bind\ Slot]}
+\DoxyCodeLine{\ \ \ \ Name\ \ \ ←\ "{}MyMeshComponent"{}\ \ \ (matches\ the\ track's\ slot\ name\ in\ the\ Director)}
+\DoxyCodeLine{\ \ \ \ Object\ ←\ MID}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Player\ →\ Play]}
+
+\end{DoxyCode}
+
+
+You can also apply the MID to your mesh in the same Begin\+Play before or after binding — the order relative to {\ttfamily Bind Slot} does not matter as long as both happen before {\ttfamily Play}.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md79}{}\doxysubsection{\texorpdfstring{Debugging Binding Errors}{Debugging Binding Errors}}\label{index_autotoc_md79}
+After {\ttfamily Build} runs (which happens automatically on first {\ttfamily Play}), you can read {\ttfamily Player → Binding Errors}. It is a {\ttfamily TArray\texorpdfstring{$<$}{<}FString\texorpdfstring{$>$}{>}} that lists every slot that failed to auto-\/bind\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Track\ 'Cube':\ slot\ 'Cube'\ could\ not\ be\ auto-\/bound\ —\ no\ matching\ component\ or\ property\ found\ on\ 'BP\_MyActor'.}
+
+\end{DoxyCode}
+
+
+{\bfseries{Common causes and fixes\+:}}
+
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Cause  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Fix  \\
+Component was renamed in the Blueprint after the track was created  &Rename it back, or recreate the track from the correctly named component  \\
+Animation was created for a different Blueprint  &Call {\ttfamily Bind Slot} manually with the correct object before {\ttfamily Play}  \\
+Component is a C++ native component (not in the SCS tree)  &Call {\ttfamily Bind Slot} manually  \\
+Material step slot not bound to a MID  &Create a MID and call {\ttfamily Bind Slot} before {\ttfamily Play}  \\
+\end{DoxyTable}
+
+
+A good practice during development is to add a branch after {\ttfamily Play} that checks if {\ttfamily Binding Errors} is non-\/empty and prints each error to the screen. This makes problems obvious in PIE without having to open the output log.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md81}{}\doxysubsection{\texorpdfstring{Blueprint Events Reference}{Blueprint Events Reference}}\label{index_autotoc_md81}
+All events are {\ttfamily Blueprint\+Assignable} multicast delegates. Drag from the player reference and use {\bfseries{Assign Event}} nodes.
+
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Event  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Signature  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}When it fires  \\
+{\ttfamily On\+Start}  &{\ttfamily (Player)}  &The first {\ttfamily Play} from Idle state  \\
+{\ttfamily On\+Update}  &{\ttfamily (Player)}  &Every tick while playing  \\
+{\ttfamily On\+Loop}  &{\ttfamily (Player)}  &Each time the animation completes one full loop  \\
+{\ttfamily On\+Complete}  &{\ttfamily (Player)}  &The final loop finishes  \\
+{\ttfamily On\+Killed}  &{\ttfamily (Player)}  &{\ttfamily Kill} is called  \\
+{\ttfamily On\+Step\+Begin}  &{\ttfamily (Player, Slot\+Name, Step\+Id)}  &A step\textquotesingle{}s window becomes active  \\
+{\ttfamily On\+Step\+End}  &{\ttfamily (Player, Slot\+Name, Step\+Id)}  &A step\textquotesingle{}s window becomes inactive  \\
+\end{DoxyTable}
+
+
+{\bfseries{Read-\/only playback properties}} (available as {\ttfamily Blueprint\+Read\+Only} on the player)\+:
+
+
+\begin{DoxyTable}{3}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Property  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Type  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily Current\+Local\+Time}  &{\ttfamily float}  &Current position within the current loop, in seconds  \\
+{\ttfamily Binding\+Errors}  &{\ttfamily TArray\texorpdfstring{$<$}{<}FString\texorpdfstring{$>$}{>}}  &Populated after {\ttfamily Build} if any slots failed to bind  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md83}{}\doxysubsection{\texorpdfstring{Playback API Reference}{Playback API Reference}}\label{index_autotoc_md83}
+All of these are available in Blueprint on a {\ttfamily \doxylink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player}} reference.\hypertarget{index_autotoc_md84}{}\doxysubsubsection{\texorpdfstring{Control Nodes}{Control Nodes}}\label{index_autotoc_md84}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Node  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily Play}  &Start or resume playback. Calls {\ttfamily Build} automatically on the first play.  \\
+{\ttfamily Pause}  &Freeze at the current position. Call {\ttfamily Play} again to resume from the same point.  \\
+{\ttfamily Reverse}  &Toggle playback direction between forward and backward.  \\
+{\ttfamily Restart}  &Reset to Idle state. Call {\ttfamily Play} to begin from the start again.  \\
+{\ttfamily Complete}  &Jump immediately to the end state and fire {\ttfamily On\+Complete}.  \\
+{\ttfamily Kill}  &Stop and unregister the player. Do not use the reference after calling this.  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md85}{}\doxysubsubsection{\texorpdfstring{Query Nodes}{Query Nodes}}\label{index_autotoc_md85}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Node  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Returns  \\
+{\ttfamily Get Is Playing}  &{\ttfamily true} while ticking forward or backward  \\
+{\ttfamily Get Is Completed}  &{\ttfamily true} after the final loop has finished  \\
+{\ttfamily Get Is Pending Kill}  &{\ttfamily true} after {\ttfamily Kill} is called  \\
+{\ttfamily Get Is Reversed}  &{\ttfamily true} when playing backward  \\
+{\ttfamily Get Elapsed Time}  &Total seconds elapsed since playback began (across all loops)  \\
+{\ttfamily Get Loop Duration}  &Duration of one loop in seconds — equals the asset\textquotesingle{}s total duration  \\
+{\ttfamily Get Total Duration}  &{\ttfamily Loop Duration × Loop Count}  \\
+{\ttfamily Get Current Loop}  &Zero-\/based index of the current loop  \\
+{\ttfamily Current Local Time}  &Position within the current loop in seconds, updated every tick  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md86}{}\doxysubsubsection{\texorpdfstring{Tween Access Nodes}{Tween Access Nodes}}\label{index_autotoc_md86}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Node  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily Get Tween By Step Id (FGuid)}  &Returns the {\ttfamily UQuick\+Tween\+Base} for a specific step. Must be called after {\ttfamily Build} / {\ttfamily Play}. Cast to the concrete tween type to access type-\/specific callbacks.  \\
+{\ttfamily Get Tween By Label (FString)}  &Returns the first tween whose label matches the string you provide.  \\
+\end{DoxyTable}
+\hypertarget{index_autotoc_md87}{}\doxysubsubsection{\texorpdfstring{Slot Binding Nodes}{Slot Binding Nodes}}\label{index_autotoc_md87}
+
+\begin{DoxyTable}{2}{}{}{1}
+\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Node  &\SetCell{c,bg=\tableheadbgcolor,font=\bfseries}Description  \\
+{\ttfamily Bind Slot (Name, Object)}  &Manually bind a slot name to an Actor, Scene\+Component, or {\ttfamily UMaterial\+Instance\+Dynamic}. Must be called before {\ttfamily Play} or {\ttfamily Build}. Overrides auto-\/binding for that slot.  \\
+{\ttfamily Build (World\+Context)}  &Force a rebuild of the internal tween list. Called automatically by {\ttfamily Play} if not yet built. Call manually if you need to inspect tweens before starting playback.  \\
+\end{DoxyTable}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md89}{}\doxysubsection{\texorpdfstring{Common Use Case Examples}{Common Use Case Examples}}\label{index_autotoc_md89}
+\hypertarget{index_autotoc_md90}{}\doxysubsubsection{\texorpdfstring{Example 1 — A Door Opening Animation}{Example 1 — A Door Opening Animation}}\label{index_autotoc_md90}
+You have a door Blueprint with a {\ttfamily Door\+Mesh} component. You want it to rotate 90 degrees over 0.\+8 seconds with an ease-\/out feel when the player interacts with it.
+
+{\bfseries{In the Director\+:}}
+\begin{DoxyEnumerate}
+\item Open the door Blueprint and click {\bfseries{Director}}.
+\item Click {\bfseries{+ New Animation}} and name it {\ttfamily Open}.
+\item Click {\bfseries{+ Add Track}}, select {\ttfamily Door\+Mesh}.
+\item Right-\/click the track → {\bfseries{Relative Rotation}} → set From to {\ttfamily (0, 0, 0)}, To to {\ttfamily (0, 90, 0)}, Duration {\ttfamily 0.\+8s}, Ease Type {\ttfamily Ease Out Cubic}.
+\item Click {\bfseries{Apply}}, then {\bfseries{Save}}.
+\end{DoxyEnumerate}
+
+{\bfseries{In Begin\+Play or an interaction event\+:}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[On\ Interact]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Create\ Director\ Player]\ \ ←\ Asset:\ Open\ (your\ variable)}
+\DoxyCodeLine{\ \ \ \ World\ Context\ ←\ self}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Play]}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md92}{}\doxysubsubsection{\texorpdfstring{Example 2 — A Chest That Opens with Sound at a Specific Moment}{Example 2 — A Chest That Opens with Sound at a Specific Moment}}\label{index_autotoc_md92}
+You want to play a sound effect exactly when the lid reaches 45 degrees — halfway through a 1-\/second rotation.
+
+{\bfseries{In the Director\+:}}
+\begin{DoxyEnumerate}
+\item Add a track for {\ttfamily Lid\+Mesh}, add a Relative Rotation step\+: From {\ttfamily (0,0,0)}, To {\ttfamily (0,0,90)}, Duration {\ttfamily 1s}. Label it {\ttfamily Lid\+Rotate}.
+\item Add a Delay step on the same track starting at 0.\+5s with duration 0.\+01s. Label it {\ttfamily Sound\+Cue}.
+\end{DoxyEnumerate}
+
+{\bfseries{In Blueprint\+:}}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Director\ Player]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Assign\ OnStepBegin\ ←\ HandleStepBegin]}
+\DoxyCodeLine{\ \ \ \ └──►\ [Play]}
+\DoxyCodeLine{}
+\DoxyCodeLine{[HandleStepBegin]}
+\DoxyCodeLine{\ \ \ \ SlotName\ ──►\ [Switch\ on\ Name]}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ "{}LidMesh"{}\ ──►\ [Get\ Tween\ By\ Label\ "{}SoundCue"{}]\ ──►\ [If\ valid]\ ──►\ [Play\ Sound]}
+
+\end{DoxyCode}
+
+
+Or more directly, use {\ttfamily On\+Step\+Begin} and filter by the step label using {\ttfamily Get Tween By Label} to confirm it is the right step, then play the sound.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md94}{}\doxysubsubsection{\texorpdfstring{Example 3 — A UI Panel That Slides In and Fades Simultaneously}{Example 3 — A UI Panel That Slides In and Fades Simultaneously}}\label{index_autotoc_md94}
+You have a widget component with a background mesh and a spotlight. You want the mesh to slide in from the left over 0.\+5s while the light fades up over 0.\+4s starting 0.\+1s into the animation.
+
+{\bfseries{In the Director\+:}}
+\begin{DoxyEnumerate}
+\item Add a track for {\ttfamily Background\+Mesh}. Right-\/click → {\bfseries{Relative Location}} → From {\ttfamily (-\/500, 0, 0)}, To {\ttfamily (0, 0, 0)}, Duration {\ttfamily 0.\+5s}, Ease {\ttfamily Ease Out Quint}. Place it at time 0.
+\item Add a track for {\ttfamily Spot\+Light}. Right-\/click → {\bfseries{Material Scalar Parameter}} → Parameter Name {\ttfamily Brightness}, From {\ttfamily 0.\+0}, To {\ttfamily 1.\+0}, Duration {\ttfamily 0.\+4s}. Place it at time 0.\+1s.
+\end{DoxyEnumerate}
+
+Both tracks run in parallel automatically. No extra coordination needed.
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md96}{}\doxysubsubsection{\texorpdfstring{Example 4 — Looping an Animation and Stopping It Later}{Example 4 — Looping an Animation and Stopping It Later}}\label{index_autotoc_md96}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Event\ BeginPlay]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[Create\ Director\ Player]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├──►\ [SET\ IdleAnimation]}
+\DoxyCodeLine{\ \ \ \ └──►\ [Play]}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Event\ OnPlayerNearby]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ▼}
+\DoxyCodeLine{[GET\ IdleAnimation]\ ──►\ [Complete]\ \ \ ←\ snaps\ to\ end\ state}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ──►\ [Kill]\ \ \ \ \ \ \ ←\ or\ Kill\ to\ stop\ immediately\ without\ snapping}
+
+\end{DoxyCode}
+
+
+Because Director Player steps must have a finite loop count, the animation loops naturally when you set the asset\textquotesingle{}s loop count to more than 1 (or handle looping by re-\/calling {\ttfamily Play} in {\ttfamily On\+Complete}).
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md98}{}\doxysubsubsection{\texorpdfstring{Example 5 — Nesting a Director Animation Inside a Sequence}{Example 5 — Nesting a Director Animation Inside a Sequence}}\label{index_autotoc_md98}
+You can use a Director Player as one step inside a larger {\ttfamily UQuick\+Tween\+Sequence}, mixing it with individual tweens\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Director\ Player]\ \ ←\ your\ animation\ asset}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ──►\ Player}
+\DoxyCodeLine{}
+\DoxyCodeLine{[Create\ Sequence]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Append]\ ←\ Player\ \ \ \ \ \ \ \ \ ←\ runs\ Director\ animation\ first}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Append]\ ←\ Float\ Tween\ \ \ \ ←\ then\ runs\ this\ after\ it\ finishes}
+\DoxyCodeLine{\ \ \ \ └──►\ [Play]}
+
+\end{DoxyCode}
+
+
+Or in parallel\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Create\ Sequence]}
+\DoxyCodeLine{\ \ \ \ │}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Join]\ ←\ Player\ \ \ \ \ \ \ \ \ \ \ ←\ runs\ together}
+\DoxyCodeLine{\ \ \ \ ├──►\ [Join]\ ←\ Camera\ Tween\ \ \ \ \ ←\ at\ the\ same\ time}
+\DoxyCodeLine{\ \ \ \ └──►\ [Play]}
+
+\end{DoxyCode}
+
+
+The Director Player behaves exactly like a {\ttfamily UQuick\+Tween\+Sequence} from the parent\textquotesingle{}s perspective.
+
+\begin{quote}
+{\bfseries{Important\+:}} When nesting, every step inside the Director animation must have a finite loop count (minimum 1). The parent sequence needs a known total duration to calculate seek times. \end{quote}
+
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md100}{}\doxysubsection{\texorpdfstring{Tips for Juniors}{Tips for Juniors}}\label{index_autotoc_md100}
+A few things that are easy to miss when getting started\+:
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Nothing plays in editor.}} The timeline is for authoring only. To see the result, you must run PIE with {\ttfamily Create Director Player → Play} in Begin\+Play.
+\item {\bfseries{The Duration badge is read-\/only.}} It reflects the furthest step end time. To make the animation longer, add a step or extend an existing one further out.
+\item {\bfseries{Snap makes life easier.}} Turn it on early and keep it on. It keeps steps aligned to clean boundaries and makes timing predictable.
+\item {\bfseries{Export before big changes.}} Use Export JSON as a backup before reorganizing tracks or doing large edits. You can always import it back.
+\item {\bfseries{Check Binding Errors in PIE.}} If something is not animating, the first thing to check is the {\ttfamily Binding Errors} array on the player. It will tell you exactly which slots failed and why.
+\item {\bfseries{Infinite loops are not allowed inside a Director.}} If a step needs to loop forever, you cannot do it inside the timeline. Instead, use a loop count of 1 in the step and handle repeating at the Director level, or use a regular Quick\+Tween alongside the Director.
+\item {\bfseries{Material steps always need a MID.}} You cannot animate a material parameter directly on a Static Mesh component. You must create a {\ttfamily UMaterial\+Instance\+Dynamic}, apply it to the mesh, and bind it via {\ttfamily Bind Slot} before {\ttfamily Play}.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{index_autotoc_md102}{}\doxysubsection{\texorpdfstring{Requests and Bug Reports}{Requests and Bug Reports}}\label{index_autotoc_md102}
+If there is something you wish the plugin could do, or if you run into a problem\+:
+
+
+\begin{DoxyItemize}
+\item {\bfseries{Feature requests\+:}} email {\ttfamily mosti.\+dev@gmail.\+com} with subject {\bfseries{Request -\/ \texorpdfstring{$<$}{<}Feature Name\texorpdfstring{$>$}{>}}} and a description of what you need.
+\item {\bfseries{Bug reports\+:}} email {\ttfamily mosti.\+dev@gmail.\+com} with subject {\bfseries{Bug -\/ \texorpdfstring{$<$}{<}Descriptive Name\texorpdfstring{$>$}{>}}}, including your Unreal Engine version, a description of the issue, a callstack if available, and steps to reproduce.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+
+
+Thanks for using {\bfseries{\doxylink{class_quick_tween_director}{Quick\+Tween\+Director}}}. If you have any questions, feel free to reach out at {\ttfamily mosti.\+dev@gmail.\+com}. 

@@ -1,0 +1,36 @@
+\doxysection{Quick\+Tween\+Director\+Library.\+h}
+\hypertarget{_quick_tween_director_library_8h_source}{}\label{_quick_tween_director_library_8h_source}\index{Source/QuickTweenDirector/Public/QuickTweenDirectorLibrary.h@{Source/QuickTweenDirector/Public/QuickTweenDirectorLibrary.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Kismet/BlueprintFunctionLibrary.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}QuickTweenDirectorLibrary.generated.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}};}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}};}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00015\ UCLASS()}
+\DoxyCodeLine{00016\ class\ QUICKTWEENDIRECTOR\_API\ \mbox{\hyperlink{class_u_quick_tween_director_library}{UQuickTweenDirectorLibrary}}\ :\ public\ UBlueprintFunctionLibrary}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ \ \ \ \ GENERATED\_BODY()}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00021\ }
+\DoxyCodeLine{00030\ \ \ \ \ UFUNCTION(BlueprintCallable,\ meta\ =\ (WorldContext\ =\ \textcolor{stringliteral}{"{}WorldContextObject"{}}),\ Category\ =\ \textcolor{stringliteral}{"{}QuickTweenDirector"{}})}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}}*\ \mbox{\hyperlink{class_u_quick_tween_director_library_ac9e2f420ee2e423e1e462a7de4f05ea4}{CreateDirectorPlayer}}(}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ UObject*\ WorldContextObject,}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ Asset);}
+\DoxyCodeLine{00034\ }
+\DoxyCodeLine{00045\ \ \ \ \ UFUNCTION(BlueprintCallable,\ meta\ =\ (WorldContext\ =\ \textcolor{stringliteral}{"{}WorldContextObject"{}}),\ Category\ =\ \textcolor{stringliteral}{"{}QuickTweenDirector"{}})}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}}*\ \mbox{\hyperlink{class_u_quick_tween_director_library_a11c132df038f06a141fb73dda60ed224}{PlayDirectorAsset}}(}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ UObject*\ WorldContextObject,}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ Asset,}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ FName\ SlotName,}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ UObject*\ SlotObject);}
+\DoxyCodeLine{00051\ \};}
+
+\end{DoxyCode}

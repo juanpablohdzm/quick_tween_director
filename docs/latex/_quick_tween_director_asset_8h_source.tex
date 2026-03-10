@@ -1,0 +1,67 @@
+\doxysection{Quick\+Tween\+Director\+Asset.\+h}
+\hypertarget{_quick_tween_director_asset_8h_source}{}\label{_quick_tween_director_asset_8h_source}\index{Source/QuickTweenDirector/Public/QuickTweenDirectorAsset.h@{Source/QuickTweenDirector/Public/QuickTweenDirectorAsset.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Engine/DataAsset.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}QTDStepData.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}Utils/LoopType.h"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}QuickTweenDirectorAsset.generated.h"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00018\ UCLASS(BlueprintType)}
+\DoxyCodeLine{00019\ class\ QUICKTWEENDIRECTOR\_API\ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}\ :\ public\ UDataAsset}
+\DoxyCodeLine{00020\ \{}
+\DoxyCodeLine{00021\ \ \ \ \ GENERATED\_BODY()}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00024\ \ \ \ \ \textcolor{comment}{//\ ──\ Steps\ \&\ tracks\ ────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00025\ }
+\DoxyCodeLine{00027\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Director"{}})}
+\DoxyCodeLine{00028\ \ \ \ \ TArray<\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}>\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a18bc36cd0c785fffaf4f66b32b615efa}{Steps}};}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00031\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Editor"{}})}
+\DoxyCodeLine{00032\ \ \ \ \ TArray<\mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrackData}}>\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a841ca0223ce29992a1d50d6a8f969f54}{Tracks}};}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{comment}{//\ ──\ Global\ playback\ settings\ ──────────────────────────────────────────────}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00037\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Playback"{}})}
+\DoxyCodeLine{00038\ \ \ \ \ int32\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a3358720c736f3f2dfa68b256cb13e057}{Loops}}\ =\ 1;}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00041\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Playback"{}})}
+\DoxyCodeLine{00042\ \ \ \ \ ELoopType\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a79b2e976640f303f1ed99dbeb75e9e4f}{LoopType}}\ =\ ELoopType::Restart;}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00045\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Playback"{}})}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a936c5fe0a54806aa9c5e75b04fe72735}{bAutoKill}}\ =\ true;}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00049\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Playback"{}})}
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a07e758b4b6411e193a5d97dd76ebc4c6}{bPlayWhilePaused}}\ =\ false;}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ ──\ Accessors\ ─────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00055\ \ \ \ \ UFUNCTION(BlueprintCallable,\ Category\ =\ \textcolor{stringliteral}{"{}Director"{}})}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a9737307080525a7611c65dde8bf7c7cc}{GetTotalDuration}}()\ const;}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{comment}{//\ ──\ Editor\ helpers\ (called\ from\ the\ editor\ toolkit)\ ───────────────────────}}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00061\ \ \ \ \ FGuid\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a550af85a19aadf75bd8e8b18f5bce079}{AddTrack}}(const\ FString\&\ Label,\ EQTDStepType\ DefaultType\ =\ EQTDStepType::Vector);}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a4db91fd91423191a25d02a4e77703777}{RemoveTrack}}(const\ FGuid\&\ InTrackId);}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00067\ \ \ \ \ int32\ \mbox{\hyperlink{class_u_quick_tween_director_asset_ae5d4d3af2f03e74910a290dbce861541}{AddStep}}(\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\ InStep);}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a8f77806f57df3a682ca3aaf396b21f24}{RemoveStep}}(const\ FGuid\&\ InStepId);}
+\DoxyCodeLine{00071\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a055bfcb1a57d5c860a1f0aaa1cc29ea1}{UpdateStep}}(const\ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\&\ InStep);}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00076\ \ \ \ \ TArray<\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}*>\ \mbox{\hyperlink{class_u_quick_tween_director_asset_aaa82fde4973ee8808dbf8e43b61c8e2a}{GetStepsForTrack}}(const\ FGuid\&\ InTrackId);}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00079\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}*\ \mbox{\hyperlink{class_u_quick_tween_director_asset_a45d5e8406617f40ec4ce8a863ae3b02e}{FindStep}}(const\ FGuid\&\ InStepId);}
+\DoxyCodeLine{00080\ }
+\DoxyCodeLine{00082\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrackData}}*\ \mbox{\hyperlink{class_u_quick_tween_director_asset_af0e43d2dd824f9885b67f0e4e68af5c4}{FindTrack}}(const\ FGuid\&\ InTrackId);}
+\DoxyCodeLine{00083\ \};}
+
+\end{DoxyCode}

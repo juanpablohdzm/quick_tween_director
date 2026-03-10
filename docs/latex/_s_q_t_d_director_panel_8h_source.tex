@@ -1,0 +1,71 @@
+\doxysection{SQTDDirector\+Panel.\+h}
+\hypertarget{_s_q_t_d_director_panel_8h_source}{}\label{_s_q_t_d_director_panel_8h_source}\index{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDDirectorPanel.h@{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDDirectorPanel.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Widgets/SCompoundWidget.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}Widgets/Text/SInlineEditableTextBlock.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }UBlueprint;}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}};}
+\DoxyCodeLine{00011\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_quick_tween_director_editor}{SQuickTweenDirectorEditor}};}
+\DoxyCodeLine{00012\ \textcolor{keyword}{class\ }SBorder;}
+\DoxyCodeLine{00013\ \textcolor{keyword}{class\ }SBox;}
+\DoxyCodeLine{00014\ \textcolor{keyword}{class\ }SVerticalBox;}
+\DoxyCodeLine{00015\ \textcolor{keyword}{class\ }STextBlock;}
+\DoxyCodeLine{00016\ \textcolor{keyword}{class\ }SScrollBox;}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00031\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_director_panel}{SQTDDirectorPanel}}\ :\ \textcolor{keyword}{public}\ SCompoundWidget}
+\DoxyCodeLine{00032\ \{}
+\DoxyCodeLine{00033\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00034\ \ \ \ \ SLATE\_BEGIN\_ARGS(\mbox{\hyperlink{class_s_q_t_d_director_panel}{SQTDDirectorPanel}})\ \{\}}
+\DoxyCodeLine{00035\ \ \ \ \ SLATE\_END\_ARGS()}
+\DoxyCodeLine{00036\ }
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordtype}{void}\ Construct(\textcolor{keyword}{const}\ FArguments\&\ InArgs);}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_s_q_t_d_director_panel_ac2f88b39ea0a9a85728ec1760dd11f3c}{SetBlueprint}}(UBlueprint*\ NewBlueprint);}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ ──\ Animation\ list\ helpers\ ────────────────────────────────────────────────}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordtype}{void}\ RefreshAnimationList();}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keywordtype}{void}\ SelectAnimation(int32\ Index);}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ FReply\ OnNewAnimationClicked();}
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ OnDeleteAnimation(int32\ Index);}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{keywordtype}{void}\ \ \ OnRenameAnimation(int32\ Index,\ \textcolor{keyword}{const}\ FText\&\ NewText,\ ETextCommit::Type\ CommitType);}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{comment}{//\ ──\ Asset\ /\ variable\ management\ ───────────────────────────────────────────}}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00062\ \ \ \ \ TArray<TPair<FName,\ UQuickTweenDirectorAsset*>>\ GetDirectorAnimations()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00069\ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ CreateNewAnimation(\textcolor{keyword}{const}\ FString\&\ VarName);}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00072\ \ \ \ \ FString\ MakeUniqueAnimationName()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{comment}{//\ ──\ Data\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00075\ }
+\DoxyCodeLine{00076\ \ \ \ \ TWeakObjectPtr<UBlueprint>\ Blueprint;}
+\DoxyCodeLine{00077\ \ \ \ \ int32\ SelectedAnimIndex\ =\ INDEX\_NONE;}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00080\ \ \ \ \ TArray<FName>\ AnimVarNames;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{//\ ──\ Widgets\ ───────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ TSharedPtr<SBorder>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ RootBorder;}
+\DoxyCodeLine{00085\ \ \ \ \ TSharedPtr<STextBlock>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BlueprintNameText;}
+\DoxyCodeLine{00086\ \ \ \ \ TSharedPtr<SVerticalBox>\ \ \ \ \ \ \ \ \ \ \ \ \ AnimListContainer;}
+\DoxyCodeLine{00087\ \ \ \ \ TSharedPtr<SBox>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TimelineArea;}
+\DoxyCodeLine{00088\ \ \ \ \ TSharedPtr<SQuickTweenDirectorEditor>\ TimelineEditor;}
+\DoxyCodeLine{00089\ \ \ \ \ TSharedPtr<SWidget>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EmptyTimelineHint;}
+\DoxyCodeLine{00090\ \ \ \ \ TSharedPtr<SWidget>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ NoBlueprintHint;}
+\DoxyCodeLine{00091\ \ \ \ \ TSharedPtr<SWidget>\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ MainContent;}
+\DoxyCodeLine{00092\ \};}
+
+\end{DoxyCode}

@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['s_20tween_0',['Accessing a Specific Step&apos;s Tween',['../index.html#autotoc_md74',1,'']]],
+  ['saving_1',['Saving',['../index.html#autotoc_md40',1,'']]],
+  ['scalar_20integer_2',['Material Scalar Integer',['../index.html#autotoc_md54',1,'']]],
+  ['scalar_20parameter_20float_3',['Material Scalar Parameter (Float)',['../index.html#autotoc_md48',1,'']]],
+  ['scale_20vector_4',['Location and Scale (Vector)',['../index.html#autotoc_md44',1,'']]],
+  ['scrubbing_5',['Ruler Scrubbing',['../index.html#autotoc_md32',1,'']]],
+  ['selecting_20steps_6',['Multi-Selecting Steps',['../index.html#autotoc_md24',1,'']]],
+  ['sequence_7',['Example 5 — Nesting a Director Animation Inside a Sequence',['../index.html#autotoc_md98',1,'']]],
+  ['simultaneously_8',['Example 3 — A UI Panel That Slides In and Fades Simultaneously',['../index.html#autotoc_md94',1,'']]],
+  ['slides_20in_20and_20fades_20simultaneously_9',['Example 3 — A UI Panel That Slides In and Fades Simultaneously',['../index.html#autotoc_md94',1,'']]],
+  ['slot_20binding_20nodes_10',['Slot Binding Nodes',['../index.html#autotoc_md87',1,'']]],
+  ['slot_20bindings_11',['Slot Bindings',['../index.html#autotoc_md76',1,'']]],
+  ['snapping_12',['Grid Snapping',['../index.html#autotoc_md30',1,'']]],
+  ['sound_20at_20a_20specific_20moment_13',['Example 2 — A Chest That Opens with Sound at a Specific Moment',['../index.html#autotoc_md92',1,'']]],
+  ['specific_20fields_14',['Type-Specific Fields',['../index.html#autotoc_md63',1,'']]],
+  ['specific_20moment_15',['Example 2 — A Chest That Opens with Sound at a Specific Moment',['../index.html#autotoc_md92',1,'']]],
+  ['specific_20step_20s_20tween_16',['Accessing a Specific Step&apos;s Tween',['../index.html#autotoc_md74',1,'']]],
+  ['step_20boundaries_17',['Reacting to Individual Step Boundaries',['../index.html#autotoc_md72',1,'']]],
+  ['step_20dialog_20—_20field_20reference_18',['Edit Step Dialog — Field Reference',['../index.html#autotoc_md58',1,'']]],
+  ['step_20s_20tween_19',['Accessing a Specific Step&apos;s Tween',['../index.html#autotoc_md74',1,'']]],
+  ['step_20types_20',['Step Types',['../index.html#autotoc_md42',1,'']]],
+  ['step_20values_21',['Editing Step Values',['../index.html#autotoc_md22',1,'']]],
+  ['steps_22',['Steps',['../index.html#autotoc_md16',1,'Adding Steps'],['../index.html#autotoc_md26',1,'Copying and Pasting Steps'],['../index.html#autotoc_md28',1,'Deleting Steps'],['../index.html#autotoc_md18',1,'Moving Steps'],['../index.html#autotoc_md24',1,'Multi-Selecting Steps'],['../index.html#autotoc_md20',1,'Resizing Steps']]],
+  ['stopping_20it_20later_23',['Example 4 — Looping an Animation and Stopping It Later',['../index.html#autotoc_md96',1,'']]],
+  ['storing_20the_20player_20for_20later_20control_24',['Storing the Player for Later Control',['../index.html#autotoc_md68',1,'']]]
+];

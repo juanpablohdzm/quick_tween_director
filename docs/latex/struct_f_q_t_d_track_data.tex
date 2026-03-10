@@ -1,0 +1,62 @@
+\doxysection{FQTDTrack\+Data Struct Reference}
+\hypertarget{struct_f_q_t_d_track_data}{}\label{struct_f_q_t_d_track_data}\index{FQTDTrackData@{FQTDTrackData}}
+
+
+{\ttfamily \#include $<$QTDStep\+Data.\+h$>$}
+
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+FGuid \mbox{\hyperlink{struct_f_q_t_d_track_data_a7d2e1dbe8db084992e9ac19353881843}{Track\+Id}}
+\item 
+FString \mbox{\hyperlink{struct_f_q_t_d_track_data_a3f56b1f192ee728fcd0a58a196a07041}{Track\+Label}} = TEXT("{}New Track"{})
+\item 
+EQTDStep\+Type \mbox{\hyperlink{struct_f_q_t_d_track_data_a2090661c3e5b4ded27f019b99998eff3}{Default\+Step\+Type}} = EQTDStep\+Type\+::\+Vector
+\item 
+FName \mbox{\hyperlink{struct_f_q_t_d_track_data_a33eae2a3b9c36b6d16a87aa73c2ede7c}{Component\+Variable\+Name}}
+\item 
+TSubclass\+Of$<$ UActor\+Component $>$ \mbox{\hyperlink{struct_f_q_t_d_track_data_aae3515d437e143511d4c8529e522fea4}{Component\+Class}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Editor-\/only track metadata. Tracks group steps visually in the timeline. They have no runtime meaning beyond step assignment. 
+
+\label{doc-variable-members}
+\Hypertarget{struct_f_q_t_d_track_data_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{struct_f_q_t_d_track_data_aae3515d437e143511d4c8529e522fea4}\index{FQTDTrackData@{FQTDTrackData}!ComponentClass@{ComponentClass}}
+\index{ComponentClass@{ComponentClass}!FQTDTrackData@{FQTDTrackData}}
+\doxysubsubsection{\texorpdfstring{ComponentClass}{ComponentClass}}
+{\footnotesize\ttfamily \label{struct_f_q_t_d_track_data_aae3515d437e143511d4c8529e522fea4} 
+TSubclass\+Of$<$UActor\+Component$>$ FQTDTrack\+Data\+::\+Component\+Class}
+
+The class of the component. Stored so the editor can filter animation type options without needing a live Blueprint reference. \Hypertarget{struct_f_q_t_d_track_data_a33eae2a3b9c36b6d16a87aa73c2ede7c}\index{FQTDTrackData@{FQTDTrackData}!ComponentVariableName@{ComponentVariableName}}
+\index{ComponentVariableName@{ComponentVariableName}!FQTDTrackData@{FQTDTrackData}}
+\doxysubsubsection{\texorpdfstring{ComponentVariableName}{ComponentVariableName}}
+{\footnotesize\ttfamily \label{struct_f_q_t_d_track_data_a33eae2a3b9c36b6d16a87aa73c2ede7c} 
+FName FQTDTrack\+Data\+::\+Component\+Variable\+Name}
+
+The Blueprint variable name of the component this track animates. Set automatically when the track is created via the Blueprint Director panel. At runtime, \doxylink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player} will auto-\/bind this name to the matching component on the owning actor — no manual Bind\+Slot() call needed. \Hypertarget{struct_f_q_t_d_track_data_a2090661c3e5b4ded27f019b99998eff3}\index{FQTDTrackData@{FQTDTrackData}!DefaultStepType@{DefaultStepType}}
+\index{DefaultStepType@{DefaultStepType}!FQTDTrackData@{FQTDTrackData}}
+\doxysubsubsection{\texorpdfstring{DefaultStepType}{DefaultStepType}}
+{\footnotesize\ttfamily \label{struct_f_q_t_d_track_data_a2090661c3e5b4ded27f019b99998eff3} 
+EQTDStep\+Type FQTDTrack\+Data\+::\+Default\+Step\+Type = EQTDStep\+Type\+::\+Vector}
+
+Step type assumed when the user adds a step to this track without specifying a type. \Hypertarget{struct_f_q_t_d_track_data_a7d2e1dbe8db084992e9ac19353881843}\index{FQTDTrackData@{FQTDTrackData}!TrackId@{TrackId}}
+\index{TrackId@{TrackId}!FQTDTrackData@{FQTDTrackData}}
+\doxysubsubsection{\texorpdfstring{TrackId}{TrackId}}
+{\footnotesize\ttfamily \label{struct_f_q_t_d_track_data_a7d2e1dbe8db084992e9ac19353881843} 
+FGuid FQTDTrack\+Data\+::\+Track\+Id}
+
+Unique track identifier. \Hypertarget{struct_f_q_t_d_track_data_a3f56b1f192ee728fcd0a58a196a07041}\index{FQTDTrackData@{FQTDTrackData}!TrackLabel@{TrackLabel}}
+\index{TrackLabel@{TrackLabel}!FQTDTrackData@{FQTDTrackData}}
+\doxysubsubsection{\texorpdfstring{TrackLabel}{TrackLabel}}
+{\footnotesize\ttfamily \label{struct_f_q_t_d_track_data_a3f56b1f192ee728fcd0a58a196a07041} 
+FString FQTDTrack\+Data\+::\+Track\+Label = TEXT("{}New Track"{})}
+
+Label shown on the left panel of the timeline. 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director/\+Public/QTDStep\+Data.\+h\end{DoxyCompactItemize}

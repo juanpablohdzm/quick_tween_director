@@ -1,0 +1,81 @@
+\doxysection{SQTDComponent\+Picker\+Dialog.\+h}
+\hypertarget{_s_q_t_d_component_picker_dialog_8h_source}{}\label{_s_q_t_d_component_picker_dialog_8h_source}\index{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDComponentPickerDialog.h@{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDComponentPickerDialog.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Widgets/SCompoundWidget.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}Widgets/Views/STreeView.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }UBlueprint;}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_component_picker_dialog}{SQTDComponentPickerDialog}}\ :\ \textcolor{keyword}{public}\ SCompoundWidget}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00018\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{struct\ }\mbox{\hyperlink{struct_s_q_t_d_component_picker_dialog_1_1_f_result}{FResult}}}
+\DoxyCodeLine{00022\ \ \ \ \ \{}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ FName\ \mbox{\hyperlink{struct_s_q_t_d_component_picker_dialog_1_1_f_result_a9a8387d1a713fb8286945d9ebeeb4bf4}{VariableName}};}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ TSubclassOf<UActorComponent>\ \mbox{\hyperlink{struct_s_q_t_d_component_picker_dialog_1_1_f_result_a371d440e97c58709148350cda0e94112}{ComponentClass}};}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ FString\ \mbox{\hyperlink{struct_s_q_t_d_component_picker_dialog_1_1_f_result_a6fa2f45d3d4aa054eb5eaac7c3010aa9}{DisplayName}};}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{struct_s_q_t_d_component_picker_dialog_1_1_f_result_a03b8f14fdb77fcad355d4b477defc980}{bConfirmed}}\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00031\ \ \ \ \ \};}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ SLATE\_BEGIN\_ARGS(\mbox{\hyperlink{class_s_q_t_d_component_picker_dialog}{SQTDComponentPickerDialog}})\ \{\}}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(UBlueprint*,\ Blueprint)}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(TSharedPtr<SWindow>,\ ParentWindow)}
+\DoxyCodeLine{00036\ \ \ \ \ SLATE\_END\_ARGS()}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ void\ Construct(const\ FArguments\&\ InArgs);}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ const\ FResult\&\ GetResult()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ Result;\ \}}
+\DoxyCodeLine{00041\ }
+\DoxyCodeLine{00042\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ ──\ Component\ tree\ node\ ───────────────────────────────────────────────────}}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keyword}{struct\ }FComponentNode}
+\DoxyCodeLine{00047\ \ \ \ \ \{}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ FName\ \ \ VariableName;}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ TSubclassOf<UActorComponent>\ ComponentClass;}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ FString\ DisplayName;}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ TArray<TSharedPtr<FComponentNode>>\ Children;}
+\DoxyCodeLine{00052\ \ \ \ \ \};}
+\DoxyCodeLine{00053\ }
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ ──\ Tree\ view\ helpers\ ─────────────────────────────────────────────────────}}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{void}\ BuildComponentTree();}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \ \ \ \ TSharedRef<ITableRow>\ GenerateRow(TSharedPtr<FComponentNode>\ Item,}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ TSharedRef<STableViewBase>\&\ OwnerTable);}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordtype}{void}\ GetChildren(TSharedPtr<FComponentNode>\ Item,}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TArray<TSharedPtr<FComponentNode>>\&\ OutChildren);}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{void}\ OnSelectionChanged(TSharedPtr<FComponentNode>\ Item,}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ESelectInfo::Type\ SelectInfo);}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{keywordtype}{void}\ OnItemDoubleClicked(TSharedPtr<FComponentNode>\ Item);}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{comment}{//\ ──\ Buttons\ ───────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ FReply\ OnConfirm();}
+\DoxyCodeLine{00072\ \ \ \ \ FReply\ OnCancel();}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ CanConfirm()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ SelectedNode.IsValid();\ \}}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{//\ ──\ Data\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ UBlueprint*\ Blueprint\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00078\ \ \ \ \ TWeakPtr<SWindow>\ WeakParentWindow;}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ TArray<TSharedPtr<FComponentNode>>\ RootNodes;}
+\DoxyCodeLine{00081\ \ \ \ \ TSharedPtr<STreeView<TSharedPtr<FComponentNode>>>\ TreeView;}
+\DoxyCodeLine{00082\ \ \ \ \ TSharedPtr<FComponentNode>\ SelectedNode;}
+\DoxyCodeLine{00083\ }
+\DoxyCodeLine{00084\ \ \ \ \ \mbox{\hyperlink{struct_s_q_t_d_component_picker_dialog_1_1_f_result}{FResult}}\ Result;}
+\DoxyCodeLine{00085\ \};}
+
+\end{DoxyCode}

@@ -1,0 +1,57 @@
+\doxysection{Quick\+Tween\+Director\+Editor\+Module.\+h}
+\hypertarget{_quick_tween_director_editor_module_8h_source}{}\label{_quick_tween_director_editor_module_8h_source}\index{Source/QuickTweenDirectorEditor/Public/QuickTweenDirectorEditorModule.h@{Source/QuickTweenDirectorEditor/Public/QuickTweenDirectorEditorModule.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Modules/ModuleManager.h"{}}}
+\DoxyCodeLine{00007\ }
+\DoxyCodeLine{00008\ \textcolor{keyword}{class\ }IAssetTypeActions;}
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }UBlueprint;}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_director_panel}{SQTDDirectorPanel}};}
+\DoxyCodeLine{00011\ \textcolor{keyword}{class\ }SDockTab;}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00022\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_f_quick_tween_director_editor_module}{FQuickTweenDirectorEditorModule}}\ :\ \textcolor{keyword}{public}\ IModuleInterface}
+\DoxyCodeLine{00023\ \{}
+\DoxyCodeLine{00024\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ StartupModule()\ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ ShutdownModule()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_f_quick_tween_director_editor_module_a559ac0510db491db636a88319ef163fd}{SetActiveBlueprint}}(UBlueprint*\ BP);}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \ \ UBlueprint*\ GetActiveBlueprint()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ ActiveBlueprint.Get();\ \}}
+\DoxyCodeLine{00032\ }
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{static}\ \mbox{\hyperlink{class_f_quick_tween_director_editor_module}{FQuickTweenDirectorEditorModule}}\&\ Get()}
+\DoxyCodeLine{00034\ \ \ \ \ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ FModuleManager::GetModuleChecked<FQuickTweenDirectorEditorModule>(\textcolor{stringliteral}{"{}QuickTweenDirectorEditor"{}});}
+\DoxyCodeLine{00036\ \ \ \ \ \}}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{comment}{//\ ──\ Blueprint\ editor\ tracking\ ─────────────────────────────────────────────}}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keywordtype}{void}\ OnAssetOpenedInEditor(UObject*\ Asset,\ IAssetEditorInstance*\ EditorInstance);}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keywordtype}{void}\ OnBlueprintEditorTabActivated(TSharedRef<SDockTab>\ Tab,\ ETabActivationCause\ Cause);}
+\DoxyCodeLine{00043\ }
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{comment}{//\ ──\ Nomad\ tab\ ─────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00045\ \ \ \ \ TSharedRef<SDockTab>\ SpawnDirectorPanel(\textcolor{keyword}{const}\ FSpawnTabArgs\&\ Args);}
+\DoxyCodeLine{00046\ }
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{comment}{//\ ──\ Blueprint\ toolbar\ extension\ ───────────────────────────────────────────}}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{void}\ OpenDirectorPanel();}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{comment}{//\ ──\ Data\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00051\ \ \ \ \ TSharedPtr<IAssetTypeActions>\ AssetTypeActions;}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \ \ \ \ \textcolor{comment}{//\ Maps\ each\ Blueprint\ editor's\ major\ (owner)\ tab\ →\ its\ Blueprint.}}
+\DoxyCodeLine{00054\ \ \ \ \ \textcolor{comment}{//\ Used\ to\ identify\ which\ BP\ is\ focused\ when\ the\ user\ switches\ tabs.}}
+\DoxyCodeLine{00055\ \ \ \ \ TMap<TWeakPtr<SDockTab>,\ TWeakObjectPtr<UBlueprint>>\ OpenBlueprintEditorTabs;}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ TWeakObjectPtr<UBlueprint>\ \ \ \ ActiveBlueprint;}
+\DoxyCodeLine{00058\ \ \ \ \ TWeakPtr<SQTDDirectorPanel>\ \ \ DirectorPanel;}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ FDelegateHandle\ AssetOpenedHandle;}
+\DoxyCodeLine{00061\ \};}
+
+\end{DoxyCode}

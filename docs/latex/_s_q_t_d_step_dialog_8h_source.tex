@@ -1,0 +1,101 @@
+\doxysection{SQTDStep\+Dialog.\+h}
+\hypertarget{_s_q_t_d_step_dialog_8h_source}{}\label{_s_q_t_d_step_dialog_8h_source}\index{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDStepDialog.h@{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDStepDialog.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Widgets/SCompoundWidget.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}QTDStepData.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}};}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }SBorder;}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00019\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_step_dialog}{SQTDStepDialog}}\ :\ \textcolor{keyword}{public}\ SCompoundWidget}
+\DoxyCodeLine{00020\ \{}
+\DoxyCodeLine{00021\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00022\ \ \ \ \ SLATE\_BEGIN\_ARGS(\mbox{\hyperlink{class_s_q_t_d_step_dialog}{SQTDStepDialog}})\ \{\}}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ StepData)}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*,\ \ \ \ Asset)}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(TSharedPtr<SWindow>,\ \ \ \ \ \ \ \ \ \ ParentWindow)}
+\DoxyCodeLine{00026\ \ \ \ \ SLATE\_END\_ARGS()}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keywordtype}{void}\ Construct(\textcolor{keyword}{const}\ FArguments\&\ InArgs);}
+\DoxyCodeLine{00029\ }
+\DoxyCodeLine{00030\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00031\ \ \ \ \ FReply\ OnConfirm();}
+\DoxyCodeLine{00032\ \ \ \ \ FReply\ OnCancel();}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\ EditedStep;}
+\DoxyCodeLine{00035\ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ Asset\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00036\ \ \ \ \ TWeakPtr<SWindow>\ WeakParentWindow;}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{comment}{//\ ──\ Cached\ widget\ refs\ for\ reading\ values\ back\ ────────────────────────────}}
+\DoxyCodeLine{00039\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ LabelBox;}
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ Timing}}
+\DoxyCodeLine{00042\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ DurationBox;}
+\DoxyCodeLine{00043\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ TimeScaleBox;}
+\DoxyCodeLine{00044\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ LoopsBox;}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{comment}{//\ Easing}}
+\DoxyCodeLine{00047\ \ \ \ \ TArray<TSharedPtr<FString>>\ \ \ EaseTypeOptions;}
+\DoxyCodeLine{00048\ \ \ \ \ TSharedPtr<STextBlock>\ \ \ \ \ \ \ \ EaseTypeDisplay;}
+\DoxyCodeLine{00049\ \ \ \ \ int32\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SelectedEaseIndex\ =\ 0;}
+\DoxyCodeLine{00050\ \ \ \ \ TSoftObjectPtr<UCurveFloat>\ \ \ EditEaseCurve;}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{comment}{//\ Loop\ type}}
+\DoxyCodeLine{00053\ \ \ \ \ TArray<TSharedPtr<FString>>\ \ \ LoopTypeOptions;}
+\DoxyCodeLine{00054\ \ \ \ \ TSharedPtr<STextBlock>\ \ \ \ \ \ \ \ LoopTypeDisplay;}
+\DoxyCodeLine{00055\ \ \ \ \ int32\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SelectedLoopTypeIndex\ =\ 0;}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00057\ \ \ \ \ \textcolor{comment}{//\ Parameter\ name\ (for\ material\ steps)}}
+\DoxyCodeLine{00058\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ ParameterNameBox;}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{//\ Vector}}
+\DoxyCodeLine{00061\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ VecFromXBox,\ VecFromYBox,\ VecFromZBox;}
+\DoxyCodeLine{00062\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ VecToXBox,\ \ \ VecToYBox,\ \ \ VecToZBox;}
+\DoxyCodeLine{00063\ }
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{comment}{//\ Vector2D}}
+\DoxyCodeLine{00065\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ Vec2DFromXBox,\ Vec2DFromYBox;}
+\DoxyCodeLine{00066\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ Vec2DToXBox,\ \ \ Vec2DToYBox;}
+\DoxyCodeLine{00067\ }
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{comment}{//\ Int}}
+\DoxyCodeLine{00069\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ IntFromBox,\ IntToBox;}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{comment}{//\ Rotator}}
+\DoxyCodeLine{00072\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ RotFromPitch,\ RotFromYaw,\ RotFromRoll;}
+\DoxyCodeLine{00073\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ RotToPitch,\ \ \ RotToYaw,\ \ \ RotToRoll;}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{comment}{//\ Float}}
+\DoxyCodeLine{00076\ \ \ \ \ TSharedPtr<SEditableTextBox>\ \ FloatFromBox,\ FloatToBox;}
+\DoxyCodeLine{00077\ }
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{comment}{//\ Color}}
+\DoxyCodeLine{00079\ \ \ \ \ TSharedPtr<SBorder>\ \ \ \ \ \ \ \ \ \ \ ColorFromSwatch,\ ColorToSwatch;}
+\DoxyCodeLine{00080\ \ \ \ \ FLinearColor\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EditColorFrom,\ EditColorTo;}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00082\ \ \ \ \ \textcolor{comment}{//\ User\ color\ override}}
+\DoxyCodeLine{00083\ \ \ \ \ TSharedPtr<SBorder>\ \ \ \ \ \ \ \ \ \ \ UserColorSwatch;}
+\DoxyCodeLine{00084\ \ \ \ \ FLinearColor\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ EditUserColor;}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{//\ ──\ Helper\ builders\ ───────────────────────────────────────────────────────}}
+\DoxyCodeLine{00087\ \ \ \ \ TSharedRef<SWidget>\ BuildVectorRow(\textcolor{keyword}{const}\ FText\&\ Label,\ TSharedPtr<SEditableTextBox>\&\ X,}
+\DoxyCodeLine{00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TSharedPtr<SEditableTextBox>\&\ Y,}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TSharedPtr<SEditableTextBox>\&\ Z,}
+\DoxyCodeLine{00090\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ FVector\&\ Initial);}
+\DoxyCodeLine{00091\ }
+\DoxyCodeLine{00092\ \ \ \ \ TSharedRef<SWidget>\ BuildFloatRow(\textcolor{keyword}{const}\ FText\&\ Label,}
+\DoxyCodeLine{00093\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ TSharedPtr<SEditableTextBox>\&\ Box,}
+\DoxyCodeLine{00094\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{float}\ Initial);}
+\DoxyCodeLine{00095\ }
+\DoxyCodeLine{00096\ \ \ \ \ TSharedRef<SWidget>\ BuildTypeSpecificSection();}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keywordtype}{bool}\ CollectValues();}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ FReply\ LaunchColorPicker(\textcolor{keywordtype}{bool}\ bIsFrom);}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keywordtype}{void}\ OnColorPickerCommitted(FLinearColor\ NewColor,\ \textcolor{keywordtype}{bool}\ bIsFrom);}
+\DoxyCodeLine{00103\ \};}
+
+\end{DoxyCode}

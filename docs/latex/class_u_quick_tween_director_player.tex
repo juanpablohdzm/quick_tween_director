@@ -1,0 +1,222 @@
+\doxysection{UQuick\+Tween\+Director\+Player Class Reference}
+\hypertarget{class_u_quick_tween_director_player}{}\label{class_u_quick_tween_director_player}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+
+
+{\ttfamily \#include $<$Quick\+Tween\+Director\+Player.\+h$>$}
+
+Inheritance diagram for UQuick\+Tween\+Director\+Player\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_u_quick_tween_director_player}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{class_u_quick_tween_director_player_ad570bb12766ab896ceeaa4b5f3e47aef}{Bind\+Slot}} (FName Slot\+Name, UObject \texorpdfstring{$\ast$}{*}Object)
+\item 
+bool \mbox{\hyperlink{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}{Build}} (UObject \texorpdfstring{$\ast$}{*}World\+Context)
+\item 
+UQuick\+Tween\+Base \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_u_quick_tween_director_player_a2a0143f4242300ff1d936ff46c12bff7}{Get\+Tween\+By\+Step\+Id}} (FGuid Step\+Id) const
+\item 
+UQuick\+Tween\+Base \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_u_quick_tween_director_player_a5f7bfcbdfaae81296207a8baac7d10c7}{Get\+Tween\+By\+Label}} (const FString \&Label) const
+\item 
+\Hypertarget{class_u_quick_tween_director_player_af5169b537f61bdb2514919e373bdefc3}\label{class_u_quick_tween_director_player_af5169b537f61bdb2514919e373bdefc3} 
+virtual void {\bfseries Set\+Owner} (UQuick\+Tweenable \texorpdfstring{$\ast$}{*}In\+Owner) override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ac3511b83baff586b8ade18e693c7304a}\label{class_u_quick_tween_director_player_ac3511b83baff586b8ade18e693c7304a} 
+virtual void {\bfseries Play} () override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a3540e637dbcc46392cd01ac8b7e03b80}\label{class_u_quick_tween_director_player_a3540e637dbcc46392cd01ac8b7e03b80} 
+virtual void {\bfseries Pause} () override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_aaf8ed16677fafbda114149f41b5918c6}\label{class_u_quick_tween_director_player_aaf8ed16677fafbda114149f41b5918c6} 
+virtual void {\bfseries Reverse} () override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ae1976633a0b735ffed89e4f113d2faa2}\label{class_u_quick_tween_director_player_ae1976633a0b735ffed89e4f113d2faa2} 
+virtual void {\bfseries Restart} () override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a7b74b58ecdba6241525e65302dc8cb53}\label{class_u_quick_tween_director_player_a7b74b58ecdba6241525e65302dc8cb53} 
+virtual void {\bfseries Complete} (bool b\+Snap\+To\+End=true) override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a1d1aeb9c24ab5435690c5b52e9fb8a26}\label{class_u_quick_tween_director_player_a1d1aeb9c24ab5435690c5b52e9fb8a26} 
+virtual void {\bfseries Kill} () override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_af59465b2058e8ea84029c71f6f9b16a3}\label{class_u_quick_tween_director_player_af59465b2058e8ea84029c71f6f9b16a3} 
+virtual void {\bfseries Update} (float Delta\+Time) override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_af617777bf40e19a284e8c471a599f583}\label{class_u_quick_tween_director_player_af617777bf40e19a284e8c471a599f583} 
+virtual void {\bfseries Evaluate} (const FQuick\+Tween\+Evaluate\+Payload \&Payload, const UQuick\+Tweenable \texorpdfstring{$\ast$}{*}Instigator) override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a1cffd253c8013838687b48940dd3f47b}\label{class_u_quick_tween_director_player_a1cffd253c8013838687b48940dd3f47b} 
+virtual bool {\bfseries Get\+Is\+Pending\+Kill} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a0853a5652a81e43adac8d19e4bb83b2b}\label{class_u_quick_tween_director_player_a0853a5652a81e43adac8d19e4bb83b2b} 
+virtual float {\bfseries Get\+Loop\+Duration} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a2a53c649e92ad6be95a99541f72b36ab}\label{class_u_quick_tween_director_player_a2a53c649e92ad6be95a99541f72b36ab} 
+virtual float {\bfseries Get\+Total\+Duration} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a6093e6ff0434b02fb8aea74733ef1dd9}\label{class_u_quick_tween_director_player_a6093e6ff0434b02fb8aea74733ef1dd9} 
+virtual float {\bfseries Get\+Elapsed\+Time} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a2711fbf21cace7d93edb8d75e2584aba}\label{class_u_quick_tween_director_player_a2711fbf21cace7d93edb8d75e2584aba} 
+virtual float {\bfseries Get\+Time\+Scale} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a45b84cdb29eea6f3b6f597d53a4ce18d}\label{class_u_quick_tween_director_player_a45b84cdb29eea6f3b6f597d53a4ce18d} 
+virtual bool {\bfseries Get\+Is\+Playing} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ad795b626f3fc45d44c76b0e364cbf2ca}\label{class_u_quick_tween_director_player_ad795b626f3fc45d44c76b0e364cbf2ca} 
+virtual bool {\bfseries Get\+Is\+Completed} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a383761226d31c9d8c4f0d88f0ec6ce9f}\label{class_u_quick_tween_director_player_a383761226d31c9d8c4f0d88f0ec6ce9f} 
+virtual bool {\bfseries Get\+Is\+Reversed} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a44377287280e464e9eea09c4c2ca2c2f}\label{class_u_quick_tween_director_player_a44377287280e464e9eea09c4c2ca2c2f} 
+virtual EEase\+Type {\bfseries Get\+Ease\+Type} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a3240c8c3e18bb3d6f26f3db257af373a}\label{class_u_quick_tween_director_player_a3240c8c3e18bb3d6f26f3db257af373a} 
+virtual UCurve\+Float \texorpdfstring{$\ast$}{*} {\bfseries Get\+Ease\+Curve} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a84e9e18b64e9be63c1b7365c38a59ac6}\label{class_u_quick_tween_director_player_a84e9e18b64e9be63c1b7365c38a59ac6} 
+virtual int32 {\bfseries Get\+Loops} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ab4e724559061d3d4928469ff91e15667}\label{class_u_quick_tween_director_player_ab4e724559061d3d4928469ff91e15667} 
+virtual ELoop\+Type {\bfseries Get\+Loop\+Type} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a4dc6002e3e5a234228be97145692e6c6}\label{class_u_quick_tween_director_player_a4dc6002e3e5a234228be97145692e6c6} 
+virtual FString {\bfseries Get\+Tween\+Tag} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ad752cd0234df9cbf8968bc1cd8c922a9}\label{class_u_quick_tween_director_player_ad752cd0234df9cbf8968bc1cd8c922a9} 
+virtual int32 {\bfseries Get\+Current\+Loop} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ae5a401824687a0b4281029b8f16eb024}\label{class_u_quick_tween_director_player_ae5a401824687a0b4281029b8f16eb024} 
+virtual bool {\bfseries Get\+Auto\+Kill} () const override
+\item 
+\Hypertarget{class_u_quick_tween_director_player_aac3673464fc50ec55d640477832aa966}\label{class_u_quick_tween_director_player_aac3673464fc50ec55d640477832aa966} 
+virtual bool {\bfseries Get\+Should\+Play\+While\+Paused} () const override
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_u_quick_tween_director_player_aef0b663b4fa216d55ab42c52503f4388}\label{class_u_quick_tween_director_player_aef0b663b4fa216d55ab42c52503f4388} 
+FOn\+QTDPlayer\+Event {\bfseries On\+Start}
+\item 
+\Hypertarget{class_u_quick_tween_director_player_aca838bcfc0a131b114ad84eeced7b61c}\label{class_u_quick_tween_director_player_aca838bcfc0a131b114ad84eeced7b61c} 
+FOn\+QTDPlayer\+Event {\bfseries On\+Update}
+\item 
+\Hypertarget{class_u_quick_tween_director_player_abf80b04d6c520c4d78ee8eb6763ac122}\label{class_u_quick_tween_director_player_abf80b04d6c520c4d78ee8eb6763ac122} 
+FOn\+QTDPlayer\+Event {\bfseries On\+Complete}
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ab6e1ee28b16916758a6e6491a2841a21}\label{class_u_quick_tween_director_player_ab6e1ee28b16916758a6e6491a2841a21} 
+FOn\+QTDPlayer\+Event {\bfseries On\+Killed}
+\item 
+\Hypertarget{class_u_quick_tween_director_player_a10b88eca9636dabf7f04f23e54f42f74}\label{class_u_quick_tween_director_player_a10b88eca9636dabf7f04f23e54f42f74} 
+FOn\+QTDPlayer\+Event {\bfseries On\+Loop}
+\item 
+FOn\+QTDStep\+Event \mbox{\hyperlink{class_u_quick_tween_director_player_a7a185f27a6ae5869d3c4c88785fcc05f}{On\+Step\+Begin}}
+\item 
+FOn\+QTDStep\+Event \mbox{\hyperlink{class_u_quick_tween_director_player_a506e545040509a6be29ee40cb3a137c6}{On\+Step\+End}}
+\item 
+TArray$<$ FString $>$ \mbox{\hyperlink{class_u_quick_tween_director_player_ad37d8c02c02bc295d74f1b6f93e9d7b2}{Binding\+Errors}}
+\item 
+float \mbox{\hyperlink{class_u_quick_tween_director_player_a52aa372ee9b7610cd84aeff1558a2c53}{Current\+Local\+Time}} = 0.\+0f
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_u_quick_tween_director_player_ab60ee147976bb8880aa3ef0d13959c8f}\label{class_u_quick_tween_director_player_ab60ee147976bb8880aa3ef0d13959c8f} 
+class {\bfseries UQuick\+Tween\+Director\+Library}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Runtime player that instantiates and plays a \doxylink{class_u_quick_tween_director_asset}{UQuick\+Tween\+Director\+Asset}.
+
+Workflow (Blueprint)\+:
+\begin{DoxyEnumerate}
+\item Call UQuick\+Tween\+Director\+Library\+::\+Create\+Director\+Player(\+Asset, self)
+\item Call Bind\+Slot(Name, Actor/\+Component) for every named slot in the asset.
+\item Call Play() — the player builds the tweens on first play.
+\item Optionally add the player to another sequence with UQuick\+Tween\+Library functions, just like any UQuick\+Tweenable.
+\end{DoxyEnumerate}
+
+Implements the full UQuick\+Tweenable interface so it behaves identically to a UQuick\+Tween\+Sequence and can be nested inside other sequences. 
+
+\label{doc-func-members}
+\Hypertarget{class_u_quick_tween_director_player_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_u_quick_tween_director_player_ad570bb12766ab896ceeaa4b5f3e47aef}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!BindSlot@{BindSlot}}
+\index{BindSlot@{BindSlot}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{BindSlot()}{BindSlot()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_ad570bb12766ab896ceeaa4b5f3e47aef} 
+void UQuick\+Tween\+Director\+Player\+::\+Bind\+Slot (\begin{DoxyParamCaption}\item[{FName}]{Slot\+Name}{, }\item[{UObject \texorpdfstring{$\ast$}{*}}]{Object}{}\end{DoxyParamCaption})}
+
+Bind a named slot to a UScene\+Component (or AActor — its root component is used). Must be called before Play() / \doxylink{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}{Build()}. 
+\begin{DoxyParams}{Parameters}
+{\em Slot\+Name} & The name referenced in \doxylink{struct_f_q_t_d_step_data_a83b4a8eeb6539a691375cf190d618e9b}{FQTDStep\+Data\+::\+Slot\+Name}. \\
+\hline
+{\em Object} & The live object to animate (Actor or Scene\+Component). \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!Build@{Build}}
+\index{Build@{Build}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{Build()}{Build()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91} 
+bool UQuick\+Tween\+Director\+Player\+::\+Build (\begin{DoxyParamCaption}\item[{UObject \texorpdfstring{$\ast$}{*}}]{World\+Context}{}\end{DoxyParamCaption})}
+
+Explicitly (re-\/)build the sequence from the asset and current bindings. Called automatically on the first Play() if the player has not been built yet. 
+\begin{DoxyParams}{Parameters}
+{\em World\+Context} & Needed to resolve material / curve assets. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the build succeeded. 
+\end{DoxyReturn}
+\Hypertarget{class_u_quick_tween_director_player_a5f7bfcbdfaae81296207a8baac7d10c7}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!GetTweenByLabel@{GetTweenByLabel}}
+\index{GetTweenByLabel@{GetTweenByLabel}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{GetTweenByLabel()}{GetTweenByLabel()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_a5f7bfcbdfaae81296207a8baac7d10c7} 
+UQuick\+Tween\+Base \texorpdfstring{$\ast$}{*} UQuick\+Tween\+Director\+Player\+::\+Get\+Tween\+By\+Label (\begin{DoxyParamCaption}\item[{const FString \&}]{Label}{}\end{DoxyParamCaption}) const}
+
+Return the first tween whose step label matches Label, or nullptr if not found. The player must have been built (Play() or \doxylink{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}{Build()} called) before calling this. Cast the result to UQuick\+Tween\+Base to assign per-\/tween callbacks. \Hypertarget{class_u_quick_tween_director_player_a2a0143f4242300ff1d936ff46c12bff7}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!GetTweenByStepId@{GetTweenByStepId}}
+\index{GetTweenByStepId@{GetTweenByStepId}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{GetTweenByStepId()}{GetTweenByStepId()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_a2a0143f4242300ff1d936ff46c12bff7} 
+UQuick\+Tween\+Base \texorpdfstring{$\ast$}{*} UQuick\+Tween\+Director\+Player\+::\+Get\+Tween\+By\+Step\+Id (\begin{DoxyParamCaption}\item[{FGuid}]{Step\+Id}{}\end{DoxyParamCaption}) const}
+
+Return the tween for the step with the given ID, or nullptr if not found. The player must have been built (Play() or \doxylink{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}{Build()} called) before calling this. Cast the result to UQuick\+Tween\+Base to assign per-\/tween callbacks. 
+
+\label{doc-variable-members}
+\Hypertarget{class_u_quick_tween_director_player_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_u_quick_tween_director_player_ad37d8c02c02bc295d74f1b6f93e9d7b2}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!BindingErrors@{BindingErrors}}
+\index{BindingErrors@{BindingErrors}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{BindingErrors}{BindingErrors}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_ad37d8c02c02bc295d74f1b6f93e9d7b2} 
+TArray$<$FString$>$ UQuick\+Tween\+Director\+Player\+::\+Binding\+Errors}
+
+Populated during \doxylink{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}{Build()}. Contains one entry per slot that could not be automatically resolved. Empty on success. \Hypertarget{class_u_quick_tween_director_player_a52aa372ee9b7610cd84aeff1558a2c53}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!CurrentLocalTime@{CurrentLocalTime}}
+\index{CurrentLocalTime@{CurrentLocalTime}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{CurrentLocalTime}{CurrentLocalTime}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_a52aa372ee9b7610cd84aeff1558a2c53} 
+float UQuick\+Tween\+Director\+Player\+::\+Current\+Local\+Time = 0.\+0f}
+
+Current loop-\/local playback time in seconds (updated every Seek\+Time call). \Hypertarget{class_u_quick_tween_director_player_a7a185f27a6ae5869d3c4c88785fcc05f}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!OnStepBegin@{OnStepBegin}}
+\index{OnStepBegin@{OnStepBegin}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{OnStepBegin}{OnStepBegin}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_a7a185f27a6ae5869d3c4c88785fcc05f} 
+FOn\+QTDStep\+Event UQuick\+Tween\+Director\+Player\+::\+On\+Step\+Begin}
+
+Fired when a step becomes active (local\+Time enters its \mbox{[}Start, End\mbox{]} window). \Hypertarget{class_u_quick_tween_director_player_a506e545040509a6be29ee40cb3a137c6}\index{UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}!OnStepEnd@{OnStepEnd}}
+\index{OnStepEnd@{OnStepEnd}!UQuickTweenDirectorPlayer@{UQuickTweenDirectorPlayer}}
+\doxysubsubsection{\texorpdfstring{OnStepEnd}{OnStepEnd}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_player_a506e545040509a6be29ee40cb3a137c6} 
+FOn\+QTDStep\+Event UQuick\+Tween\+Director\+Player\+::\+On\+Step\+End}
+
+Fired when an active step becomes inactive (local\+Time leaves its window). 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director/\+Public/Quick\+Tween\+Director\+Player.\+h\item 
+Source/\+Quick\+Tween\+Director/\+Private/Quick\+Tween\+Director\+Player.\+cpp\end{DoxyCompactItemize}

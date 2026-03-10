@@ -1,0 +1,63 @@
+\doxysection{SQTDRuler Class Reference}
+\hypertarget{class_s_q_t_d_ruler}{}\label{class_s_q_t_d_ruler}\index{SQTDRuler@{SQTDRuler}}
+Inheritance diagram for SQTDRuler\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_s_q_t_d_ruler}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_s_q_t_d_ruler_acec429e01a315a9af61dd5a3214e0d74}\label{class_s_q_t_d_ruler_acec429e01a315a9af61dd5a3214e0d74} 
+{\bfseries SLATE\+\_\+\+BEGIN\+\_\+\+ARGS} (\mbox{\hyperlink{class_s_q_t_d_ruler}{SQTDRuler}})
+\item 
+\Hypertarget{class_s_q_t_d_ruler_a5fdb364c7dd7d5b32fedc9a378ddde03}\label{class_s_q_t_d_ruler_a5fdb364c7dd7d5b32fedc9a378ddde03} 
+void {\bfseries Construct} (const FArguments \&In\+Args)
+\item 
+\Hypertarget{class_s_q_t_d_ruler_a7667391940c8ba291d8dd4d61000bcd3}\label{class_s_q_t_d_ruler_a7667391940c8ba291d8dd4d61000bcd3} 
+virtual FVector2D {\bfseries Compute\+Desired\+Size} (float) const override
+\item 
+virtual FReply \mbox{\hyperlink{class_s_q_t_d_ruler_a69d4ae88f8e72663a17b1dbbe4c43e93}{On\+Mouse\+Button\+Down}} (const FGeometry \&Geometry, const FPointer\+Event \&Event) override
+\item 
+\Hypertarget{class_s_q_t_d_ruler_aa025c8ff27b5f5112d230b57deb16049}\label{class_s_q_t_d_ruler_aa025c8ff27b5f5112d230b57deb16049} 
+virtual FReply {\bfseries On\+Mouse\+Move} (const FGeometry \&Geometry, const FPointer\+Event \&Event) override
+\item 
+\Hypertarget{class_s_q_t_d_ruler_a7ad8c9b8233b142fc55dc4c77d0a4e01}\label{class_s_q_t_d_ruler_a7ad8c9b8233b142fc55dc4c77d0a4e01} 
+virtual FReply {\bfseries On\+Mouse\+Button\+Up} (const FGeometry \&, const FPointer\+Event \&Event) override
+\item 
+\Hypertarget{class_s_q_t_d_ruler_a89b5f1165852d94dc06745d3be5ef907}\label{class_s_q_t_d_ruler_a89b5f1165852d94dc06745d3be5ef907} 
+virtual int32 {\bfseries On\+Paint} (const FPaint\+Args \&Args, const FGeometry \&Allotted\+Geometry, const FSlate\+Rect \&My\+Culling\+Rect, FSlate\+Window\+Element\+List \&Out\+Draw\+Elements, int32 Layer\+Id, const FWidget\+Style \&In\+Widget\+Style, bool b\+Parent\+Enabled) const override
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+TFunction$<$ void(float)$>$ \mbox{\hyperlink{class_s_q_t_d_ruler_a3a61c67468689bfd3f0c22ba147a7242}{On\+Scrub}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{class_s_q_t_d_ruler_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_s_q_t_d_ruler_a69d4ae88f8e72663a17b1dbbe4c43e93}\index{SQTDRuler@{SQTDRuler}!OnMouseButtonDown@{OnMouseButtonDown}}
+\index{OnMouseButtonDown@{OnMouseButtonDown}!SQTDRuler@{SQTDRuler}}
+\doxysubsubsection{\texorpdfstring{OnMouseButtonDown()}{OnMouseButtonDown()}}
+{\footnotesize\ttfamily \label{class_s_q_t_d_ruler_a69d4ae88f8e72663a17b1dbbe4c43e93} 
+virtual FReply SQTDRuler\+::\+On\+Mouse\+Button\+Down (\begin{DoxyParamCaption}\item[{const FGeometry \&}]{Geometry}{, }\item[{const FPointer\+Event \&}]{Event}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+Allow the ruler to be scrubbed by clicking/dragging. 
+
+\label{doc-variable-members}
+\Hypertarget{class_s_q_t_d_ruler_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_s_q_t_d_ruler_a3a61c67468689bfd3f0c22ba147a7242}\index{SQTDRuler@{SQTDRuler}!OnScrub@{OnScrub}}
+\index{OnScrub@{OnScrub}!SQTDRuler@{SQTDRuler}}
+\doxysubsubsection{\texorpdfstring{OnScrub}{OnScrub}}
+{\footnotesize\ttfamily \label{class_s_q_t_d_ruler_a3a61c67468689bfd3f0c22ba147a7242} 
+TFunction$<$void(float)$>$ SQTDRuler\+::\+On\+Scrub}
+
+Delegate fired when the user scrubs the ruler (passes the new time). 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director\+Editor/\+Private/\+Widgets/SQuick\+Tween\+Director\+Editor.\+cpp\end{DoxyCompactItemize}

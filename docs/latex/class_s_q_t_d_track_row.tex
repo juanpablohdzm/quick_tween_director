@@ -1,0 +1,69 @@
+\doxysection{SQTDTrack\+Row Class Reference}
+\hypertarget{class_s_q_t_d_track_row}{}\label{class_s_q_t_d_track_row}\index{SQTDTrackRow@{SQTDTrackRow}}
+
+
+{\ttfamily \#include $<$SQTDTrack\+Row.\+h$>$}
+
+Inheritance diagram for SQTDTrack\+Row\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_s_q_t_d_track_row}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_s_q_t_d_track_row_ab0841e738b534534d14a33d1f40fb156}\label{class_s_q_t_d_track_row_ab0841e738b534534d14a33d1f40fb156} 
+{\bfseries SLATE\+\_\+\+BEGIN\+\_\+\+ARGS} (\mbox{\hyperlink{class_s_q_t_d_track_row}{SQTDTrack\+Row}})
+\item 
+\Hypertarget{class_s_q_t_d_track_row_a089af7901f4e26a2be2eef42c9da0820}\label{class_s_q_t_d_track_row_a089af7901f4e26a2be2eef42c9da0820} 
+void {\bfseries Construct} (const FArguments \&In\+Args)
+\item 
+void \mbox{\hyperlink{class_s_q_t_d_track_row_af69f8d5915ebff2051637360e057bf93}{Set\+Pixels\+Per\+Sec}} (float New\+PPS)
+\item 
+void \mbox{\hyperlink{class_s_q_t_d_track_row_a01d2461c0ad8bb5fcbaa4e19cd962258}{Set\+Snap\+Enabled}} (bool b\+Enabled)
+\item 
+TShared\+Ref$<$ SWidget $>$ \mbox{\hyperlink{class_s_q_t_d_track_row_a84e836c3e60a264061dea128375af624}{Get\+Step\+Content\+Widget}} () const
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+One track row in the director timeline.
+
+This widget shows ONLY the label column (component name, icon, delete button). The step content widget is hosted separately (in the shared horizontal scroll box) and can be retrieved via \doxylink{class_s_q_t_d_track_row_a84e836c3e60a264061dea128375af624}{Get\+Step\+Content\+Widget()}.
+
+Step interactions (on the step content widget)\+:
+\begin{DoxyItemize}
+\item Left-\/click + drag → move (change Start\+Time)
+\item Double-\/click → open the step edit dialog
+\item Right-\/click empty → context submenu with animation types filtered by component class
+\item Right-\/click step → delete option 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{class_s_q_t_d_track_row_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_s_q_t_d_track_row_a84e836c3e60a264061dea128375af624}\index{SQTDTrackRow@{SQTDTrackRow}!GetStepContentWidget@{GetStepContentWidget}}
+\index{GetStepContentWidget@{GetStepContentWidget}!SQTDTrackRow@{SQTDTrackRow}}
+\doxysubsubsection{\texorpdfstring{GetStepContentWidget()}{GetStepContentWidget()}}
+{\footnotesize\ttfamily \label{class_s_q_t_d_track_row_a84e836c3e60a264061dea128375af624} 
+TShared\+Ref$<$ SWidget $>$ SQTDTrack\+Row\+::\+Get\+Step\+Content\+Widget (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+Returns the step content widget to be placed in the shared horizontal scroll box. Must be called after Construct(). \Hypertarget{class_s_q_t_d_track_row_af69f8d5915ebff2051637360e057bf93}\index{SQTDTrackRow@{SQTDTrackRow}!SetPixelsPerSec@{SetPixelsPerSec}}
+\index{SetPixelsPerSec@{SetPixelsPerSec}!SQTDTrackRow@{SQTDTrackRow}}
+\doxysubsubsection{\texorpdfstring{SetPixelsPerSec()}{SetPixelsPerSec()}}
+{\footnotesize\ttfamily \label{class_s_q_t_d_track_row_af69f8d5915ebff2051637360e057bf93} 
+void SQTDTrack\+Row\+::\+Set\+Pixels\+Per\+Sec (\begin{DoxyParamCaption}\item[{float}]{New\+PPS}{}\end{DoxyParamCaption})}
+
+Update zoom and propagate to the inner content widget. \Hypertarget{class_s_q_t_d_track_row_a01d2461c0ad8bb5fcbaa4e19cd962258}\index{SQTDTrackRow@{SQTDTrackRow}!SetSnapEnabled@{SetSnapEnabled}}
+\index{SetSnapEnabled@{SetSnapEnabled}!SQTDTrackRow@{SQTDTrackRow}}
+\doxysubsubsection{\texorpdfstring{SetSnapEnabled()}{SetSnapEnabled()}}
+{\footnotesize\ttfamily \label{class_s_q_t_d_track_row_a01d2461c0ad8bb5fcbaa4e19cd962258} 
+void SQTDTrack\+Row\+::\+Set\+Snap\+Enabled (\begin{DoxyParamCaption}\item[{bool}]{b\+Enabled}{}\end{DoxyParamCaption})}
+
+Enable/disable grid snapping in the inner content widget. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director\+Editor/\+Public/\+Widgets/SQTDTrack\+Row.\+h\item 
+Source/\+Quick\+Tween\+Director\+Editor/\+Private/\+Widgets/SQTDTrack\+Row.\+cpp\end{DoxyCompactItemize}

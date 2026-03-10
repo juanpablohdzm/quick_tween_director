@@ -1,0 +1,159 @@
+\doxysection{UQuick\+Tween\+Director\+Asset Class Reference}
+\hypertarget{class_u_quick_tween_director_asset}{}\label{class_u_quick_tween_director_asset}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+
+
+{\ttfamily \#include $<$Quick\+Tween\+Director\+Asset.\+h$>$}
+
+Inheritance diagram for UQuick\+Tween\+Director\+Asset\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_u_quick_tween_director_asset}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{class_u_quick_tween_director_asset_a9737307080525a7611c65dde8bf7c7cc}{Get\+Total\+Duration}} () const
+\item 
+FGuid \mbox{\hyperlink{class_u_quick_tween_director_asset_a550af85a19aadf75bd8e8b18f5bce079}{Add\+Track}} (const FString \&Label, EQTDStep\+Type Default\+Type=EQTDStep\+Type\+::\+Vector)
+\item 
+void \mbox{\hyperlink{class_u_quick_tween_director_asset_a4db91fd91423191a25d02a4e77703777}{Remove\+Track}} (const FGuid \&In\+Track\+Id)
+\item 
+int32 \mbox{\hyperlink{class_u_quick_tween_director_asset_ae5d4d3af2f03e74910a290dbce861541}{Add\+Step}} (\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} In\+Step)
+\item 
+void \mbox{\hyperlink{class_u_quick_tween_director_asset_a8f77806f57df3a682ca3aaf396b21f24}{Remove\+Step}} (const FGuid \&In\+Step\+Id)
+\item 
+void \mbox{\hyperlink{class_u_quick_tween_director_asset_a055bfcb1a57d5c860a1f0aaa1cc29ea1}{Update\+Step}} (const \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} \&In\+Step)
+\item 
+TArray$<$ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} \texorpdfstring{$\ast$}{*} $>$ \mbox{\hyperlink{class_u_quick_tween_director_asset_aaa82fde4973ee8808dbf8e43b61c8e2a}{Get\+Steps\+For\+Track}} (const FGuid \&In\+Track\+Id)
+\item 
+\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_u_quick_tween_director_asset_a45d5e8406617f40ec4ce8a863ae3b02e}{Find\+Step}} (const FGuid \&In\+Step\+Id)
+\item 
+\mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrack\+Data}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_u_quick_tween_director_asset_af0e43d2dd824f9885b67f0e4e68af5c4}{Find\+Track}} (const FGuid \&In\+Track\+Id)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+TArray$<$ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} $>$ \mbox{\hyperlink{class_u_quick_tween_director_asset_a18bc36cd0c785fffaf4f66b32b615efa}{Steps}}
+\item 
+TArray$<$ \mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrack\+Data}} $>$ \mbox{\hyperlink{class_u_quick_tween_director_asset_a841ca0223ce29992a1d50d6a8f969f54}{Tracks}}
+\item 
+int32 \mbox{\hyperlink{class_u_quick_tween_director_asset_a3358720c736f3f2dfa68b256cb13e057}{Loops}} = 1
+\item 
+ELoop\+Type \mbox{\hyperlink{class_u_quick_tween_director_asset_a79b2e976640f303f1ed99dbeb75e9e4f}{Loop\+Type}} = ELoop\+Type\+::\+Restart
+\item 
+bool \mbox{\hyperlink{class_u_quick_tween_director_asset_a936c5fe0a54806aa9c5e75b04fe72735}{b\+Auto\+Kill}} = true
+\item 
+bool \mbox{\hyperlink{class_u_quick_tween_director_asset_a07e758b4b6411e193a5d97dd76ebc4c6}{b\+Play\+While\+Paused}} = false
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Serializable asset that stores a complete tween-\/sequence definition.
+
+Create one from the Content Browser (right-\/click → Quick\+Tween → Director Sequence). Open it by double-\/clicking to launch the visual timeline editor. At runtime, pass the asset to \doxylink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player} to play the animation. 
+
+\label{doc-func-members}
+\Hypertarget{class_u_quick_tween_director_asset_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_u_quick_tween_director_asset_ae5d4d3af2f03e74910a290dbce861541}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!AddStep@{AddStep}}
+\index{AddStep@{AddStep}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{AddStep()}{AddStep()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_ae5d4d3af2f03e74910a290dbce861541} 
+int32 UQuick\+Tween\+Director\+Asset\+::\+Add\+Step (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}}}]{In\+Step}{}\end{DoxyParamCaption})}
+
+Appends a step and returns its index. Marks the asset dirty. Generates a Step\+Id if the step has none. \Hypertarget{class_u_quick_tween_director_asset_a550af85a19aadf75bd8e8b18f5bce079}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!AddTrack@{AddTrack}}
+\index{AddTrack@{AddTrack}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{AddTrack()}{AddTrack()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a550af85a19aadf75bd8e8b18f5bce079} 
+FGuid UQuick\+Tween\+Director\+Asset\+::\+Add\+Track (\begin{DoxyParamCaption}\item[{const FString \&}]{Label}{, }\item[{EQTDStep\+Type}]{Default\+Type}{ = {\ttfamily EQTDStepType\+:\+:Vector}}\end{DoxyParamCaption})}
+
+Creates a new track and returns its ID. \Hypertarget{class_u_quick_tween_director_asset_a45d5e8406617f40ec4ce8a863ae3b02e}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!FindStep@{FindStep}}
+\index{FindStep@{FindStep}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{FindStep()}{FindStep()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a45d5e8406617f40ec4ce8a863ae3b02e} 
+\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} \texorpdfstring{$\ast$}{*} UQuick\+Tween\+Director\+Asset\+::\+Find\+Step (\begin{DoxyParamCaption}\item[{const FGuid \&}]{In\+Step\+Id}{}\end{DoxyParamCaption})}
+
+Finds a step by its ID, returns nullptr if not found. \Hypertarget{class_u_quick_tween_director_asset_af0e43d2dd824f9885b67f0e4e68af5c4}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!FindTrack@{FindTrack}}
+\index{FindTrack@{FindTrack}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{FindTrack()}{FindTrack()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_af0e43d2dd824f9885b67f0e4e68af5c4} 
+\mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrack\+Data}} \texorpdfstring{$\ast$}{*} UQuick\+Tween\+Director\+Asset\+::\+Find\+Track (\begin{DoxyParamCaption}\item[{const FGuid \&}]{In\+Track\+Id}{}\end{DoxyParamCaption})}
+
+Returns a copy of the track data for the given ID, or an empty struct. \Hypertarget{class_u_quick_tween_director_asset_aaa82fde4973ee8808dbf8e43b61c8e2a}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!GetStepsForTrack@{GetStepsForTrack}}
+\index{GetStepsForTrack@{GetStepsForTrack}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{GetStepsForTrack()}{GetStepsForTrack()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_aaa82fde4973ee8808dbf8e43b61c8e2a} 
+TArray$<$ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} \texorpdfstring{$\ast$}{*} $>$ UQuick\+Tween\+Director\+Asset\+::\+Get\+Steps\+For\+Track (\begin{DoxyParamCaption}\item[{const FGuid \&}]{In\+Track\+Id}{}\end{DoxyParamCaption})}
+
+Returns pointers to all steps belonging to the given track. \Hypertarget{class_u_quick_tween_director_asset_a9737307080525a7611c65dde8bf7c7cc}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!GetTotalDuration@{GetTotalDuration}}
+\index{GetTotalDuration@{GetTotalDuration}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{GetTotalDuration()}{GetTotalDuration()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a9737307080525a7611c65dde8bf7c7cc} 
+float UQuick\+Tween\+Director\+Asset\+::\+Get\+Total\+Duration (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+Returns max(step.\+Start\+Time + step.\+Duration \texorpdfstring{$\ast$}{*} step.\+Loops) across all steps. \Hypertarget{class_u_quick_tween_director_asset_a8f77806f57df3a682ca3aaf396b21f24}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!RemoveStep@{RemoveStep}}
+\index{RemoveStep@{RemoveStep}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{RemoveStep()}{RemoveStep()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a8f77806f57df3a682ca3aaf396b21f24} 
+void UQuick\+Tween\+Director\+Asset\+::\+Remove\+Step (\begin{DoxyParamCaption}\item[{const FGuid \&}]{In\+Step\+Id}{}\end{DoxyParamCaption})}
+
+Removes the step with the matching Step\+Id. Marks the asset dirty. \Hypertarget{class_u_quick_tween_director_asset_a4db91fd91423191a25d02a4e77703777}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!RemoveTrack@{RemoveTrack}}
+\index{RemoveTrack@{RemoveTrack}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{RemoveTrack()}{RemoveTrack()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a4db91fd91423191a25d02a4e77703777} 
+void UQuick\+Tween\+Director\+Asset\+::\+Remove\+Track (\begin{DoxyParamCaption}\item[{const FGuid \&}]{In\+Track\+Id}{}\end{DoxyParamCaption})}
+
+Removes a track and every step that belongs to it. Marks the asset dirty. \Hypertarget{class_u_quick_tween_director_asset_a055bfcb1a57d5c860a1f0aaa1cc29ea1}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!UpdateStep@{UpdateStep}}
+\index{UpdateStep@{UpdateStep}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{UpdateStep()}{UpdateStep()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a055bfcb1a57d5c860a1f0aaa1cc29ea1} 
+void UQuick\+Tween\+Director\+Asset\+::\+Update\+Step (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}} \&}]{In\+Step}{}\end{DoxyParamCaption})}
+
+Updates an existing step (matched by Step\+Id). Marks the asset dirty. 
+
+\label{doc-variable-members}
+\Hypertarget{class_u_quick_tween_director_asset_doc-variable-members}
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_u_quick_tween_director_asset_a936c5fe0a54806aa9c5e75b04fe72735}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!bAutoKill@{bAutoKill}}
+\index{bAutoKill@{bAutoKill}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{bAutoKill}{bAutoKill}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a936c5fe0a54806aa9c5e75b04fe72735} 
+bool UQuick\+Tween\+Director\+Asset\+::b\+Auto\+Kill = true}
+
+Whether the player auto-\/kills itself when the animation finishes. \Hypertarget{class_u_quick_tween_director_asset_a07e758b4b6411e193a5d97dd76ebc4c6}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!bPlayWhilePaused@{bPlayWhilePaused}}
+\index{bPlayWhilePaused@{bPlayWhilePaused}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{bPlayWhilePaused}{bPlayWhilePaused}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a07e758b4b6411e193a5d97dd76ebc4c6} 
+bool UQuick\+Tween\+Director\+Asset\+::b\+Play\+While\+Paused = false}
+
+Whether the animation continues while the game is paused. \Hypertarget{class_u_quick_tween_director_asset_a3358720c736f3f2dfa68b256cb13e057}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!Loops@{Loops}}
+\index{Loops@{Loops}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{Loops}{Loops}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a3358720c736f3f2dfa68b256cb13e057} 
+int32 UQuick\+Tween\+Director\+Asset\+::\+Loops = 1}
+
+How many times the full animation loops (-\/1 = infinite). \Hypertarget{class_u_quick_tween_director_asset_a79b2e976640f303f1ed99dbeb75e9e4f}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!LoopType@{LoopType}}
+\index{LoopType@{LoopType}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{LoopType}{LoopType}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a79b2e976640f303f1ed99dbeb75e9e4f} 
+ELoop\+Type UQuick\+Tween\+Director\+Asset\+::\+Loop\+Type = ELoop\+Type\+::\+Restart}
+
+Loop behavior for the full animation. \Hypertarget{class_u_quick_tween_director_asset_a18bc36cd0c785fffaf4f66b32b615efa}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!Steps@{Steps}}
+\index{Steps@{Steps}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{Steps}{Steps}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a18bc36cd0c785fffaf4f66b32b615efa} 
+TArray$<$\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStep\+Data}}$>$ UQuick\+Tween\+Director\+Asset\+::\+Steps}
+
+All animation steps stored in this sequence. \Hypertarget{class_u_quick_tween_director_asset_a841ca0223ce29992a1d50d6a8f969f54}\index{UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}!Tracks@{Tracks}}
+\index{Tracks@{Tracks}!UQuickTweenDirectorAsset@{UQuickTweenDirectorAsset}}
+\doxysubsubsection{\texorpdfstring{Tracks}{Tracks}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_asset_a841ca0223ce29992a1d50d6a8f969f54} 
+TArray$<$\mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrack\+Data}}$>$ UQuick\+Tween\+Director\+Asset\+::\+Tracks}
+
+Track definitions used by the editor to group steps visually. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director/\+Public/Quick\+Tween\+Director\+Asset.\+h\item 
+Source/\+Quick\+Tween\+Director/\+Private/Quick\+Tween\+Director\+Asset.\+cpp\end{DoxyCompactItemize}

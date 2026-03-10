@@ -1,0 +1,186 @@
+\doxysection{Quick\+Tween\+Director\+Player.\+h}
+\hypertarget{_quick_tween_director_player_8h_source}{}\label{_quick_tween_director_player_8h_source}\index{Source/QuickTweenDirector/Public/QuickTweenDirectorPlayer.h@{Source/QuickTweenDirector/Public/QuickTweenDirectorPlayer.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}QuickTweenable.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}Utils/CommonValues.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}Tweens/QuickTweenBase.h"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}QTDStepData.h"{}}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ "{}QuickTweenDirectorPlayer.generated.h"{}}}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}};}
+\DoxyCodeLine{00013\ \textcolor{keyword}{class\ }UQuickTweenBase;}
+\DoxyCodeLine{00014\ \textcolor{keyword}{class\ }AActor;}
+\DoxyCodeLine{00015\ \textcolor{keyword}{class\ }USceneComponent;}
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ DECLARE\_DYNAMIC\_MULTICAST\_DELEGATE\_OneParam(FOnQTDPlayerEvent,\ \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}}*,\ Player);}
+\DoxyCodeLine{00018\ DECLARE\_DYNAMIC\_MULTICAST\_DELEGATE\_ThreeParams(FOnQTDStepEvent,\ \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}}*,\ Player,\ FName,\ SlotName,\ FGuid,\ StepId);}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00024\ USTRUCT()}
+\DoxyCodeLine{00025\ struct\ \mbox{\hyperlink{struct_f_q_t_d_built_step}{FQTDBuiltStep}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \ \ \ \ GENERATED\_BODY()}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \ \ \ \ UPROPERTY()}
+\DoxyCodeLine{00030\ \ \ \ \ UQuickTweenable*\ Tween\ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00031\ }
+\DoxyCodeLine{00032\ \ \ \ \ \textcolor{keywordtype}{float}\ StartTime\ =\ 0.0f;}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_f_q_t_d_built_step_aa08798db812b261d83d9912eadc0f562}{TotalDuration}}\ =\ 0.0f;}
+\DoxyCodeLine{00036\ \};}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00051\ UCLASS(BlueprintType)}
+\DoxyCodeLine{00052\ class\ QUICKTWEENDIRECTOR\_API\ \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}}\ :\ public\ UQuickTweenable}
+\DoxyCodeLine{00053\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ GENERATED\_BODY()}
+\DoxyCodeLine{00055\ }
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keyword}{friend}\ \textcolor{keyword}{class\ }UQuickTweenDirectorLibrary;}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00058\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00060\ \ \ \ \ \textcolor{comment}{//\ ──\ Slot\ binding\ ──────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00068\ \ \ \ \ UFUNCTION(BlueprintCallable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Binding"{}})}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_u_quick_tween_director_player_ad570bb12766ab896ceeaa4b5f3e47aef}{BindSlot}}(FName\ SlotName,\ UObject*\ Object);}
+\DoxyCodeLine{00070\ }
+\DoxyCodeLine{00077\ \ \ \ \ UFUNCTION(BlueprintCallable,\ Category\ =\ \textcolor{stringliteral}{"{}Director"{}})}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_u_quick_tween_director_player_a76a380d84a613ec38a84bcb38fdf2d91}{Build}}(UObject*\ WorldContext);}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ ──\ Tween\ accessors\ ───────────────────────────────────────────────────────}}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00087\ \ \ \ \ UFUNCTION(BlueprintCallable,\ Category\ =\ \textcolor{stringliteral}{"{}Director"{}})}
+\DoxyCodeLine{00088\ \ \ \ \ UQuickTweenBase*\ \mbox{\hyperlink{class_u_quick_tween_director_player_a2a0143f4242300ff1d936ff46c12bff7}{GetTweenByStepId}}(FGuid\ StepId)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00095\ \ \ \ \ UFUNCTION(BlueprintCallable,\ Category\ =\ \textcolor{stringliteral}{"{}Director"{}})}
+\DoxyCodeLine{00096\ \ \ \ \ UQuickTweenBase*\ \mbox{\hyperlink{class_u_quick_tween_director_player_a5f7bfcbdfaae81296207a8baac7d10c7}{GetTweenByLabel}}(\textcolor{keyword}{const}\ FString\&\ Label)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{comment}{//\ ──\ UQuickTweenable\ interface\ ─────────────────────────────────────────────}}
+\DoxyCodeLine{00099\ }
+\DoxyCodeLine{00100\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ SetOwner(UQuickTweenable*\ InOwner)\textcolor{keyword}{\ override\ }\{\ Owner\ =\ InOwner;\ \}}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Play()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Pause()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Reverse()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Restart()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Complete(\textcolor{keywordtype}{bool}\ bSnapToEnd\ =\ \textcolor{keyword}{true})\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Kill()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Update(\textcolor{keywordtype}{float}\ DeltaTime)\ \ \ \textcolor{keyword}{override};}
+\DoxyCodeLine{00110\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ Evaluate(\textcolor{keyword}{const}\ FQuickTweenEvaluatePayload\&\ Payload,\ \textcolor{keyword}{const}\ UQuickTweenable*\ Instigator)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00111\ }
+\DoxyCodeLine{00112\ \ \ \ \ \textcolor{comment}{//\ ──\ State\ queries\ ─────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00113\ }
+\DoxyCodeLine{00114\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ GetIsPendingKill()\textcolor{keyword}{\ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ PlayerState\ ==\ EQuickTweenState::Kill;\ \}}
+\DoxyCodeLine{00115\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{float}\ GetLoopDuration()\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00116\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{float}\ GetTotalDuration()\ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00117\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{float}\ GetElapsedTime()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ ElapsedTime;\ \}}
+\DoxyCodeLine{00118\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{float}\ GetTimeScale()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ 1.0f;\ \}}
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ GetIsPlaying()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ PlayerState\ ==\ EQuickTweenState::Play;\ \}}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ GetIsCompleted()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ PlayerState\ ==\ EQuickTweenState::Complete;\ \}}
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ GetIsReversed()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ bIsReversed;\ \}}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keyword}{virtual}\ EEaseType\ \ \ \ \ GetEaseType()\textcolor{keyword}{\ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ EEaseType::Linear;\ \}}
+\DoxyCodeLine{00123\ \ \ \ \ \textcolor{keyword}{virtual}\ UCurveFloat*\ \ GetEaseCurve()\textcolor{keyword}{\ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{nullptr};\ \}}
+\DoxyCodeLine{00124\ \ \ \ \ \textcolor{keyword}{virtual}\ int32\ GetLoops()\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keyword}{virtual}\ ELoopType\ GetLoopType()\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00126\ \ \ \ \ \textcolor{keyword}{virtual}\ FString\ GetTweenTag()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ TEXT(\textcolor{stringliteral}{"{}"{}});\ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \textcolor{keyword}{virtual}\ int32\ GetCurrentLoop()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ const\ override\ }\{\ \textcolor{keywordflow}{return}\ CurrentLoop;\ \}}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ GetAutoKill()\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{bool}\ \ GetShouldPlayWhilePaused()\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{//\ ──\ Events\ ────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00132\ }
+\DoxyCodeLine{00133\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00134\ \ \ \ \ FOnQTDPlayerEvent\ OnStart;}
+\DoxyCodeLine{00135\ }
+\DoxyCodeLine{00136\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00137\ \ \ \ \ FOnQTDPlayerEvent\ OnUpdate;}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00140\ \ \ \ \ FOnQTDPlayerEvent\ OnComplete;}
+\DoxyCodeLine{00141\ }
+\DoxyCodeLine{00142\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00143\ \ \ \ \ FOnQTDPlayerEvent\ OnKilled;}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00146\ \ \ \ \ FOnQTDPlayerEvent\ OnLoop;}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00149\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00150\ \ \ \ \ FOnQTDStepEvent\ \mbox{\hyperlink{class_u_quick_tween_director_player_a7a185f27a6ae5869d3c4c88785fcc05f}{OnStepBegin}};}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00153\ \ \ \ \ UPROPERTY(BlueprintAssignable,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Events"{}})}
+\DoxyCodeLine{00154\ \ \ \ \ FOnQTDStepEvent\ \mbox{\hyperlink{class_u_quick_tween_director_player_a506e545040509a6be29ee40cb3a137c6}{OnStepEnd}};}
+\DoxyCodeLine{00155\ }
+\DoxyCodeLine{00156\ \ \ \ \ \textcolor{comment}{//\ ──\ Debug\ /\ inspection\ ────────────────────────────────────────────────────}}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00162\ \ \ \ \ UPROPERTY(BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Debug"{}})}
+\DoxyCodeLine{00163\ \ \ \ \ TArray<FString>\ \mbox{\hyperlink{class_u_quick_tween_director_player_ad37d8c02c02bc295d74f1b6f93e9d7b2}{BindingErrors}};}
+\DoxyCodeLine{00164\ }
+\DoxyCodeLine{00166\ \ \ \ \ UPROPERTY(BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Director|Playback"{}})}
+\DoxyCodeLine{00167\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{class_u_quick_tween_director_player_a52aa372ee9b7610cd84aeff1558a2c53}{CurrentLocalTime}}\ =\ 0.0f;}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ private:}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{//\ ──\ Factory\ (Blueprint\ library\ only)\ ──────────────────────────────────────}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00173\ \ \ \ \ static\ \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuickTweenDirectorPlayer}}*\ Create(UObject*\ WorldContext,\ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ Asset);}
+\DoxyCodeLine{00174\ }
+\DoxyCodeLine{00175\ \ \ \ \ \textcolor{comment}{//\ ──\ Internals\ ─────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00176\ }
+\DoxyCodeLine{00177\ \ \ \ \ \textcolor{keywordtype}{bool}\ HasOwner()\textcolor{keyword}{\ \ \ \ \ \ \ \ \ \ \ \ \ const\ }\{\ \textcolor{keywordflow}{return}\ Owner\ !=\ \textcolor{keyword}{nullptr};\ \}}
+\DoxyCodeLine{00178\ \ \ \ \ \textcolor{keywordtype}{bool}\ InstigatorIsOwner(\textcolor{keyword}{const}\ UQuickTweenable*\ Instigator)\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ Instigator\ ==\ Owner;\ \}}
+\DoxyCodeLine{00179\ }
+\DoxyCodeLine{00180\ \ \ \ \ \textcolor{keywordtype}{bool}\ RequestStateTransition(EQuickTweenState\ NewState);}
+\DoxyCodeLine{00181\ \ \ \ \ \textcolor{keywordtype}{void}\ HandleOnStart();}
+\DoxyCodeLine{00182\ \ \ \ \ \textcolor{keywordtype}{void}\ HandleOnComplete();}
+\DoxyCodeLine{00183\ \ \ \ \ \textcolor{keywordtype}{void}\ HandleOnKill();}
+\DoxyCodeLine{00184\ }
+\DoxyCodeLine{00189\ \ \ \ \ \textcolor{keywordtype}{void}\ SeekTime(\textcolor{keywordtype}{float}\ LoopLocalTime);}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00192\ \ \ \ \ UQuickTweenBase*\ CreateTweenForStep(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\&\ Step);}
+\DoxyCodeLine{00193\ }
+\DoxyCodeLine{00195\ \ \ \ \ USceneComponent*\ ResolveComponentSlot(FName\ SlotName)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00198\ \ \ \ \ UMaterialInstanceDynamic*\ ResolveMIDSlot(FName\ SlotName)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00200\ \ \ \ \ \textcolor{comment}{//\ ──\ Data\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00201\ }
+\DoxyCodeLine{00202\ \ \ \ \ UPROPERTY()}
+\DoxyCodeLine{00203\ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ Asset\ =\ \textcolor{keywordtype}{nullptr};}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00205\ \ \ \ \ UPROPERTY()}
+\DoxyCodeLine{00206\ \ \ \ \ const\ UObject*\ WorldContextObject\ =\ \textcolor{keywordtype}{nullptr};}
+\DoxyCodeLine{00207\ }
+\DoxyCodeLine{00208\ \ \ \ \ UPROPERTY()}
+\DoxyCodeLine{00209\ \ \ \ \ UQuickTweenable*\ Owner\ =\ \textcolor{keywordtype}{nullptr};}
+\DoxyCodeLine{00210\ }
+\DoxyCodeLine{00212\ \ \ \ \ TMap<FName,\ TWeakObjectPtr<UObject>>\ SlotBindings;}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00215\ \ \ \ \ UPROPERTY()}
+\DoxyCodeLine{00216\ \ \ \ \ TArray<UQuickTweenable*>\ OwnedTweens;}
+\DoxyCodeLine{00217\ }
+\DoxyCodeLine{00219\ \ \ \ \ TArray<\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}>\ BuiltStepData;}
+\DoxyCodeLine{00220\ }
+\DoxyCodeLine{00222\ \ \ \ \ TArray<\mbox{\hyperlink{struct_f_q_t_d_built_step}{FQTDBuiltStep}}>\ BuiltSteps;}
+\DoxyCodeLine{00223\ }
+\DoxyCodeLine{00224\ \ \ \ \ \textcolor{keywordtype}{bool}\ bIsBuilt\ =\ false;}
+\DoxyCodeLine{00225\ }
+\DoxyCodeLine{00227\ \ \ \ \ TSet<int32>\ ActiveStepIndices;}
+\DoxyCodeLine{00228\ }
+\DoxyCodeLine{00229\ \ \ \ \ \textcolor{comment}{//\ ──\ Playback\ state\ ────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00230\ }
+\DoxyCodeLine{00231\ \ \ \ \ EQuickTweenState\ PlayerState\ \ =\ EQuickTweenState::Idle;}
+\DoxyCodeLine{00232\ \ \ \ \ \textcolor{keywordtype}{float}\ ElapsedTime\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0.0f;}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keywordtype}{float}\ PreviousLoopLocalTime\ \ \ =\ 0.0f;}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ bIsReversed\ \ \ \ \ \ \ \ \ \ \ \ \ =\ false;}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ bWasActive\ \ \ \ \ \ \ \ \ \ \ \ \ \ =\ false;\ \ \textcolor{comment}{//\ used\ when\ owned\ by\ a\ parent\ sequence}}
+\DoxyCodeLine{00236\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ bTriggerEvents\ \ \ \ \ \ \ \ \ \ =\ true;}
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ bSnapToEndOnComplete\ \ \ \ =\ true;}
+\DoxyCodeLine{00238\ \ \ \ \ int32\ CurrentLoop\ \ \ \ \ \ \ \ \ \ \ \ \ =\ 0;}
+\DoxyCodeLine{00239\ \};}
+
+\end{DoxyCode}

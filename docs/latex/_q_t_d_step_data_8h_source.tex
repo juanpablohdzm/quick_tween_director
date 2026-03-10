@@ -1,0 +1,283 @@
+\doxysection{QTDStep\+Data.\+h}
+\hypertarget{_q_t_d_step_data_8h_source}{}\label{_q_t_d_step_data_8h_source}\index{Source/QuickTweenDirector/Public/QTDStepData.h@{Source/QuickTweenDirector/Public/QTDStepData.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Components/ActorComponent.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}Utils/EaseType.h"{}}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ "{}Utils/LoopType.h"{}}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ "{}QTDStepData.generated.h"{}}}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ Enums}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00016\ UENUM(BlueprintType)}
+\DoxyCodeLine{00017\ \textcolor{keyword}{enum\ class}\ EQTDStepType\ :\ uint8}
+\DoxyCodeLine{00018\ \{}
+\DoxyCodeLine{00019\ \ \ \ \ Vector\ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Vector"{}}),}
+\DoxyCodeLine{00020\ \ \ \ \ Rotator\ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Rotator"{}}),}
+\DoxyCodeLine{00021\ \ \ \ \ Float\ \ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Float"{}}),}
+\DoxyCodeLine{00022\ \ \ \ \ LinearColor\ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Linear\ Color"{}}),}
+\DoxyCodeLine{00023\ \ \ \ \ Vector2D\ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Vector\ 2D"{}}),}
+\DoxyCodeLine{00024\ \ \ \ \ Int\ \ \ \ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Integer"{}}),}
+\DoxyCodeLine{00025\ \ \ \ \ Empty\ \ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Empty\ (Delay)"{}}),}
+\DoxyCodeLine{00026\ \};}
+\DoxyCodeLine{00027\ }
+\DoxyCodeLine{00029\ UENUM(BlueprintType)}
+\DoxyCodeLine{00030\ \textcolor{keyword}{enum\ class}\ EQTDVectorProperty\ :\ uint8}
+\DoxyCodeLine{00031\ \{}
+\DoxyCodeLine{00032\ \ \ \ \ WorldLocation\ \ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}World\ Location"{}}),}
+\DoxyCodeLine{00033\ \ \ \ \ RelativeLocation\ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Relative\ Location"{}}),}
+\DoxyCodeLine{00034\ \ \ \ \ WorldScale3D\ \ \ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}World\ Scale\ 3D"{}}),}
+\DoxyCodeLine{00035\ \ \ \ \ RelativeScale3D\ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Relative\ Scale\ 3D"{}}),}
+\DoxyCodeLine{00037\ \ \ \ \ WorldLocationBy\ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}World\ Location\ By\ (Delta)"{}}),}
+\DoxyCodeLine{00039\ \ \ \ \ RelativeLocationBy\ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Relative\ Location\ By\ (Delta)"{}}),}
+\DoxyCodeLine{00041\ \ \ \ \ WorldScale3DBy\ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}World\ Scale\ 3D\ By\ (Delta)"{}}),}
+\DoxyCodeLine{00043\ \ \ \ \ RelativeScale3DBy\ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Relative\ Scale\ 3D\ By\ (Delta)"{}}),}
+\DoxyCodeLine{00044\ \};}
+\DoxyCodeLine{00045\ }
+\DoxyCodeLine{00047\ UENUM(BlueprintType)}
+\DoxyCodeLine{00048\ \textcolor{keyword}{enum\ class}\ EQTDRotatorProperty\ :\ uint8}
+\DoxyCodeLine{00049\ \{}
+\DoxyCodeLine{00050\ \ \ \ \ WorldRotation\ \ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}World\ Rotation"{}}),}
+\DoxyCodeLine{00051\ \ \ \ \ RelativeRotation\ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Relative\ Rotation"{}}),}
+\DoxyCodeLine{00053\ \ \ \ \ WorldRotationBy\ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}World\ Rotation\ By\ (Delta)"{}}),}
+\DoxyCodeLine{00055\ \ \ \ \ RelativeRotationBy\ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Relative\ Rotation\ By\ (Delta)"{}}),}
+\DoxyCodeLine{00056\ \};}
+\DoxyCodeLine{00057\ }
+\DoxyCodeLine{00059\ UENUM(BlueprintType)}
+\DoxyCodeLine{00060\ \textcolor{keyword}{enum\ class}\ EQTDFloatTarget\ :\ uint8}
+\DoxyCodeLine{00061\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ MaterialScalar\ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Material\ Scalar\ Parameter"{}}),}
+\DoxyCodeLine{00064\ \};}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00067\ UENUM(BlueprintType)}
+\DoxyCodeLine{00068\ \textcolor{keyword}{enum\ class}\ EQTDColorTarget\ :\ uint8}
+\DoxyCodeLine{00069\ \{}
+\DoxyCodeLine{00071\ \ \ \ \ MaterialVector\ \ \ \ \ \ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Material\ Vector\ Parameter"{}}),}
+\DoxyCodeLine{00072\ \};}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00075\ UENUM(BlueprintType)}
+\DoxyCodeLine{00076\ \textcolor{keyword}{enum\ class}\ EQTDVector2DTarget\ :\ uint8}
+\DoxyCodeLine{00077\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ MaterialVector2D\ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Material\ Vector2D\ Parameter\ (UV)"{}}),}
+\DoxyCodeLine{00080\ \};}
+\DoxyCodeLine{00081\ }
+\DoxyCodeLine{00083\ UENUM(BlueprintType)}
+\DoxyCodeLine{00084\ \textcolor{keyword}{enum\ class}\ EQTDIntTarget\ :\ uint8}
+\DoxyCodeLine{00085\ \{}
+\DoxyCodeLine{00087\ \ \ \ \ MaterialScalarInt\ UMETA(DisplayName\ =\ \textcolor{stringliteral}{"{}Material\ Scalar\ (Integer)"{}}),}
+\DoxyCodeLine{00088\ \};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00091\ \textcolor{comment}{//\ Step\ data}}
+\DoxyCodeLine{00092\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00093\ }
+\DoxyCodeLine{00098\ USTRUCT(BlueprintType)}
+\DoxyCodeLine{00099\ struct\ QUICKTWEENDIRECTOR\_API\ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}}
+\DoxyCodeLine{00100\ \{}
+\DoxyCodeLine{00101\ \ \ \ \ GENERATED\_BODY()}
+\DoxyCodeLine{00102\ }
+\DoxyCodeLine{00103\ \ \ \ \ \textcolor{comment}{//\ ──\ Identity\ ──────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00104\ }
+\DoxyCodeLine{00105\ \ \ \ \ }
+\DoxyCodeLine{00106\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Identity"{}})}
+\DoxyCodeLine{00107\ \ \ \ \ FGuid\ \mbox{\hyperlink{struct_f_q_t_d_step_data_aa82e8cc129191b9a895603e9724c921a}{StepId}};}
+\DoxyCodeLine{00108\ }
+\DoxyCodeLine{00110\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Identity"{}})}
+\DoxyCodeLine{00111\ \ \ \ \ FString\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a2b3e221046c5b30aaa63a16ce01a7f3f}{Label}};}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00114\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Identity"{}})}
+\DoxyCodeLine{00115\ \ \ \ \ FGuid\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a3a69dc9f14133583c66ff1f42ae5f9b2}{TrackId}};}
+\DoxyCodeLine{00116\ }
+\DoxyCodeLine{00118\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Identity"{}})}
+\DoxyCodeLine{00119\ \ \ \ \ EQTDStepType\ \mbox{\hyperlink{struct_f_q_t_d_step_data_ad1485d402941aa1a10cb4e3c56886a2e}{StepType}}\ =\ EQTDStepType::Empty;}
+\DoxyCodeLine{00120\ }
+\DoxyCodeLine{00121\ \ \ \ \ \textcolor{comment}{//\ ──\ Timing\ ────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00124\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Timing"{}},\ meta\ =\ (ClampMin\ =\ \textcolor{stringliteral}{"{}0.0"{}}))}
+\DoxyCodeLine{00125\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_f_q_t_d_step_data_ac8410b9580bd3d1a29b6cbc2f2f7e7aa}{StartTime}}\ =\ 0.0f;}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00128\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Timing"{}},\ meta\ =\ (ClampMin\ =\ \textcolor{stringliteral}{"{}0.001"{}}))}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a98cdfa990122bab373bd1fe2edce894b}{Duration}}\ =\ 1.0f;}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00132\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Timing"{}},\ meta\ =\ (ClampMin\ =\ \textcolor{stringliteral}{"{}0.01"{}}))}
+\DoxyCodeLine{00133\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_f_q_t_d_step_data_ad32c6c15b5455c166b5b2ebccedf1295}{TimeScale}}\ =\ 1.0f;}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00136\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Timing"{}},\ meta\ =\ (ClampMin\ =\ \textcolor{stringliteral}{"{}1"{}}))}
+\DoxyCodeLine{00137\ \ \ \ \ int32\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a81d42984a1aeae8f8c6f40db38c9003c}{Loops}}\ =\ 1;}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00140\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Timing"{}})}
+\DoxyCodeLine{00141\ \ \ \ \ ELoopType\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a9ac615410ee42b288002a4869099c8a6}{LoopType}}\ =\ ELoopType::Restart;}
+\DoxyCodeLine{00142\ }
+\DoxyCodeLine{00143\ \ \ \ \ \textcolor{comment}{//\ ──\ Easing\ ────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00146\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Easing"{}})}
+\DoxyCodeLine{00147\ \ \ \ \ EEaseType\ \mbox{\hyperlink{struct_f_q_t_d_step_data_af1d9666b6e67be297e50c56bea242f44}{EaseType}}\ =\ EEaseType::Linear;}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00150\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Easing"{}})}
+\DoxyCodeLine{00151\ \ \ \ \ TSoftObjectPtr<UCurveFloat>\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a4e349e834b43a1f50030419bf4cfd0b8}{EaseCurve}};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{comment}{//\ ──\ Target\ Binding\ ────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00160\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Target"{}})}
+\DoxyCodeLine{00161\ \ \ \ \ FName\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a83b4a8eeb6539a691375cf190d618e9b}{SlotName}};}
+\DoxyCodeLine{00162\ }
+\DoxyCodeLine{00168\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Target"{}})}
+\DoxyCodeLine{00169\ \ \ \ \ FName\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a49703cd4ace0a317208b02a576fb33e3}{ParameterName}};}
+\DoxyCodeLine{00170\ }
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{comment}{//\ ──\ Vector-\/specific\ ───────────────────────────────────────────────────────}}
+\DoxyCodeLine{00172\ }
+\DoxyCodeLine{00174\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector"{}},}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector"{}},\ EditConditionHides))}
+\DoxyCodeLine{00176\ \ \ \ \ EQTDVectorProperty\ VectorProperty\ =\ EQTDVectorProperty::RelativeLocation;}
+\DoxyCodeLine{00177\ }
+\DoxyCodeLine{00179\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector"{}},}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector\ \&\&\ !bVectorFromCurrent"{}},\ EditConditionHides))}
+\DoxyCodeLine{00181\ \ \ \ \ FVector\ VectorFrom\ =\ FVector::ZeroVector;}
+\DoxyCodeLine{00182\ }
+\DoxyCodeLine{00184\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector"{}},}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector"{}},\ EditConditionHides))}
+\DoxyCodeLine{00186\ \ \ \ \ FVector\ VectorTo\ =\ FVector::ZeroVector;}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00189\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector"{}},}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector"{}},\ EditConditionHides))}
+\DoxyCodeLine{00191\ \ \ \ \ \textcolor{keywordtype}{bool}\ bVectorFromCurrent\ =\ true;}
+\DoxyCodeLine{00192\ }
+\DoxyCodeLine{00193\ \ \ \ \ \textcolor{comment}{//\ ──\ Rotator-\/specific\ ──────────────────────────────────────────────────────}}
+\DoxyCodeLine{00194\ }
+\DoxyCodeLine{00196\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Rotator"{}},}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Rotator"{}},\ EditConditionHides))}
+\DoxyCodeLine{00198\ \ \ \ \ EQTDRotatorProperty\ RotatorProperty\ =\ EQTDRotatorProperty::RelativeRotation;}
+\DoxyCodeLine{00199\ }
+\DoxyCodeLine{00201\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Rotator"{}},}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Rotator\ \&\&\ !bRotatorFromCurrent"{}},\ EditConditionHides))}
+\DoxyCodeLine{00203\ \ \ \ \ FRotator\ RotatorFrom\ =\ FRotator::ZeroRotator;}
+\DoxyCodeLine{00204\ }
+\DoxyCodeLine{00206\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Rotator"{}},}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Rotator"{}},\ EditConditionHides))}
+\DoxyCodeLine{00208\ \ \ \ \ FRotator\ RotatorTo\ =\ FRotator::ZeroRotator;}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00211\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Rotator"{}},}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Rotator"{}},\ EditConditionHides))}
+\DoxyCodeLine{00213\ \ \ \ \ \textcolor{keywordtype}{bool}\ bRotatorFromCurrent\ =\ true;}
+\DoxyCodeLine{00214\ }
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{comment}{//\ ──\ Float-\/specific\ ────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00216\ }
+\DoxyCodeLine{00218\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Float"{}},}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Float"{}},\ EditConditionHides))}
+\DoxyCodeLine{00220\ \ \ \ \ EQTDFloatTarget\ FloatTarget\ =\ EQTDFloatTarget::MaterialScalar;}
+\DoxyCodeLine{00221\ }
+\DoxyCodeLine{00223\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Float"{}},}
+\DoxyCodeLine{00224\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Float\ \&\&\ !bFloatFromCurrent"{}},\ EditConditionHides))}
+\DoxyCodeLine{00225\ \ \ \ \ \textcolor{keywordtype}{float}\ FloatFrom\ =\ 0.0f;}
+\DoxyCodeLine{00226\ }
+\DoxyCodeLine{00228\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Float"{}},}
+\DoxyCodeLine{00229\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Float"{}},\ EditConditionHides))}
+\DoxyCodeLine{00230\ \ \ \ \ \textcolor{keywordtype}{float}\ FloatTo\ =\ 1.0f;}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00233\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Float"{}},}
+\DoxyCodeLine{00234\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Float"{}},\ EditConditionHides))}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordtype}{bool}\ bFloatFromCurrent\ =\ false;}
+\DoxyCodeLine{00236\ }
+\DoxyCodeLine{00237\ \ \ \ \ \textcolor{comment}{//\ ──\ LinearColor-\/specific\ ──────────────────────────────────────────────────}}
+\DoxyCodeLine{00238\ }
+\DoxyCodeLine{00240\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Color"{}},}
+\DoxyCodeLine{00241\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::LinearColor"{}},\ EditConditionHides))}
+\DoxyCodeLine{00242\ \ \ \ \ EQTDColorTarget\ ColorTarget\ =\ EQTDColorTarget::MaterialVector;}
+\DoxyCodeLine{00243\ }
+\DoxyCodeLine{00245\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Color"{}},}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::LinearColor\ \&\&\ !bColorFromCurrent"{}},\ EditConditionHides))}
+\DoxyCodeLine{00247\ \ \ \ \ FLinearColor\ ColorFrom\ =\ FLinearColor::White;}
+\DoxyCodeLine{00248\ }
+\DoxyCodeLine{00250\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Color"{}},}
+\DoxyCodeLine{00251\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::LinearColor"{}},\ EditConditionHides))}
+\DoxyCodeLine{00252\ \ \ \ \ FLinearColor\ ColorTo\ =\ FLinearColor::Black;}
+\DoxyCodeLine{00253\ }
+\DoxyCodeLine{00255\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Color"{}},}
+\DoxyCodeLine{00256\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::LinearColor"{}},\ EditConditionHides))}
+\DoxyCodeLine{00257\ \ \ \ \ \textcolor{keywordtype}{bool}\ bColorFromCurrent\ =\ false;}
+\DoxyCodeLine{00258\ }
+\DoxyCodeLine{00259\ \ \ \ \ \textcolor{comment}{//\ ──\ Vector2D-\/specific\ ─────────────────────────────────────────────────}}
+\DoxyCodeLine{00260\ }
+\DoxyCodeLine{00262\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector2D"{}},}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector2D"{}},\ EditConditionHides))}
+\DoxyCodeLine{00264\ \ \ \ \ EQTDVector2DTarget\ Vector2DTarget\ =\ EQTDVector2DTarget::MaterialVector2D;}
+\DoxyCodeLine{00265\ }
+\DoxyCodeLine{00267\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector2D"{}},}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector2D\ \&\&\ !bVector2DFromCurrent"{}},\ EditConditionHides))}
+\DoxyCodeLine{00269\ \ \ \ \ FVector2D\ Vector2DFrom\ =\ FVector2D::ZeroVector;}
+\DoxyCodeLine{00270\ }
+\DoxyCodeLine{00272\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector2D"{}},}
+\DoxyCodeLine{00273\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector2D"{}},\ EditConditionHides))}
+\DoxyCodeLine{00274\ \ \ \ \ FVector2D\ Vector2DTo\ =\ FVector2D::ZeroVector;}
+\DoxyCodeLine{00275\ }
+\DoxyCodeLine{00277\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Vector2D"{}},}
+\DoxyCodeLine{00278\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Vector2D"{}},\ EditConditionHides))}
+\DoxyCodeLine{00279\ \ \ \ \ \textcolor{keywordtype}{bool}\ bVector2DFromCurrent\ =\ false;}
+\DoxyCodeLine{00280\ }
+\DoxyCodeLine{00281\ \ \ \ \ \textcolor{comment}{//\ ──\ Int-\/specific\ ──────────────────────────────────────────────────────}}
+\DoxyCodeLine{00282\ }
+\DoxyCodeLine{00284\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Int"{}},}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Int"{}},\ EditConditionHides))}
+\DoxyCodeLine{00286\ \ \ \ \ EQTDIntTarget\ IntTarget\ =\ EQTDIntTarget::MaterialScalarInt;}
+\DoxyCodeLine{00287\ }
+\DoxyCodeLine{00289\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Int"{}},}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Int\ \&\&\ !bIntFromCurrent"{}},\ EditConditionHides))}
+\DoxyCodeLine{00291\ \ \ \ \ int32\ IntFrom\ =\ 0;}
+\DoxyCodeLine{00292\ }
+\DoxyCodeLine{00294\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Int"{}},}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Int"{}},\ EditConditionHides))}
+\DoxyCodeLine{00296\ \ \ \ \ int32\ IntTo\ =\ 1;}
+\DoxyCodeLine{00297\ }
+\DoxyCodeLine{00299\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Int"{}},}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ meta\ =\ (EditCondition\ =\ \textcolor{stringliteral}{"{}StepType\ ==\ EQTDStepType::Int"{}},\ EditConditionHides))}
+\DoxyCodeLine{00301\ \ \ \ \ \textcolor{keywordtype}{bool}\ bIntFromCurrent\ =\ false;}
+\DoxyCodeLine{00302\ }
+\DoxyCodeLine{00303\ \ \ \ \ \textcolor{comment}{//\ ──\ Appearance\ ────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00304\ }
+\DoxyCodeLine{00309\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data_af272d10958e383c632a3efb4f013309b}{UPROPERTY}}(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Step|Appearance"{}})}
+\DoxyCodeLine{00310\ \ \ \ \ FLinearColor\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a1cef0ec5bd6aae9a4e959e323fbd6ba2}{UserColor}}\ =\ FLinearColor(0.f,\ 0.f,\ 0.f,\ 0.f);}
+\DoxyCodeLine{00311\ }
+\DoxyCodeLine{00312\ \ \ \ \ \textcolor{comment}{//\ ──\ Helpers\ ───────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00313\ }
+\DoxyCodeLine{00315\ \ \ \ \ \textcolor{keywordtype}{float}\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a37d6b6443dc35d663bec70aceaf4b060}{GetEndTime}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_f_q_t_d_step_data_ac8410b9580bd3d1a29b6cbc2f2f7e7aa}{StartTime}}\ +\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a98cdfa990122bab373bd1fe2edce894b}{Duration}}\ *\ FMath::Max(\mbox{\hyperlink{struct_f_q_t_d_step_data_a81d42984a1aeae8f8c6f40db38c9003c}{Loops}},\ 1);\ \}}
+\DoxyCodeLine{00316\ }
+\DoxyCodeLine{00318\ \ \ \ \ FLinearColor\ GetTypeColor()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00319\ }
+\DoxyCodeLine{00321\ \ \ \ \ FLinearColor\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a9b925eaae37ca41a2f9f0f3af6a2cd41}{GetDisplayColor}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a1cef0ec5bd6aae9a4e959e323fbd6ba2}{UserColor}}.A\ >\ 0.f\ ?\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a1cef0ec5bd6aae9a4e959e323fbd6ba2}{UserColor}}\ :\ \mbox{\hyperlink{struct_f_q_t_d_step_data_a643a322c65545abd2459657544eb441d}{GetTypeColor}}();\ \}}
+\DoxyCodeLine{00322\ \};}
+\DoxyCodeLine{00323\ }
+\DoxyCodeLine{00324\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00325\ \textcolor{comment}{//\ Track\ data}}
+\DoxyCodeLine{00326\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00327\ }
+\DoxyCodeLine{00332\ USTRUCT(BlueprintType)}
+\DoxyCodeLine{00333\ struct\ QUICKTWEENDIRECTOR\_API\ \mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrackData}}}
+\DoxyCodeLine{00334\ \{}
+\DoxyCodeLine{00335\ \ \ \ \ GENERATED\_BODY()}
+\DoxyCodeLine{00336\ }
+\DoxyCodeLine{00337\ \ \ \ \ }
+\DoxyCodeLine{00338\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Track"{}})}
+\DoxyCodeLine{00339\ \ \ \ \ FGuid\ \mbox{\hyperlink{struct_f_q_t_d_track_data_a7d2e1dbe8db084992e9ac19353881843}{TrackId}};}
+\DoxyCodeLine{00340\ }
+\DoxyCodeLine{00342\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Track"{}})}
+\DoxyCodeLine{00343\ \ \ \ \ FString\ \mbox{\hyperlink{struct_f_q_t_d_track_data_a3f56b1f192ee728fcd0a58a196a07041}{TrackLabel}}\ =\ TEXT(\textcolor{stringliteral}{"{}New\ Track"{}});}
+\DoxyCodeLine{00344\ }
+\DoxyCodeLine{00346\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadWrite,\ Category\ =\ \textcolor{stringliteral}{"{}Track"{}})}
+\DoxyCodeLine{00347\ \ \ \ \ EQTDStepType\ \mbox{\hyperlink{struct_f_q_t_d_track_data_a2090661c3e5b4ded27f019b99998eff3}{DefaultStepType}}\ =\ EQTDStepType::Vector;}
+\DoxyCodeLine{00348\ }
+\DoxyCodeLine{00355\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Track"{}})}
+\DoxyCodeLine{00356\ \ \ \ \ FName\ \mbox{\hyperlink{struct_f_q_t_d_track_data_a33eae2a3b9c36b6d16a87aa73c2ede7c}{ComponentVariableName}};}
+\DoxyCodeLine{00357\ }
+\DoxyCodeLine{00362\ \ \ \ \ UPROPERTY(EditAnywhere,\ BlueprintReadOnly,\ Category\ =\ \textcolor{stringliteral}{"{}Track"{}})}
+\DoxyCodeLine{00363\ \ \ \ \ TSubclassOf<UActorComponent>\ \mbox{\hyperlink{struct_f_q_t_d_track_data_aae3515d437e143511d4c8529e522fea4}{ComponentClass}};}
+\DoxyCodeLine{00364\ }
+\DoxyCodeLine{00365\ \};}
+
+\end{DoxyCode}

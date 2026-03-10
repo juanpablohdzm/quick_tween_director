@@ -1,0 +1,73 @@
+\doxysection{UQuick\+Tween\+Director\+Library Class Reference}
+\hypertarget{class_u_quick_tween_director_library}{}\label{class_u_quick_tween_director_library}\index{UQuickTweenDirectorLibrary@{UQuickTweenDirectorLibrary}}
+
+
+{\ttfamily \#include $<$Quick\+Tween\+Director\+Library.\+h$>$}
+
+Inheritance diagram for UQuick\+Tween\+Director\+Library\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_u_quick_tween_director_library}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_u_quick_tween_director_library_ac9e2f420ee2e423e1e462a7de4f05ea4}{Create\+Director\+Player}} (UObject \texorpdfstring{$\ast$}{*}World\+Context\+Object, \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuick\+Tween\+Director\+Asset}} \texorpdfstring{$\ast$}{*}Asset)
+\item 
+static \mbox{\hyperlink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{class_u_quick_tween_director_library_a11c132df038f06a141fb73dda60ed224}{Play\+Director\+Asset}} (UObject \texorpdfstring{$\ast$}{*}World\+Context\+Object, \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuick\+Tween\+Director\+Asset}} \texorpdfstring{$\ast$}{*}Asset, FName Slot\+Name, UObject \texorpdfstring{$\ast$}{*}Slot\+Object)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Blueprint function library providing convenience functions for \doxylink{class_quick_tween_director}{Quick\+Tween\+Director}. 
+
+\label{doc-func-members}
+\Hypertarget{class_u_quick_tween_director_library_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_u_quick_tween_director_library_ac9e2f420ee2e423e1e462a7de4f05ea4}\index{UQuickTweenDirectorLibrary@{UQuickTweenDirectorLibrary}!CreateDirectorPlayer@{CreateDirectorPlayer}}
+\index{CreateDirectorPlayer@{CreateDirectorPlayer}!UQuickTweenDirectorLibrary@{UQuickTweenDirectorLibrary}}
+\doxysubsubsection{\texorpdfstring{CreateDirectorPlayer()}{CreateDirectorPlayer()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_library_ac9e2f420ee2e423e1e462a7de4f05ea4} 
+\mbox{\hyperlink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player}} \texorpdfstring{$\ast$}{*} UQuick\+Tween\+Director\+Library\+::\+Create\+Director\+Player (\begin{DoxyParamCaption}\item[{UObject \texorpdfstring{$\ast$}{*}}]{World\+Context\+Object}{, }\item[{\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuick\+Tween\+Director\+Asset}} \texorpdfstring{$\ast$}{*}}]{Asset}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+Create a director player for the given asset and register it with the tween manager. The player is idle after creation — call Bind\+Slot() for each named slot and then Play().
+
+
+\begin{DoxyParams}{Parameters}
+{\em World\+Context\+Object} & Any in-\/world UObject. \\
+\hline
+{\em Asset} & The director asset to instantiate. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The new player, or nullptr on failure. 
+\end{DoxyReturn}
+\Hypertarget{class_u_quick_tween_director_library_a11c132df038f06a141fb73dda60ed224}\index{UQuickTweenDirectorLibrary@{UQuickTweenDirectorLibrary}!PlayDirectorAsset@{PlayDirectorAsset}}
+\index{PlayDirectorAsset@{PlayDirectorAsset}!UQuickTweenDirectorLibrary@{UQuickTweenDirectorLibrary}}
+\doxysubsubsection{\texorpdfstring{PlayDirectorAsset()}{PlayDirectorAsset()}}
+{\footnotesize\ttfamily \label{class_u_quick_tween_director_library_a11c132df038f06a141fb73dda60ed224} 
+\mbox{\hyperlink{class_u_quick_tween_director_player}{UQuick\+Tween\+Director\+Player}} \texorpdfstring{$\ast$}{*} UQuick\+Tween\+Director\+Library\+::\+Play\+Director\+Asset (\begin{DoxyParamCaption}\item[{UObject \texorpdfstring{$\ast$}{*}}]{World\+Context\+Object}{, }\item[{\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuick\+Tween\+Director\+Asset}} \texorpdfstring{$\ast$}{*}}]{Asset}{, }\item[{FName}]{Slot\+Name}{, }\item[{UObject \texorpdfstring{$\ast$}{*}}]{Slot\+Object}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+Convenience\+: create the player, bind a single slot, and call Play() immediately. Useful for simple one-\/slot animations.
+
+
+\begin{DoxyParams}{Parameters}
+{\em World\+Context\+Object} & Any in-\/world UObject. \\
+\hline
+{\em Asset} & The director asset to play. \\
+\hline
+{\em Slot\+Name} & Name of the slot to bind (must match \doxylink{struct_f_q_t_d_step_data_a83b4a8eeb6539a691375cf190d618e9b}{FQTDStep\+Data\+::\+Slot\+Name}). \\
+\hline
+{\em Slot\+Object} & The actor or component to animate. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The playing player, or nullptr on failure. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director/\+Public/Quick\+Tween\+Director\+Library.\+h\item 
+Source/\+Quick\+Tween\+Director/\+Private/Quick\+Tween\+Director\+Library.\+cpp\end{DoxyCompactItemize}

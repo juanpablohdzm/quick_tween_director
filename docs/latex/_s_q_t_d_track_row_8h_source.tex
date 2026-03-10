@@ -1,0 +1,65 @@
+\doxysection{SQTDTrack\+Row.\+h}
+\hypertarget{_s_q_t_d_track_row_8h_source}{}\label{_s_q_t_d_track_row_8h_source}\index{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDTrackRow.h@{Source/QuickTweenDirectorEditor/Public/Widgets/SQTDTrackRow.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Widgets/SCompoundWidget.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}QTDStepData.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}};}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_step_content}{SQTDStepContent}};}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ DECLARE\_DELEGATE\_OneParam\ (FOnTrackDelete,\ \ \ FGuid\ \ \ \ \ \ \ \ \textcolor{comment}{/*TrackId*/});}
+\DoxyCodeLine{00013\ DECLARE\_DELEGATE\_TwoParams(FOnTrackReorder,\ \ FGuid\ \ \ \ \ \ \ \ \textcolor{comment}{/*TrackId*/},\ int32\ \textcolor{comment}{/*Direction:\ +1=down,\ -\/1=up*/});}
+\DoxyCodeLine{00020\ DECLARE\_DELEGATE\_OneParam\ (FOnStepAdded,\ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\ \textcolor{comment}{/*PrefilledStep*/});}
+\DoxyCodeLine{00021\ DECLARE\_DELEGATE\_OneParam\ (FOnStepEdit,\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\ \textcolor{comment}{/*Step*/});}
+\DoxyCodeLine{00022\ DECLARE\_DELEGATE\_TwoParams(FOnStepMoved,\ \ \ \ FGuid\ \ \ \ \ \ \ \ \textcolor{comment}{/*StepId*/},\ \textcolor{keywordtype}{float}\ \textcolor{comment}{/*NewStartTime*/});}
+\DoxyCodeLine{00023\ DECLARE\_DELEGATE\_OneParam\ (FOnStepDeleted,\ \ FGuid\ \ \ \ \ \ \ \ \textcolor{comment}{/*StepId*/});}
+\DoxyCodeLine{00024\ }
+\DoxyCodeLine{00038\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_q_t_d_track_row}{SQTDTrackRow}}\ :\ \textcolor{keyword}{public}\ SCompoundWidget}
+\DoxyCodeLine{00039\ \{}
+\DoxyCodeLine{00040\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00041\ \ \ \ \ SLATE\_BEGIN\_ARGS(\mbox{\hyperlink{class_s_q_t_d_track_row}{SQTDTrackRow}})\ \{\}}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrackData}},\ \ \ \ \ \ \ \ \ \ \ \ \ Track)}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*,\ Asset)}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\textcolor{keywordtype}{float},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PixelsPerSec)}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\textcolor{keywordtype}{bool},\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ IsSelected)}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FSimpleDelegate,\ \ \ \ \ \ \ \ \ \ \ \ \ OnTrackSelected)}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FOnTrackDelete,\ \ \ \ \ \ \ \ \ \ \ \ \ \ OnTrackDelete)}
+\DoxyCodeLine{00048\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FOnTrackReorder,\ \ \ \ \ \ \ \ \ \ \ \ \ OnTrackReorder)}
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FOnStepAdded,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OnStepAdded)}
+\DoxyCodeLine{00050\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FOnStepEdit,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OnStepEdit)}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FOnStepMoved,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ OnStepMoved)}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ SLATE\_EVENT\ (FOnStepDeleted,\ \ \ \ \ \ \ \ \ \ \ \ \ \ OnStepDeleted)}
+\DoxyCodeLine{00053\ \ \ \ \ SLATE\_END\_ARGS()}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{keywordtype}{void}\ Construct(\textcolor{keyword}{const}\ FArguments\&\ InArgs);}
+\DoxyCodeLine{00056\ }
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_s_q_t_d_track_row_af69f8d5915ebff2051637360e057bf93}{SetPixelsPerSec}}(\textcolor{keywordtype}{float}\ NewPPS);}
+\DoxyCodeLine{00059\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_s_q_t_d_track_row_a01d2461c0ad8bb5fcbaa4e19cd962258}{SetSnapEnabled}}(\textcolor{keywordtype}{bool}\ bEnabled);}
+\DoxyCodeLine{00062\ }
+\DoxyCodeLine{00067\ \ \ \ \ TSharedRef<SWidget>\ \mbox{\hyperlink{class_s_q_t_d_track_row_a84e836c3e60a264061dea128375af624}{GetStepContentWidget}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00068\ }
+\DoxyCodeLine{00069\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00070\ \ \ \ \ \mbox{\hyperlink{struct_f_q_t_d_track_data}{FQTDTrackData}}\ \ \ \ \ \ \ \ \ \ \ \ \ Track;}
+\DoxyCodeLine{00071\ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ Asset\ \ \ \ \ \ \ \ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{float}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ PixelsPerSec\ =\ 80.0f;}
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{keywordtype}{bool}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bIsSelected\ \ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00074\ }
+\DoxyCodeLine{00075\ \ \ \ \ FSimpleDelegate\ \ OnTrackSelected;}
+\DoxyCodeLine{00076\ \ \ \ \ FOnTrackDelete\ \ \ OnTrackDelete;}
+\DoxyCodeLine{00077\ \ \ \ \ FOnTrackReorder\ \ OnTrackReorder;}
+\DoxyCodeLine{00078\ \ \ \ \ FOnStepAdded\ \ \ \ \ OnStepAdded;}
+\DoxyCodeLine{00079\ \ \ \ \ FOnStepEdit\ \ \ \ \ OnStepEdit;}
+\DoxyCodeLine{00080\ \ \ \ \ FOnStepMoved\ \ \ \ OnStepMoved;}
+\DoxyCodeLine{00081\ \ \ \ \ FOnStepDeleted\ \ OnStepDeleted;}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \ \ \ \ TSharedPtr<SQTDStepContent>\ StepContent;}
+\DoxyCodeLine{00084\ \};}
+
+\end{DoxyCode}

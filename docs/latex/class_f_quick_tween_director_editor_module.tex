@@ -1,0 +1,59 @@
+\doxysection{FQuick\+Tween\+Director\+Editor\+Module Class Reference}
+\hypertarget{class_f_quick_tween_director_editor_module}{}\label{class_f_quick_tween_director_editor_module}\index{FQuickTweenDirectorEditorModule@{FQuickTweenDirectorEditorModule}}
+
+
+{\ttfamily \#include $<$Quick\+Tween\+Director\+Editor\+Module.\+h$>$}
+
+Inheritance diagram for FQuick\+Tween\+Director\+Editor\+Module\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_f_quick_tween_director_editor_module}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_f_quick_tween_director_editor_module_acf51dd0dc869aa78826d184fb101df11}\label{class_f_quick_tween_director_editor_module_acf51dd0dc869aa78826d184fb101df11} 
+virtual void {\bfseries Startup\+Module} () override
+\item 
+\Hypertarget{class_f_quick_tween_director_editor_module_a448a9f193576a7a1d33963390fea2c3f}\label{class_f_quick_tween_director_editor_module_a448a9f193576a7a1d33963390fea2c3f} 
+virtual void {\bfseries Shutdown\+Module} () override
+\item 
+void \mbox{\hyperlink{class_f_quick_tween_director_editor_module_a559ac0510db491db636a88319ef163fd}{Set\+Active\+Blueprint}} (UBlueprint \texorpdfstring{$\ast$}{*}BP)
+\item 
+\Hypertarget{class_f_quick_tween_director_editor_module_aa641a4a3e8d77b26dea5b100584912c5}\label{class_f_quick_tween_director_editor_module_aa641a4a3e8d77b26dea5b100584912c5} 
+UBlueprint \texorpdfstring{$\ast$}{*} {\bfseries Get\+Active\+Blueprint} () const
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_f_quick_tween_director_editor_module_a4238439ca0b555f20e4cb442b86ebba6}\label{class_f_quick_tween_director_editor_module_a4238439ca0b555f20e4cb442b86ebba6} 
+static \mbox{\hyperlink{class_f_quick_tween_director_editor_module}{FQuick\+Tween\+Director\+Editor\+Module}} \& {\bfseries Get} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Editor module for \doxylink{class_quick_tween_director}{Quick\+Tween\+Director}.
+
+Responsibilities\+:
+\begin{DoxyItemize}
+\item Registers the "{}\+Quick\+Tween Director"{} nomad tab in the global tab manager.
+\item Extends the Blueprint editor toolbar with a "{}\+Director"{} button.
+\item Tracks which Actor Blueprint is currently being edited so the Director panel can show the right animations and component hierarchy. 
+\end{DoxyItemize}
+
+\label{doc-func-members}
+\Hypertarget{class_f_quick_tween_director_editor_module_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_f_quick_tween_director_editor_module_a559ac0510db491db636a88319ef163fd}\index{FQuickTweenDirectorEditorModule@{FQuickTweenDirectorEditorModule}!SetActiveBlueprint@{SetActiveBlueprint}}
+\index{SetActiveBlueprint@{SetActiveBlueprint}!FQuickTweenDirectorEditorModule@{FQuickTweenDirectorEditorModule}}
+\doxysubsubsection{\texorpdfstring{SetActiveBlueprint()}{SetActiveBlueprint()}}
+{\footnotesize\ttfamily \label{class_f_quick_tween_director_editor_module_a559ac0510db491db636a88319ef163fd} 
+void FQuick\+Tween\+Director\+Editor\+Module\+::\+Set\+Active\+Blueprint (\begin{DoxyParamCaption}\item[{UBlueprint \texorpdfstring{$\ast$}{*}}]{BP}{}\end{DoxyParamCaption})}
+
+Updates the active Blueprint and refreshes the Director panel if open. 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Source/\+Quick\+Tween\+Director\+Editor/\+Public/Quick\+Tween\+Director\+Editor\+Module.\+h\item 
+Source/\+Quick\+Tween\+Director\+Editor/\+Private/Quick\+Tween\+Director\+Editor\+Module.\+cpp\end{DoxyCompactItemize}

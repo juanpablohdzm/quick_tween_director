@@ -1,0 +1,88 @@
+\doxysection{SQuick\+Tween\+Director\+Editor.\+h}
+\hypertarget{_s_quick_tween_director_editor_8h_source}{}\label{_s_quick_tween_director_editor_8h_source}\index{Source/QuickTweenDirectorEditor/Public/Widgets/SQuickTweenDirectorEditor.h@{Source/QuickTweenDirectorEditor/Public/Widgets/SQuickTweenDirectorEditor.h}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ Copyright\ 2025\ Juan\ Pablo\ Hernandez\ Mosti.\ All\ Rights\ Reserved.}}
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ "{}CoreMinimal.h"{}}}
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ "{}Widgets/SCompoundWidget.h"{}}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ "{}QTDStepData.h"{}}}
+\DoxyCodeLine{00008\ }
+\DoxyCodeLine{00009\ \textcolor{keyword}{class\ }UBlueprint;}
+\DoxyCodeLine{00010\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}};}
+\DoxyCodeLine{00011\ }
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ Constants\ shared\ between\ the\ editor\ and\ its\ sub-\/widgets}}
+\DoxyCodeLine{00014\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ \textcolor{keyword}{namespace\ }QTDEditorConstants}
+\DoxyCodeLine{00017\ \{}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ TrackLabelWidth\ \ \ \ \ =\ 200.0f;}
+\DoxyCodeLine{00021\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ DefaultPixelsPerSec\ =\ 80.0f;}
+\DoxyCodeLine{00023\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ TrackHeight\ \ \ \ \ \ \ \ \ =\ 36.0f;}
+\DoxyCodeLine{00025\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ RulerHeight\ \ \ \ \ \ \ \ \ =\ 28.0f;}
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ MinStepWidth\ \ \ \ \ \ \ \ =\ 8.0f;}
+\DoxyCodeLine{00029\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ SnapIncrement\ \ \ \ \ \ \ =\ 0.05f;}
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ ToolbarHeight\ \ \ \ \ \ \ =\ 32.0f;}
+\DoxyCodeLine{00033\ \ \ \ \ \textcolor{keyword}{static}\ \textcolor{keyword}{constexpr}\ \textcolor{keywordtype}{float}\ LabelAccentWidth\ \ \ \ =\ 2.0f;}
+\DoxyCodeLine{00034\ \}}
+\DoxyCodeLine{00035\ }
+\DoxyCodeLine{00036\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00037\ \textcolor{comment}{//\ SQuickTweenDirectorEditor}}
+\DoxyCodeLine{00038\ \textcolor{comment}{//\ ──────────────────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_s_quick_tween_director_editor}{SQuickTweenDirectorEditor}}\ :\ \textcolor{keyword}{public}\ SCompoundWidget}
+\DoxyCodeLine{00041\ \{}
+\DoxyCodeLine{00042\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00043\ \ \ \ \ SLATE\_BEGIN\_ARGS(\mbox{\hyperlink{class_s_quick_tween_director_editor}{SQuickTweenDirectorEditor}})\ \{\}}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(\mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*,\ Asset)}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ SLATE\_ARGUMENT(TWeakObjectPtr<UBlueprint>,\ Blueprint)}
+\DoxyCodeLine{00046\ \ \ \ \ SLATE\_END\_ARGS()}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordtype}{void}\ Construct(\textcolor{keyword}{const}\ FArguments\&\ InArgs);}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_s_quick_tween_director_editor_a202d6f3a56bd9656712825c9b4ef8056}{RefreshFromAsset}}();}
+\DoxyCodeLine{00052\ }
+\DoxyCodeLine{00053\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \textcolor{comment}{//\ ──\ Toolbar\ ───────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00056\ \ \ \ \ FReply\ OnSaveClicked();}
+\DoxyCodeLine{00057\ \ \ \ \ FReply\ OnAddTrackClicked();}
+\DoxyCodeLine{00058\ \ \ \ \ FReply\ OnExportJsonClicked();}
+\DoxyCodeLine{00059\ \ \ \ \ FReply\ OnImportJsonClicked();}
+\DoxyCodeLine{00060\ }
+\DoxyCodeLine{00061\ \ \ \ \ \textcolor{comment}{//\ ──\ Track\ /\ step\ actions\ ──────────────────────────────────────────────────}}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keywordtype}{void}\ DeleteTrack(FGuid\ TrackId);}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keywordtype}{void}\ ReorderTrack(FGuid\ TrackId,\ int32\ Direction);}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{void}\ AddStepToTrack(\mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\ PrefilledStep);}
+\DoxyCodeLine{00065\ \ \ \ \ \textcolor{keywordtype}{void}\ OpenStepDialog(\textcolor{keyword}{const}\ \mbox{\hyperlink{struct_f_q_t_d_step_data}{FQTDStepData}}\&\ Step);}
+\DoxyCodeLine{00066\ }
+\DoxyCodeLine{00067\ \ \ \ \ \textcolor{comment}{//\ ──\ Zoom\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00068\ \ \ \ \ \textcolor{keywordtype}{float}\ PixelsPerSec\ =\ QTDEditorConstants::DefaultPixelsPerSec;}
+\DoxyCodeLine{00069\ \ \ \ \ \textcolor{keywordtype}{float}\ OnGetZoomValue()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ PixelsPerSec;\ \}}
+\DoxyCodeLine{00070\ \ \ \ \ \textcolor{keywordtype}{void}\ \ OnZoomChanged(\textcolor{keywordtype}{float}\ NewValue);}
+\DoxyCodeLine{00071\ \ \ \ \ FReply\ OnZoomToFitClicked();}
+\DoxyCodeLine{00072\ }
+\DoxyCodeLine{00073\ \ \ \ \ \textcolor{comment}{//\ ──\ Snap\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00074\ \ \ \ \ \textcolor{keywordtype}{bool}\ bSnapEnabled\ =\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00075\ \ \ \ \ \textcolor{keywordtype}{void}\ PropagateSnapToRows();}
+\DoxyCodeLine{00076\ }
+\DoxyCodeLine{00077\ \ \ \ \ \textcolor{comment}{//\ ──\ Ruler\ scrubbing\ ───────────────────────────────────────────────────────}}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keywordtype}{float}\ PlayheadTime\ =\ 0.f;}
+\DoxyCodeLine{00079\ }
+\DoxyCodeLine{00080\ \ \ \ \ \textcolor{comment}{//\ ──\ Data\ ──────────────────────────────────────────────────────────────────}}
+\DoxyCodeLine{00081\ \ \ \ \ \mbox{\hyperlink{class_u_quick_tween_director_asset}{UQuickTweenDirectorAsset}}*\ \ \ \ Asset\ \ \ \ \ \ \ \ \ \ \ =\ \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{00082\ \ \ \ \ TWeakObjectPtr<UBlueprint>\ \ \ Blueprint;}
+\DoxyCodeLine{00083\ \ \ \ \ FGuid\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ SelectedTrackId;}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ TSharedPtr<SVerticalBox>\ \ \ \ \ LabelContainer;}
+\DoxyCodeLine{00086\ \ \ \ \ TSharedPtr<SVerticalBox>\ \ \ \ \ ContentContainer;}
+\DoxyCodeLine{00087\ \ \ \ \ TSharedPtr<SScrollBox>\ \ \ \ \ \ \ HScrollBox;}
+\DoxyCodeLine{00088\ \ \ \ \ TSharedPtr<SWidget>\ \ \ \ \ \ \ \ \ \ RulerWidget;}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00091\ \ \ \ \ TArray<TWeakPtr<class\ SQTDTrackRow>>\ TrackRows;}
+\DoxyCodeLine{00092\ \};}
+
+\end{DoxyCode}
