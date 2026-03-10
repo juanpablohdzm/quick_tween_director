@@ -6,6 +6,8 @@ Think of it as a lightweight in-editor Sequencer that lives inside your Blueprin
 
 > **Requires:** The **QuickTween** plugin must be installed and enabled alongside this one.
 
+📄 **[Documentation](https://juanpablohdzm.github.io/quick_tween_director)**
+
 ---
 
 ## Table of Contents
@@ -680,3 +682,19 @@ Or play a Director animation in parallel with other tweens:
 The Director Player behaves identically to a `UQuickTweenSequence` from the parent sequence's perspective.
 
 > **Note:** When nesting a Director Player inside a sequence, ensure all steps inside it have a finite loop count (minimum 1). Infinite loops are not supported — the parent sequence needs a known duration to calculate seek times correctly.
+
+---
+
+## License
+
+Copyright (c) 2026 Juan Pablo Hernandez Mosti. All rights reserved.
+
+Permission is granted to use this software for personal or commercial projects.
+
+**You may NOT:**
+
+- Distribute the software
+- Sublicense or resell the software
+- Claim the software as your own
+
+This software is provided "as is", without warranty of any kind.
