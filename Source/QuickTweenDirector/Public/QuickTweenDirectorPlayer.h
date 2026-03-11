@@ -13,6 +13,7 @@ class UQuickTweenDirectorAsset;
 class UQuickTweenBase;
 class AActor;
 class USceneComponent;
+class UMaterialInstanceDynamic;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQTDPlayerEvent, UQuickTweenDirectorPlayer*, Player);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnQTDStepEvent, UQuickTweenDirectorPlayer*, Player, FName, SlotName, FGuid, StepId);

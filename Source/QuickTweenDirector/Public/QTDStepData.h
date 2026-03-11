@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Curves/CurveFloat.h"
 #include "Utils/EaseType.h"
 #include "Utils/LoopType.h"
 #include "QTDStepData.generated.h"
