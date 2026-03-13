@@ -1,5 +1,8 @@
 # QuickTweenDirector
 
+![44a2463d-7c37-4fc4-b03d-14f9dac3a9f2](https://github.com/user-attachments/assets/42ab74a9-253a-4071-aaee-c9fc33416677)
+
+
 **QuickTweenDirector** is a visual timeline editor and runtime playback system for the **QuickTween** plugin. It lets you author multi-track, multi-step tween animations directly inside any Actor Blueprint and play them back at runtime with a single Blueprint node — no code required.
 
 Think of it as a lightweight in-editor Sequencer that lives inside your Blueprint editor, produces a reusable data asset, and plays back through the QuickTween engine.
@@ -7,6 +10,8 @@ Think of it as a lightweight in-editor Sequencer that lives inside your Blueprin
 > **Requires:** The **QuickTween** plugin must be installed and enabled alongside this one.
 
 📄 **[Documentation](https://juanpablohdzm.github.io/quick_tween_director)**
+
+![bf884f75-fcde-4b73-94d6-5fce95776a35](https://github.com/user-attachments/assets/1d240833-5c9e-4519-91b1-b2c7ab3785ea)
 
 ---
 
