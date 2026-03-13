@@ -41,10 +41,7 @@
 			"PlatformAllowList": [
 				"Win64",
 				"Mac",
-				"Linux",
-				"Android",
-				"IOS",
-				"TVOS"
+				"Linux"
 			]
 		}
 	]
