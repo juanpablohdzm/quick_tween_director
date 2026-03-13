@@ -8,13 +8,12 @@
 	"CreatedBy": "Mosti Dev",
 	"CreatedByURL": "",
 	"DocsURL": "https://juanpablohdzm.github.io/quick_tween_director/",
-	"MarketplaceURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/155bf4df-eeb2-4387-ab3d-5f9888bc7cbe",
 	"SupportURL": "",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
-	"PlatformAllowList": [ "Win64", "Win32", "Mac", "Linux", "LinuxArm64", "Android", "IOS" ],
 	"Plugins": [
 		{
 			"Name": "QuickTween",
@@ -25,12 +24,28 @@
 		{
 			"Name": "QuickTweenDirector",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Linux",
+				"Android",
+				"IOS",
+				"TVOS"
+			]
 		},
 		{
 			"Name": "QuickTweenDirectorEditor",
 			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
+			"LoadingPhase": "PostEngineInit",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Linux",
+				"Android",
+				"IOS",
+				"TVOS"
+			]
 		}
 	]
 }
